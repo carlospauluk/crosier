@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+
+<body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
+
+	{{ include('header.html.twig') }}
+
+	<div class="app-body">
+
+		{{ include('sidebar.html.twig') }}
+
+
+
+		<main class="main">
+
+		<div class="container-fluid" style="padding-top: 10px">
+			<div id="ui-view" style="opacity: 1;">
+				<div class="animated fadeIn">
+					{% block page_content %}
+					{{ include('main.html.twig') }}
+					{% endblock %}
+				</div>
+			</div>
+		</div>
+
+		</main>
+
+
+
+
+	</div>
+
+	{{ include('footer.html.twig') }}
+
+	{{ include('util/confirmationModal.html.twig') }}
+
+
+	
+
+</body>
+
+
+{% endblock %}

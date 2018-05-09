@@ -1,0 +1,11 @@
+input[type=submit], input[type=button]  {
+    text-transform: none;
+}
+
+.crsr-dec2,
+.crsr-dec3,
+.crsr-money
+{
+    text-align: right;
+    text-transform: none;
+}
