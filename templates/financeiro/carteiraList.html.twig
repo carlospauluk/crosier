@@ -20,7 +20,7 @@
 				<button type="button" class="btn btn-secondary" data-target="#pesquisarModal" data-toggle="modal">
 					<i class="fas fa-search" aria-hidden="true"></i> Pesquisar
 				</button>
-				<button type="button" class="btn btn-secondary">
+				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('carteira_list') }}'">
 					<i class="fas fa-sync" aria-hidden="true"></i> Recarregar
 				</button>
 			</div>
@@ -90,21 +90,33 @@
 
 
 <div class="modal fade" id="pesquisarModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <h4>Pesquisar</h4>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" id="btnCancelarPesquisa" data-dismiss="modal">
-                    <i class="fa fa-ban" aria-hidden="true"></i> Cancelar
-                </button>
-                <button type="button" class="btn btn-danger" id="btnPesquisar" data-dismiss="modal">
-                    <i class="fa fa-trash" aria-hidden="true"></i> Pesquisar
-                </button>
-            </div>
-        </div>
-    </div>
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form action="{{ url('carteira_list') }}" method="get">
+				<div class="modal-body">
+					<h4>Pesquisar</h4>
+
+					<div class="form-group">
+						<label for="p_descricao">Descrição</label>
+						<input type="text" class="form-control" id="filter[descricao]" name="filter[descricao]" value="{{ filter.descricao|default('') }}">
+					</div>
+					<div class="form-group">
+						<label for="p_descricao">Dt Consolidado</label>
+						<input type="date" size="15" class="form-control" name="filter[dtConsolidado][i]" value="{{ filter.dtConsolidado.i|default('') }}">
+						<input type="date" size="15" class="form-control" name="filter[dtConsolidado][f]" value="{{ filter.dtConsolidado.f|default('') }}">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" id="btnCancelarPesquisa" data-dismiss="modal">
+						<i class="fa fa-ban" aria-hidden="true"></i> Cancelar
+					</button>
+					<button type="submit" class="btn btn-danger" id="btnPesquisar">
+						<i class="fa fa-trash" aria-hidden="true"></i> Pesquisar
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
 
 
@@ -134,10 +146,8 @@
 			});
 
 	// Bind to modal opening to set necessary data properties to be used to make request
-	$('#confirmationModal').on('show.bs.modal', function(e) {
-		var data = $(e.relatedTarget).data();
-		$('#btnYes', this).data('url', data.url);
-		$('#btnYes', this).data('token', data.token);
+	$('#pesquisarModal').on('show.bs.modal', function(e) {
+		$('#p_descricao').focus();
 	});
 </script>
 

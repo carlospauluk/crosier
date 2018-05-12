@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity\financeiro;
+namespace App\Entity\Financeiro;
 
 use App\Entity\base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
- * @ORM\Entity(repositoryClass="App\Repository\financeiro\CarteiraRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CarteiraRepository")
  * @ORM\Table(name="fin_carteira")
  */
 class Carteira extends EntityId {
