@@ -14,7 +14,7 @@
 				<h3>Carteiras</h3>
 			</div>
 			<div class="col-4 text-right">
-				<button type="button" class="btn btn-primary">
+				<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('carteira_form') }}'">
 					<i class="fas fa-file" aria-hidden="true"></i> Novo
 				</button>
 				<button type="button" class="btn btn-secondary" data-target="#pesquisarModal" data-toggle="modal">
@@ -54,7 +54,7 @@
 		{% endfor %}
 
 		<div class="table-responsive-sm">
-			<table class="table table-striped table-hover">
+			<table class="table table-striped table-hover crsr-datatable">
 
 				<thead>
 					<tr>
@@ -73,8 +73,12 @@
 						<td>{{ item.codigo }}</td>
 						<td>{{ item.descricao }}</td>
 						<td>{{ item.dtConsolidado|date('d/m/Y') }}</td>
-						<td>
-							<button type="button" class="btn btn-lg btn-block btn-danger" data-url="{{ url('carteira_delete', {id: item.id}) }}"
+						<td class="text-right">
+							<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('carteira_form', {id: item.id}) }}'">
+								<i class="fas fa-wrench" aria-hidden="true"></i>
+							</button>
+
+							<button type="button" class="btn btn-danger" data-url="{{ url('carteira_delete', {id: item.id}) }}"
 								data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal" data-toggle="modal">
 								<i class="fa fa-trash" aria-hidden="true"></i>
 							</button>

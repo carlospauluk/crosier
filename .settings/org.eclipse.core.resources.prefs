@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding//templates/Financeiro/carteiraList.html.twig=UTF-8
-encoding//templates/financeiro/carteiraList.html.twig=UTF-8
+encoding//templates/financeiro/carteiraForm.html.twig=UTF-8
 encoding//templates/main.html.twig=UTF-8
 encoding//templates/util/confirmationModal.html.twig=UTF-8
 encoding/<project>=UTF-8
+separateDerivedEncodings=true

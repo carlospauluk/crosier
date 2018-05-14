@@ -17,13 +17,9 @@ class CarteiraType extends AbstractType
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
         ))
-            ->add('dtEntrada', DateType::class, array(
+            ->add('dtConsolidado', DateType::class, array(
             'widget' => 'single_text',
-            'format' => 'dd/MM/yyyy',
-            'label' => 'Dt Entrada',
-            'attr' => array(
-                'class' => 'datepicker'
-            )
+            'label' => 'Dt Entrada'
         ))
             ->add('save', SubmitType::class, array(
             'label' => 'Salvar'

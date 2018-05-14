@@ -1,0 +1,94 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+
+<div class="card">
+	<div class="card-header">
+
+		<div class="row">
+			<div class="col-8">
+				<h3>Carteira</h3>
+			</div>
+			<div class="col-4 text-right">				
+				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('carteira_list') }}'">
+					<i class="fas fa-sync" aria-hidden="true"></i> Listar	
+				</button>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="card-body">
+
+
+		{% for flashMessage in app.flashes('success') %}
+
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			<h4 class="alert-heading">Erro</h4>
+			<p>
+				{{ flashMessage }}
+			</p>
+		</div>
+
+		{% endfor %}
+
+		{% for flashMessage in app.flashes('error') %}
+
+		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+			<h4 class="alert-heading">Erro</h4>
+			<p>
+				{{ flashMessage }}
+			</p>
+		</div>
+
+		{% endfor %}
+
+		{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+		{{ form_start(form) }}
+		{{ form_widget(form) }}
+		{{ form_end(form) }}
+
+
+	</div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+
+
+{% block down_scripts %}
+
+
+<script>
+	//Bind click to OK button within popup
+	$('#btnYes').on(
+			'click',
+			function(e) {
+				console.log('foi');
+				var $modalDiv = $(e.delegateTarget);
+				var url = $(this).data('url');
+				var token = $(this).data('token');
+				var form = $('<form></form>').attr("method", "post").attr(
+						"action", url);
+				form.append($('<input></input>').attr("type", "hidden").attr(
+						"name", "token").attr("value", token));
+				$(form).appendTo('body').submit();
+
+			});
+
+	// Bind to modal opening to set necessary data properties to be used to make request
+	$('#pesquisarModal').on('show.bs.modal', function(e) {
+		$('#p_descricao').focus();
+	});
+</script>
+
+{% endblock %}

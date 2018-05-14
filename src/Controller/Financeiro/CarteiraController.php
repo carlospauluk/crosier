@@ -15,14 +15,16 @@ class CarteiraController extends Controller
 
     /**
      *
-     * @Route("/fin/carteira/form")
+     * @Route("/fin/carteira/form/{id}", name="carteira_form", defaults={"id"=null}, requirements={"id"="\d+"})
      */
-    public function save(Request $request)
+    public function form(Request $request, Carteira $carteira = null)
     {
-        $carteira = new Carteira();
-        
-        $carteira->setInserted(new \DateTime('now'));
-        $carteira->setUpdated(new \DateTime('now'));
+        if (! $carteira) {
+            $carteira = new Carteira();
+            
+            $carteira->setInserted(new \DateTime('now'));
+            $carteira->setUpdated(new \DateTime('now'));
+        }
         
         $form = $this->createForm(CarteiraType::class, $carteira);
         
@@ -66,7 +68,7 @@ class CarteiraController extends Controller
             
             $repo = $this->getDoctrine()->getRepository(Carteira::class);
             
-            if (!$params['filter'] OR count($params['filter']) == 0) {
+            if (! $params['filter'] or count($params['filter']) == 0) {
                 $dados = $repo->findAll();
             } else {
                 
@@ -98,7 +100,7 @@ class CarteiraController extends Controller
 
     /**
      *
-     * @Route("/fin/carteira/{id}/delete", name="carteira_delete")
+     * @Route("/fin/carteira/delete/{id}/", name="carteira_delete", requirements={"id"="\d+"})
      * @Method("POST")
      *
      */
