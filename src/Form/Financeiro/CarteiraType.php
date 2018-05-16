@@ -4,8 +4,8 @@ namespace App\Form\Financeiro;
 use App\Entity\Financeiro\Carteira;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -16,18 +16,24 @@ class CarteiraType extends AbstractType
     {
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
-        ))
-            ->add('dtEntrada', DateType::class, array(
+        ));
+        
+        $builder->add('dtEntrada', DateType::class, array(
             'widget' => 'single_text',
             'format' => 'dd/MM/yyyy',
             'label' => 'Dt Entrada',
             'attr' => array(
                 'class' => 'datepicker'
             )
-        ))
-            ->add('save', SubmitType::class, array(
-            'label' => 'Salvar'
         ));
+        
+        $builder->add('concreta', ChoiceType::class, array(
+            'choices'  => array(
+                'Sim' => true,
+                'Não' => false,
+            ),
+        ));
+        
     }
 
     public function configureOptions(OptionsResolver $resolver)
