@@ -98,7 +98,7 @@ class WhereBuilder
                         $qb->setParameter($filter->field . '_f', $filter->val['f']);
                     break;
                 case 'LIKE':
-                    $qb->setParameter($filter->field, '%'.$filter->val.'%');
+                    $qb->setParameter($filter->field, '%' . $filter->val . '%');
                     break;
                 default:
                     $qb->setParameter($filter->field, $filter->val);
