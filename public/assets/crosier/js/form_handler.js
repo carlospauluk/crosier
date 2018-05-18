@@ -18,10 +18,7 @@ function maskDateTimes() {
 
 function maskMoneys() {
 	$(".crsr-money").each(function() {
-		var value;
-		value = $(this).html();
-
-		$(this).val(value);
+		
 		$(this).maskMoney({
 			prefix : '',
 			thousands : '.',
@@ -31,11 +28,6 @@ function maskMoneys() {
 		});
 		$(this).maskMoney('mask');
 
-		// if ($(this).is('td')) {
-		$(this).html($(this).val());
-		// } else {
-		// $(this).val(formatted);
-		// }
 	});
 }
 

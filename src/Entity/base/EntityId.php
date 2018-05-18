@@ -2,26 +2,27 @@
 namespace App\Entity\base;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\ORM\Mapping as ORM;
 
 class EntityId
 {
 
     /**
-     *
+     * @ORM\Column(name="inserted", type="datetime", nullable=false)
      * @Assert\NotNull()
      * @Assert\Type("\DateTime")
      */
     public $inserted;
 
     /**
-     *
+     * @ORM\Column(name="updated", type="datetime", nullable=false)
      * @Assert\NotNull()
      * @Assert\Type("\DateTime")
      */
     public $updated;
 
     /**
-     *
+     * @ORM\Column(name="estabelecimento_id", type="integer", nullable=false)
      * @Assert\NotNull()
      */
     public $estabelecimento;

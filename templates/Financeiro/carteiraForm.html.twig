@@ -13,9 +13,10 @@
 			<div class="col-8">
 				<h3>Carteira</h3>
 			</div>
-			<div class="col-4 text-right">				
-				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('carteira_list') }}'">
-					<i class="fas fa-sync" aria-hidden="true"></i> Listar	
+			<div class="col-4 text-right">
+				<button type="button" class="btn btn-secondary"
+					onclick="window.location.href='{{ url('carteira_list') }}'">
+					<i class="fas fa-sync" aria-hidden="true"></i> Listar
 				</button>
 			</div>
 		</div>
@@ -27,7 +28,8 @@
 
 		{% for flashMessage in app.flashes('success') %}
 
-		<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<div class="alert alert-success alert-dismissible fade show"
+			role="alert">
 			<h4 class="alert-heading">Erro</h4>
 			<p>
 				{{ flashMessage }}
@@ -38,7 +40,8 @@
 
 		{% for flashMessage in app.flashes('error') %}
 
-		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		<div class="alert alert-danger alert-dismissible fade show"
+			role="alert">
 			<h4 class="alert-heading">Erro</h4>
 			<p>
 				{{ flashMessage }}
@@ -51,6 +54,22 @@
 
 		{{ form_start(form) }}
 		{{ form_widget(form) }}
+
+		<div class="row">
+			<div class="col text-right">
+				<button type="submit" class="btn btn-primary btn-lg" value="Salvar">
+					<i class="fas fa-save" aria-hidden="true"></i> Salvar
+				</button>
+
+				<button type="button" value="Resetar" class="btn btn-secondary"
+					data-url="{{ url('carteira_form') }}"
+					data-target="#confirmationModal" data-toggle="modal">
+					<i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+				</button>
+			</div>
+		</div>
+
+
 		{{ form_end(form) }}
 
 
@@ -64,7 +83,6 @@
 {% endblock %}
 
 
-
 {% block down_scripts %}
 
 
@@ -73,14 +91,10 @@
 	$('#btnYes').on(
 			'click',
 			function(e) {
-				console.log('foi');
 				var $modalDiv = $(e.delegateTarget);
 				var url = $(this).data('url');
-				var token = $(this).data('token');
-				var form = $('<form></form>').attr("method", "post").attr(
+				var form = $('<form></form>').attr("method", "get").attr(
 						"action", url);
-				form.append($('<input></input>').attr("type", "hidden").attr(
-						"name", "token").attr("value", token));
 				$(form).appendTo('body').submit();
 
 			});

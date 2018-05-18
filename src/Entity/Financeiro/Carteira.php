@@ -193,7 +193,7 @@ class Carteira extends EntityId
 
     public function getBanco(): ?Banco
     {
-        return $this->category;
+        return $this->banco;
     }
 
     public function setBanco(?Banco $banco): self
