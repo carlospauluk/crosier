@@ -72,17 +72,20 @@ class CarteiraType extends AbstractType
         ));
         
         $builder->add('agencia', TextType::class, array(
-            'label' => 'Agência'
+            'label' => 'Agência',
+            'required' => false
         ));
         
         $builder->add('conta', TextType::class, array(
-            'label' => 'Conta'
+            'label' => 'Conta',
+            'required' => false
         ));
         
         $builder->add('limite', MoneyType::class, array(
             'label' => 'Limite',
             'currency' => 'BRL',
             'grouping' => 'true',
+            'required' => false,
             'attr' => array(
                 'class' => 'crsr-money'
             )

@@ -1,0 +1,21 @@
+{% for flashMessage in app.flashes('success') %}
+
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+	<h4 class="alert-heading"><i class="fas fa-check-circle" aria-hidden="true"></i> Sucesso</h4>
+	<p>
+		{{ flashMessage }}
+	</p>
+</div>
+
+{% endfor %}
+
+{% for flashMessage in app.flashes('error') %}
+
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+	<h4 class="alert-heading"><i class="fas fa-exclamation-circle" aria-hidden="true"></i> Erro</h4>
+	<p>
+		{{ flashMessage }}
+	</p>
+</div>
+
+{% endfor %}

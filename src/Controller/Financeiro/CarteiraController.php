@@ -122,13 +122,4 @@ class CarteiraController extends Controller
         return $this->redirectToRoute('carteira_list');
     }
 
-    /**
-     *
-     * @Route("/teste")
-     *
-     */
-    public function teste(Request $request): Response
-    {
-        return $this->render('index.html.twig');
-    }
 }
