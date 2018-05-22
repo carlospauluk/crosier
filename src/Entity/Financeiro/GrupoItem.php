@@ -1,14 +1,14 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 /**
- * Entidade que representa um item de um Grupo de Movimentações (como a fatura
+ * Entidade que representa um 'item de um Grupo de Movimentações' (como a fatura
  * de um mês do cartão de crédito, por exemplo).
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoRepository")
@@ -31,6 +31,8 @@ class GrupoItem extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Grupo")
      * @ORM\JoinColumn(nullable=true)
+     *
+     * @var $pai Grupo
      */
     private $pai;
 
@@ -55,6 +57,8 @@ class GrupoItem extends EntityId
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Financeiro\GrupoItem")
      * @ORM\JoinColumn(name="anterior_id", referencedColumnName="id")
+     *
+     * @var $anterior GrupoItem
      */
     private $anterior;
 
@@ -63,6 +67,8 @@ class GrupoItem extends EntityId
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Financeiro\GrupoItem")
      * @ORM\JoinColumn(name="proximo_id", referencedColumnName="id")
+     *
+     * @var $proximo GrupoItem
      */
     private $proximo;
 
@@ -70,6 +76,8 @@ class GrupoItem extends EntityId
      * Utilizado para informar o limite disponível.
      *
      * @ORM\Column(name="valor_informado", type="decimal", nullable=true, precision=15, scale=2)
+     *
+     * @Assert\Range(min=0)
      */
     private $valorInformado;
 
@@ -85,6 +93,8 @@ class GrupoItem extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_pagante_id", nullable=true)
+     * 
+     * @var $carteiraPagante Carteira
      */
     private $carteiraPagante;
 
@@ -112,12 +122,12 @@ class GrupoItem extends EntityId
         $this->id = $id;
     }
 
-    public function getPai()
+    public function getPai() : ?Grupo
     {
         return $this->pai;
     }
 
-    public function setPai($pai)
+    public function setPai(?Grupo $pai)
     {
         $this->pai = $pai;
     }
@@ -142,22 +152,22 @@ class GrupoItem extends EntityId
         $this->dtVencto = $dtVencto;
     }
 
-    public function getAnterior()
+    public function getAnterior() : ?GrupoItem
     {
         return $this->anterior;
     }
 
-    public function setAnterior($anterior)
+    public function setAnterior(?GrupoItem $anterior)
     {
         $this->anterior = $anterior;
     }
 
-    public function getProximo()
+    public function getProximo() : ?GrupoItem
     {
         return $this->proximo;
     }
 
-    public function setProximo($proximo)
+    public function setProximo(?GrupoItem $proximo)
     {
         $this->proximo = $proximo;
     }
@@ -181,11 +191,6 @@ class GrupoItem extends EntityId
         return $this->movimentacoes;
     }
 
-    public function setMovimentacoes($movimentacoes)
-    {
-        $this->movimentacoes = $movimentacoes;
-    }
-
     public function getCarteiraPagante(): ?Carteira
     {
         return $this->carteiraPagante;
@@ -206,6 +211,11 @@ class GrupoItem extends EntityId
         $this->fechado = $fechado;
     }
 
+    /**
+     * Método auxiliar para cálculo.
+     * 
+     * @return number
+     */
     public function getValorLanctos()
     {
         if (($this->getMovimentacoes() != null) && (count($this->getMovimentacoes()) > 0)) {
@@ -222,6 +232,11 @@ class GrupoItem extends EntityId
         return abs($bdValor);
     }
 
+    /**
+     * Método auxiliar para view.
+     * 
+     * @return number
+     */
     public function getDiferenca()
     {
         return $this->getValorLanctos() - $this->getValorInformado();

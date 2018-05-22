@@ -1,11 +1,11 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Entity\Financeiro\Movimentacao;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade 'Parcelamento'.
@@ -27,6 +27,9 @@ class Parcelamento extends EntityId
     /**
      *
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Range(min=0)
      */
     private $valorTotal;
 
@@ -90,31 +93,21 @@ class Parcelamento extends EntityId
         $this->parcelas->removeElement($movimentacao);
     }
 
-    public function getVinculante()
-    {
-        return $this->vinculante;
-    }
-
-    public function setVinculante($vinculante)
-    {
-        $this->vinculante = $vinculante;
-    }
-
-    public function getVinculante()
-    {
-        return $this->vinculante;
-    }
-
-    public function setVinculante($vinculante)
-    {
-        $this->vinculante = $vinculante;
-    }
-
+    /**
+     * Método auxiliar.
+     * 
+     * @return number
+     */
     public function getQtdeParcelas()
     {
         return $this->parcelas->count();
     }
 
+    /**
+     * Método auxiliar.
+     * 
+     * @return number
+     */
     public function recalcularParcelas()
     {
         $valorTotal = 0.0;

@@ -1,12 +1,13 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- *
+ * Entidade 'Carteira'.
+ * 
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CarteiraRepository")
  * @ORM\Table(name="fin_carteira")
  */
@@ -46,11 +47,10 @@ class Carteira extends EntityId
 
     /**
      * Uma Carteira concreta é aquela em que podem ser efetuados créditos e
-     * débitos, como uma conta corrente.
-     * Um Grupo de Movimentação só pode ser
-     * filho de uma Carteira concreta. Uma movimentação que contenha um grupo de
-     * movimentação, precisa ter sua carteira igual a carteira do grupo de
-     * movimentação.
+     * débitos, como uma conta corrente ou um caixa.
+     * Um Grupo de Movimentação só pode estar vinculado à uma Carteira concreta. 
+     * Uma movimentação que contenha um grupo de movimentação, precisa ter sua 
+     * carteira igual a carteira do grupo de movimentação.
      *
      *
      * @ORM\Column(name="concreta", type="boolean", nullable=false)
@@ -60,7 +60,6 @@ class Carteira extends EntityId
 
     /**
      * Informa se esta carteira pode conter movimentações com status ABERTA.
-     * útil principalmente para o relatório de contas a pagar/receber, para não considerar movimentações de outras carteiras.
      *
      * @ORM\Column(name="abertas", type="boolean", nullable=false)
      * @Assert\NotNull()
@@ -84,6 +83,7 @@ class Carteira extends EntityId
     private $cheque = false;
 
     /**
+     * No caso da Carteira ser uma conta de banco, informa qual.
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Banco")
      * @ORM\JoinColumn(nullable=true)

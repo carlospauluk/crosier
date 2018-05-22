@@ -1,13 +1,13 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade Modo de Movimentação.
- * 
+ *
  * Informa se a movimentação foi em 'espécie', 'cheque', 'boleto', etc.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\ModoRepository")
@@ -30,6 +30,7 @@ class Modo extends EntityId
      *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Range(min=1)
      */
     private $codigo;
 

@@ -17,5 +17,12 @@ final class PlanoPagtoCartao
     const CREDITO_PARCELADO = "Crédito Parcelado";
 
     const N_A = "N/A";
+
+    const ALL = array(
+        PlanoPagtoCartao::DEBITO,
+        PlanoPagtoCartao::CREDITO_30DD,
+        PlanoPagtoCartao::CREDITO_PARCELADO,
+        PlanoPagtoCartao::N_A
+    );
 }
 

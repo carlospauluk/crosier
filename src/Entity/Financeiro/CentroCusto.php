@@ -1,11 +1,12 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Entidade 'Centro de Custo'.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CentroCustoRepository")
  * @ORM\Table(name="fin_centrocusto")
@@ -25,6 +26,7 @@ class CentroCusto extends EntityId
      *
      * @ORM\Column(name="codigo", type="integer", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Range(min=1)
      */
     private $codigo;
 

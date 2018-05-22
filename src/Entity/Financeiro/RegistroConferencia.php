@@ -1,7 +1,7 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\RegistroConferenciaRepository")
  * @ORM\Table(name="fin_reg_conf")
  */
-class Carteira extends EntityId
+class RegistroConferencia extends EntityId
 {
 
     /**
@@ -43,19 +43,20 @@ class Carteira extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=true)
+     *
+     * @var $carteira Carteira
      */
     private $carteira;
 
     /**
      *
-     * @ORM\Column(name="valor", type="decimal", nullable=true, precision=15, scale=2)
+     * @ORM\Column(name="valor", type="decimal", nullable=true, precision=15, scale=2)     *
      */
     private $valor;
 
     /**
      *
      * @ORM\Column(name="obs", type="string", nullable=true, length=5000)
-     * @Assert\NotBlank()
      */
     private $obs;
 

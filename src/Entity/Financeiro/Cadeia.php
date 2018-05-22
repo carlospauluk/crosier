@@ -1,15 +1,17 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Entity\Financeiro\Movimentacao;
+
 
 /**
  * Entidade 'Cadeia de Movimentações'.
+ *
+ * Movimentações podem ser dependentes umas das outras, formando uma cadeia de entradas e saídas entre carteiras.
  *
  * @author Carlos Eduardo Pauluk
  *        
@@ -39,7 +41,7 @@ class Cadeia extends EntityId
 
     /**
      *
-     * Se for vinculante, ao deletar uma movimentação da cadeia todas são deletadas, ver trigger trg_ad_delete_cadeia.
+     * Se for vinculante, ao deletar uma movimentação da cadeia todas deverão são deletadas (ver trigger trg_ad_delete_cadeia).
      *
      * @ORM\Column(name="vinculante", type="boolean", nullable=false)
      * @Assert\NotNull()
@@ -53,10 +55,11 @@ class Cadeia extends EntityId
      * @ORM\Column(name="fechada", type="boolean", nullable=false)
      * @Assert\NotNull()
      */
-    private $vinculante = false;
+    private $fechada = false;
 
     public function __construct()
     {
+        // Necessário para a inicialização do atributo pelo Doctrine.
         $this->movimentacoes = new ArrayCollection();
     }
 
@@ -103,14 +106,14 @@ class Cadeia extends EntityId
         $this->vinculante = $vinculante;
     }
 
-    public function getVinculante()
+    public function getFechada()
     {
-        return $this->vinculante;
+        return $this->fechada;
     }
 
-    public function setVinculante($vinculante)
+    public function setFechada($fechada)
     {
-        $this->vinculante = $vinculante;
+        $this->fechada = $fechada;
     }
 }
 

@@ -1,12 +1,13 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- *
+ * Entidade 'Banco'.
+ * 
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\BancoRepository")
  * @ORM\Table(name="fin_banco")
  */
@@ -25,6 +26,7 @@ class Banco extends EntityId
      *
      * @ORM\Column(name="codigo_banco", type="integer", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Range(min = 1)
      */
     private $codigoBanco;
 
@@ -36,7 +38,8 @@ class Banco extends EntityId
     private $nome;
 
     /**
-     *
+     * Para poder filtrar exibição na view.
+     * 
      * @ORM\Column(name="utilizado", type="boolean", nullable=false)
      * @Assert\NotNull()
      */

@@ -1,20 +1,22 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
-use App\Entity\Financeiro\GrupoItem;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
+ * Entidade 'Grupo de Movimentações'.
+ *
+ * Para movimentações que são agrupadas e pagas através de outra movimentação (como Cartão de Crédito, conta em postos, etc).
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoRepository")
  * @ORM\Table(name="fin_grupo")
  */
 class Grupo extends EntityId
 {
-    
+
     /**
      *
      * @ORM\Id()
@@ -22,7 +24,7 @@ class Grupo extends EntityId
      * @ORM\Column(type="bigint")
      */
     private $id;
-    
+
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=40)
@@ -32,26 +34,25 @@ class Grupo extends EntityId
 
     /**
      * Dia de vencimento no mês.
-     * 
-     * 32 para sempre último. 
-     * FIXME: meio burro isso.
+     *
+     * 32 para sempre último (FIXME: meio burro isso).
+     *
      * @ORM\Column(name="dia_vencto", type="integer", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Range(min = 1, max = 32)
      */
     private $diaVencto;
-    
+
     /**
      * Dia a partir do qual as movimentações são consideradas com vencimento
      * para próximo mês.
-     * 
-     * FIXME: meio burro isso.
+     *
      * @ORM\Column(name="dia_inicio", type="integer", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Range(min = 1, max = 31)
      */
     private $diaInicioAprox = 1;
-    
+
     /**
      * Informa se esta carteira pode conter movimentações com status ABERTA.
      * útil principalmente para o relatório de contas a pagar/receber, para não considerar movimentações de outras carteiras.
@@ -60,21 +61,25 @@ class Grupo extends EntityId
      * @Assert\NotNull()
      */
     private $ativo = true;
-    
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_pagante_id", nullable=true)
+     *
+     * @var $carteiraPagantePadrao Carteira
      */
     private $carteiraPagantePadrao;
-    
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(name="categoria_padrao_id", nullable=true)
+     *
+     * @var $categoriaPadrao Categoria
      */
     private $categoriaPadrao;
-    
+
     /**
      *
      * @var GrupoItem[]|ArrayCollection
@@ -86,13 +91,12 @@ class Grupo extends EntityId
      * )
      */
     private $itens;
-    
+
     public function __construct()
     {
         $this->itens = new ArrayCollection();
     }
-    
-    
+
     public function getId()
     {
         return $this->id;
@@ -143,31 +147,24 @@ class Grupo extends EntityId
         $this->ativo = $ativo;
     }
 
-    public function getCarteiraPagantePadrao()
+    public function getCarteiraPagantePadrao(): ?Carteira
     {
         return $this->carteiraPagantePadrao;
     }
 
-    public function setCarteiraPagantePadrao($carteiraPagantePadrao)
+    public function setCarteiraPagantePadrao(?Carteira $carteiraPagantePadrao)
     {
         $this->carteiraPagantePadrao = $carteiraPagantePadrao;
     }
 
-    public function getCategoriaPadrao()
+    public function getCategoriaPadrao(): ?Categoria
     {
         return $this->categoriaPadrao;
     }
 
-    public function setCategoriaPadrao($categoriaPadrao)
+    public function setCategoriaPadrao(?Categoria $categoriaPadrao)
     {
         $this->categoriaPadrao = $categoriaPadrao;
     }
-
-    
-    
-    
-    
-    
-    
 }
 

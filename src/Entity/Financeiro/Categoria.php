@@ -1,7 +1,7 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -30,6 +30,8 @@ class Categoria extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(nullable=true)
+     *
+     * @var $pai Categoria
      */
     private $pai;
 
@@ -39,8 +41,7 @@ class Categoria extends EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="Categoria",
-     *      mappedBy="pai",
-     *      orphanRemoval=true
+     *      mappedBy="pai"
      * )
      */
     private $subCategs;
@@ -53,6 +54,7 @@ class Categoria extends EntityId
     private $descricao;
 
     /**
+     * Para os casos onde a movimentação é importada automaticamente, define qual a descrição padrão.
      *
      * @ORM\Column(name="descricao_padrao_moviment", type="string", nullable=false, length=200)
      * @Assert\NotBlank()
@@ -63,10 +65,12 @@ class Categoria extends EntityId
      *
      * @ORM\Column(name="codigo", type="bigint", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Range(min=1)
      */
     private $codigo;
 
     /**
+     * A fim de relatórios.
      *
      * @ORM\Column(name="totalizavel", type="boolean", nullable=false)
      * @Assert\NotNull()
@@ -74,19 +78,24 @@ class Categoria extends EntityId
     private $totalizavel = false;
 
     /**
-     *
+     * Informa se esta categoria necessita que o CentroCusto seja informado (ou se ele será automático).
+     * 
      * @ORM\Column(name="centro_custo_dif", type="boolean", nullable=false)
      * @Assert\NotNull()
      */
     private $centroCustoDif = false;
 
     /**
-     *
+     * Informa quais ROLES possuem acesso as informações (categoria.descricao e movimentacao.descricao).
+	 * Para mais de uma, informar separado por vírgula.
+	 * 
      * @ORM\Column(name="roles_acess", type="string", nullable=true, length=2000)
      */
-    private $roles_acess;
+    private $rolesAcess;
 
     /**
+     *
+     * Caso o usuário logado não possua nenhuma das "rolesAcess", então a descrição alternativa deve ser exibida.
      *
      * @ORM\Column(name="descricao_alternativa", type="string", nullable=true, length=200)
      * @Assert\NotBlank()
@@ -94,14 +103,14 @@ class Categoria extends EntityId
     private $descricaoAlternativa;
 
     /**
-     *
+     * Atalho para não precisar ficar fazendo parse.
+     * 
      * @ORM\Column(name="codigo_super", type="bigint", nullable=true)
      * @Assert\NotNull()
      */
     private $codigoSuper;
 
     /**
-     * 
      */
     public function __construct()
     {
@@ -118,27 +127,23 @@ class Categoria extends EntityId
         $this->id = $id;
     }
 
-    public function getPai()
+    public function getPai(): ?Categoria
     {
         return $this->pai;
     }
 
-    public function setPai($pai)
+    public function setPai(?Categoria $pai)
     {
         $this->pai = $pai;
     }
 
     /**
+     *
      * @return Collection|Categoria[]
      */
     public function getSubCategs(): Collection
     {
         return $this->subCategs;
-    }
-
-    public function setSubCategs($subCategs)
-    {
-        $this->subCategs = $subCategs;
     }
 
     public function getDescricao()
@@ -191,14 +196,14 @@ class Categoria extends EntityId
         $this->centroCustoDif = $centroCustoDif;
     }
 
-    public function getRoles_acess()
+    public function getRolesAcess()
     {
-        return $this->roles_acess;
+        return $this->rolesAcess;
     }
 
-    public function setRoles_acess($roles_acess)
+    public function setRoles_acess($rolesAcess)
     {
-        $this->roles_acess = $roles_acess;
+        $this->roles_acess = $rolesAcess;
     }
 
     public function getDescricaoAlternativa()
@@ -229,7 +234,7 @@ class Categoria extends EntityId
      */
     public function getDescricaoMontada()
     {
-        return $this->getCodigo() . " - " . $this->getDescricao();
+        return $this->getCodigoM() . " - " . $this->getDescricao();
     }
 
     public function getCodigoM()
@@ -237,6 +242,9 @@ class Categoria extends EntityId
         return StringUtils::mascarar($this->getCodigo(), Categoria::MASK);
     }
 
+    /**
+     * Retorna somente o último 'bloco' do código.
+     */
     public function getCodigoSufixo()
     {
         if ($this->getCodigo()) {

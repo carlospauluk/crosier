@@ -1,13 +1,13 @@
 <?php
 namespace App\Entity\Financeiro;
 
-use App\Entity\base\EntityId;
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade Bandeira de Cartão.
- * Ex.: MASTER MAESTRO, MASTER, VISA ELECTRON, VISA
+ * Ex.: MASTER MAESTRO, MASTER, VISA ELECTRON, VISA, etc.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\BandeiraCartaoRepository")
  * @ORM\Table(name="fin_bandeira_cartao")
@@ -36,11 +36,13 @@ class BandeiraCartao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Modo")
      * @ORM\JoinColumn(nullable=false)
+     * @var $modo Modo
      */
     private $modo;
 
     /**
-     *
+     * Para marcar diferentes nomes que podem ser utilizados para definir uma bandeira (ex.: MAESTRO ou MASTER MAESTRO ou M MAESTRO).
+     * 
      * @ORM\Column(name="labels", type="string", nullable=false, length=2000)
      * @Assert\NotBlank()
      */
@@ -66,12 +68,12 @@ class BandeiraCartao extends EntityId
         $this->descricao = $descricao;
     }
 
-    public function getModo()
+    public function getModo(): ?Modo
     {
         return $this->modo;
     }
 
-    public function setModo($modo)
+    public function setModo(?Modo $modo)
     {
         $this->modo = $modo;
     }
