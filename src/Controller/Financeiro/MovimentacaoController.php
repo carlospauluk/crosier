@@ -1,59 +1,54 @@
 <?php
 namespace App\Controller\Financeiro;
 
-use App\Entity\Financeiro\Carteira;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Form\Financeiro\CarteiraType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use App\Utils\Repository\FilterData;
+use App\Entity\Financeiro\Movimentacao;
 
-class CarteiraController extends Controller
+class MovimentacaoController extends Controller
 {
 
     /**
      *
-     * @Route("/fin/carteira/form/{id}", name="carteira_form", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @Route("/fin/movimentacao/form/{id}", name="movimentacao_form", defaults={"id"=null}, requirements={"id"="\d+"})
      */
-    public function form(Request $request, Carteira $carteira = null)
+    public function form(Request $request, Movimentacao $movimentacao = null)
     {
-        if (! $carteira) {
-            $carteira = new Carteira();
+        if (! $movimentacao) {
+            $movimentacao = new Movimentacao();
             
-            $carteira->setInserted(new \DateTime('now'));
-            $carteira->setUpdated(new \DateTime('now'));
+            $movimentacao->setInserted(new \DateTime('now'));
+            $movimentacao->setUpdated(new \DateTime('now'));
         }
         
-        $form = $this->createForm(CarteiraType::class, $carteira);
+        $form = $this->createForm(CarteiraType::class, $movimentacao);
         
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
-            // $form->getData() holds the submitted values
-            // but, the original `$task` variable has also been updated
-            $carteira = $form->getData();
+            $movimentacao = $form->getData();
             
-            // ... perform some action, such as saving the task to the database
-            // for example, if Task is a Doctrine entity, save it!
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($carteira);
+            $entityManager->persist($movimentacao);
             $entityManager->flush();
             $this->addFlash('success', 'Registro salvo com sucesso!');
-            return $this->redirectToRoute('carteira_form', array('id' => $carteira->getId()) );
+            return $this->redirectToRoute('movimentacao_form', array('id' => $movimentacao->getId()) );
         } else {
             $form->getErrors(true, false);
         }
         
-        return $this->render('Financeiro/carteiraForm.html.twig', array(
+        return $this->render('Financeiro/movimentacaoForm.html.twig', array(
             'form' => $form->createView()
         ));
     }
 
     /**
      *
-     * @Route("/fin/carteira/list/", name="carteira_list")
+     * @Route("/fin/movimentacao/list/", name="movimentacao_list")
      */
     public function list(Request $request)
     {
@@ -66,15 +61,14 @@ class CarteiraController extends Controller
         
         try {
             
-            $repo = $this->getDoctrine()->getRepository(Carteira::class);
+            $repo = $this->getDoctrine()->getRepository(Movimentacao::class);
             
             if (! $params['filter'] or count($params['filter']) == 0) {
-                $dados = $repo->findAll();
+                $dados = $repo->findFirsts(100);
             } else {
                 
                 $filters = array(
                     new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
-                    new FilterData('dtConsolidado', 'BETWEEN', $params['filter']['dtConsolidado'])
                 );
                 
                 $dados = $repo->findByFilters($filters);
@@ -83,7 +77,7 @@ class CarteiraController extends Controller
             $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
         }
         
-        return $this->render('Financeiro/carteiraList.html.twig', array(
+        return $this->render('Financeiro/movimentacaoList.html.twig', array(
             'dados' => $dados,
             'filter' => $params['filter']
         ));
@@ -91,26 +85,26 @@ class CarteiraController extends Controller
 
     /**
      *
-     * @Route("/fin/carteira/delete/{id}/", name="carteira_delete", requirements={"id"="\d+"})
+     * @Route("/fin/movimentacao/delete/{id}/", name="movimentacao_delete", requirements={"id"="\d+"})
      * @Method("POST")
      *
      */
-    public function delete(Request $request, Carteira $carteira)
+    public function delete(Request $request, Movimentacao $movimentacao)
     {
         if (! $this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
                 $em = $this->getDoctrine()->getManager();
-                $em->remove($carteira);
+                $em->remove($movimentacao);
                 $em->flush();
                 $this->addFlash('success', 'post.deleted_successfully');
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Erro ao deletar carteira.');
+                $this->addFlash('error', 'Erro ao deletar registro.');
             }
         }
         
-        return $this->redirectToRoute('carteira_list');
+        return $this->redirectToRoute('movimentacao_list');
     }
 
 }

@@ -11,8 +11,8 @@ use Doctrine\Common\Collections\Collection;
  * Entidade que representa um 'item de um Grupo de Movimentações' (como a fatura
  * de um mês do cartão de crédito, por exemplo).
  *
- * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoRepository")
- * @ORM\Table(name="fin_grupo")
+ * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoItemRepository")
+ * @ORM\Table(name="fin_grupo_item")
  *
  * @author Carlos Eduardo Pauluk
  */

@@ -9,8 +9,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Entidade Operadora de Cartões.
  * Ex.: RDCARD, CIELO, STONE.
  *
- * @ORM\Entity(repositoryClass="App\Repository\Financeiro\BandeiraCartaoRepository")
- * @ORM\Table(name="fin_bandeira_cartao")
+ * @ORM\Entity(repositoryClass="App\Repository\Financeiro\OperadoraCartaoRepository")
+ * @ORM\Table(name="fin_operadora_cartao")
  *
  * @author Carlos Eduardo Pauluk
  */

@@ -6,6 +6,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Base\Pessoa;
 
+/**
+ * Entidade 'Movimentação'.
+ *
+ * @ORM\Entity(repositoryClass="App\Repository\Financeiro\MovimentacaoRepository")
+ * @ORM\Table(name="fin_movimentacao")
+ */
 class Movimentacao extends EntityId
 {
 
@@ -384,7 +390,7 @@ class Movimentacao extends EntityId
      *
      * FIXME: meio burro isso (podia usar o 31 mesmo).
      *
-     * @ORM\Column(name="dia", type="integer", nullable=false)
+     * @ORM\Column(name="recorr_dia", type="integer", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Range(min = 1, max = 32)
      */

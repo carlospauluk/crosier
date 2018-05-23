@@ -11,19 +11,16 @@
 
 		<div class="row">
 			<div class="col-8">
-				<h3>Carteiras</h3>
+				<h3>Movimentações</h3>
 			</div>
 			<div class="col-4 text-right">
-				<button type="button" class="btn btn-primary"
-					onclick="window.location.href='{{ url('carteira_form') }}'">
+				<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('movimentacao_form') }}'">
 					<i class="fas fa-file" aria-hidden="true"></i> Novo
 				</button>
-				<button type="button" class="btn btn-secondary"
-					data-target="#pesquisarModal" data-toggle="modal">
+				<button type="button" class="btn btn-secondary" data-target="#pesquisarModal" data-toggle="modal">
 					<i class="fas fa-search" aria-hidden="true"></i> Pesquisar
 				</button>
-				<button type="button" class="btn btn-secondary"
-					onclick="window.location.href='{{ url('carteira_list') }}'">
+				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('movimentacao_list') }}'">
 					<i class="fas fa-sync" aria-hidden="true"></i> Recarregar
 				</button>
 			</div>
@@ -44,7 +41,7 @@
 						<th scope="col">#</th>
 						<th scope="col">Código</th>
 						<th scope="col">Descrição</th>
-						<th scope="col">Dt Consolidado</th>
+						<th scope="col">Dt Útil</th>
 						<th scope="col"></th>
 					</tr>
 				</thead>
@@ -53,19 +50,16 @@
 					{% for item in dados %}
 					<tr>
 						<th scope="row">{{ loop.index }}</th>
-						<td>{{ item.codigo }}</td>
+						<td>{{ item.id }}</td>
 						<td>{{ item.descricao }}</td>
-						<td>{{ item.dtConsolidado|date('d/m/Y') }}</td>
+						<td>{{ item.dtUtil|date('d/m/Y') }}</td>
 						<td class="text-right">
-							<button type="button" class="btn btn-primary"
-								onclick="window.location.href='{{ url('carteira_form', {id: item.id}) }}'">
+							<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('movimentacao_form', {id: item.id}) }}'">
 								<i class="fas fa-wrench" aria-hidden="true"></i>
 							</button>
 
-							<button type="button" class="btn btn-danger"
-								data-url="{{ url('carteira_delete', {id: item.id}) }}"
-								data-token="{{ csrf_token('delete') }}"
-								data-target="#confirmationModal" data-toggle="modal">
+							<button type="button" class="btn btn-danger" data-url="{{ url('movimentacao_delete', {id: item.id}) }}"
+								data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal" data-toggle="modal">
 								<i class="fa fa-trash" aria-hidden="true"></i>
 							</button>
 						</td>
@@ -87,23 +81,12 @@
 					<h4>Pesquisar</h4>
 
 					<div class="form-group">
-						<label for="p_descricao">Descrição</label> <input type="text"
-							class="form-control" id="filter[descricao]"
-							name="filter[descricao]"
-							value="{{ filter.descricao|default('') }}">
-					</div>
-					<div class="form-group">
-						<label for="p_descricao">Dt Consolidado</label> <input type="date"
-							size="15" class="form-control" name="filter[dtConsolidado][i]"
-							value="{{ filter.dtConsolidado.i|default('') }}"> <input
-							type="date" size="15" class="form-control"
-							name="filter[dtConsolidado][f]"
-							value="{{ filter.dtConsolidado.f|default('') }}">
+						<label for="p_descricao">Descrição</label>
+						<input type="text" class="form-control" id="filter[descricao]" name="filter[descricao]" value="{{ filter.descricao|default('') }}">
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default"
-						id="btnCancelarPesquisa" data-dismiss="modal">
+					<button type="button" class="btn btn-default" id="btnCancelarPesquisa" data-dismiss="modal">
 						<i class="fa fa-ban" aria-hidden="true"></i> Cancelar
 					</button>
 					<button type="submit" class="btn btn-danger" id="btnPesquisar">
@@ -124,6 +107,6 @@
 {% block down_scripts %}
 
 
-{{ include('Util/confirmationModal.html.twig') }}
+
 
 {% endblock %}

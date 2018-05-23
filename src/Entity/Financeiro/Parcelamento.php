@@ -11,7 +11,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Entidade 'Parcelamento'.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ * 
+ * @ORM\Entity(repositoryClass="App\Repository\Financeiro\ParcelamentoRepository")
+ * @ORM\Table(name="fin_parcelamento")
  */
 class Parcelamento extends EntityId
 {

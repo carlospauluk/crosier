@@ -12,9 +12,11 @@ use Doctrine\Common\Collections\Collection;
  * Entidade 'Cadeia de Movimentações'.
  *
  * Movimentações podem ser dependentes umas das outras, formando uma cadeia de entradas e saídas entre carteiras.
- *
- * @author Carlos Eduardo Pauluk
  *        
+ * @ORM\Entity()
+ * @ORM\Table(name="fin_cadeia")
+ * 
+ * @author Carlos Eduardo Pauluk
  */
 class Cadeia extends EntityId
 {
