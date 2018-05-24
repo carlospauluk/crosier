@@ -30,6 +30,7 @@ class WhereBuilder
      */
     public static function build(QueryBuilder &$qb, $filters)
     {
+        
         $andX = $qb->expr()->andX();
         
         foreach ($filters as $filter) {
@@ -90,6 +91,9 @@ class WhereBuilder
         $qb->where($andX);
         
         foreach ($filters as $filter) {
+            
+            WhereBuilder::parseVal($filter);
+            
             switch ($filter->compar) {
                 case 'BETWEEN':
                     if ($filter->val['i'])
@@ -119,6 +123,21 @@ class WhereBuilder
             return $qb->expr()->gte('e.' . $filter->field, ':' . $filter->field . '_i');
         } else {
             return $qb->expr()->between('e.' . $filter->field, ':' . $filter->field . '_i', ':' . $filter->field . '_f');
+        }
+    }
+    
+    private static function parseVal(FilterData $filter) {
+        if ($filter->fieldType == 'decimal') {
+            if (!is_array($filter->val)) {
+                $filter->val = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($filter->val);
+            } else {
+                if ($filter->val['i']) {
+                    $filter->val['i'] = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($filter->val['i']);
+                }
+                if ($filter->val['f']) {
+                    $filter->val['f'] = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($filter->val['f']);
+                }
+            }
         }
     }
 }

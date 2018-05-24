@@ -4,6 +4,7 @@ namespace App\Repository\Financeiro;
 use App\Entity\Financeiro\Movimentacao;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use App\Utils\Repository\WhereBuilder;
 
 /**
  * Repository para a entidade Movimentacao.
@@ -17,6 +18,25 @@ class MovimentacaoRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Movimentacao::class);
+    }
+    
+    public function findByFilters($filters, $orders = null)
+    {
+        $em = $this->getEntityManager();
+        $qb = $em->createQueryBuilder();
+        
+        $qb->select('e')->from('App\Entity\Financeiro\Movimentacao', 'e');
+        
+        WhereBuilder::build($qb, $filters);
+        
+        $dql = $qb->getDql();
+        
+        $sql = $qb->getQuery()->getSQL();
+        
+        // example5: retrieve the associated Query object with the processed DQL
+        $query = $qb->getQuery();
+        
+        return $query->execute();
     }
 
     public function findFirsts($max)

@@ -8,6 +8,7 @@ use App\Form\Financeiro\CarteiraType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use App\Utils\Repository\FilterData;
 use App\Entity\Financeiro\Movimentacao;
+use App\Entity\Financeiro\Carteira;
 
 class MovimentacaoController extends Controller
 {
@@ -45,6 +46,16 @@ class MovimentacaoController extends Controller
             'form' => $form->createView()
         ));
     }
+    
+    private function handleFilters($params) {
+        $filters = array(
+            new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
+            new FilterData('dtUtil', 'BETWEEN', $params['filter']['dtUtil']),
+            new FilterData('valorTotal', 'BETWEEN', $params['filter']['valorTotal'], 'decimal')
+        );
+        
+        return $filters;
+    }
 
     /**
      *
@@ -66,20 +77,21 @@ class MovimentacaoController extends Controller
             if (! $params['filter'] or count($params['filter']) == 0) {
                 $dados = $repo->findFirsts(100);
             } else {
-                
-                $filters = array(
-                    new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
-                );
-                
-                $dados = $repo->findByFilters($filters);
+                $dados = $repo->findByFilters($this->handleFilters($params));
             }
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
         }
         
+        
+        $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
+        $carteiras = $repoCarteira->findAll();
+        $filterDatas = array('carteiras' => $carteiras);
+        
         return $this->render('Financeiro/movimentacaoList.html.twig', array(
             'dados' => $dados,
-            'filter' => $params['filter']
+            'filter' => $params['filter'],
+            'filterDatas' => $filterDatas
         ));
     }
 
