@@ -35,7 +35,6 @@ class Movimentacao extends EntityId
      * @ORM\Column(name="status", type="string", nullable=false, length=50)
      * @Assert\NotBlank()
      *
-     * @var $status Status
      */
     private $status;
 
@@ -45,7 +44,7 @@ class Movimentacao extends EntityId
      * @ORM\Column(name="tipo_lancto", type="string", nullable=false, length=50)
      * @Assert\NotBlank()
      *
-     * @var $status TipoLancto
+     * @var $tipoLancto TipoLancto
      */
     private $tipoLancto;
 
@@ -427,12 +426,12 @@ class Movimentacao extends EntityId
         $this->idSistemaAntigo = $idSistemaAntigo;
     }
 
-    public function getStatus(): ?Status
+    public function getStatus()
     {
         return $this->status;
     }
 
-    public function setStatus(?Status $status)
+    public function setStatus($status)
     {
         $this->status = $status;
     }

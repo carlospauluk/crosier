@@ -14,13 +14,16 @@
 				<h3>Movimentações</h3>
 			</div>
 			<div class="col-8 text-right">
-				<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('movimentacao_form') }}'">
+				<button type="button" class="btn btn-primary"
+					onclick="window.location.href='{{ url('movimentacao_form') }}'">
 					<i class="fas fa-file" aria-hidden="true"></i> Novo
 				</button>
-				<button type="button" class="btn btn-secondary" data-target="#pesquisarModal" data-toggle="modal">
+				<button type="button" class="btn btn-secondary"
+					data-target="#pesquisarModal" data-toggle="modal">
 					<i class="fas fa-search" aria-hidden="true"></i> Pesquisar
 				</button>
-				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('movimentacao_list') }}'">
+				<button type="button" class="btn btn-secondary"
+					onclick="window.location.href='{{ url('movimentacao_list') }}'">
 					<i class="fas fa-sync" aria-hidden="true"></i> Recarregar
 				</button>
 			</div>
@@ -38,8 +41,9 @@
 
 				<thead>
 					<tr>
-						<th scope="col">#</th>
 						<th scope="col">Código</th>
+						<th scope="col">Status</th>
+						<th scope="col">Categoria<br />Carteira</th>
 						<th scope="col">Descrição</th>
 						<th scope="col">Dt Útil</th>
 						<th scope="col">Valor</th>
@@ -50,18 +54,25 @@
 				<tbody>
 					{% for item in dados %}
 					<tr>
-						<th scope="row">{{ loop.index }}</th>
 						<td>{{ item.id }}</td>
+						<td>{{ item.status }}</td>
+						<td>
+							{{ item.categoria.codigoM ~ ' - ' ~ item.categoria.descricao }}<br />
+						    {{ item.carteira.descricao }}
+						</td>
 						<td>{{ item.descricao }}</td>
 						<td>{{ item.dtUtil|date('d/m/Y') }}</td>
 						<td class="text-right">{{ item.valorTotal|number_format(2,',','.') }}</td>
 						<td class="text-right">
-							<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('movimentacao_form', {id: item.id}) }}'">
+							<button type="button" class="btn btn-primary"
+								onclick="window.location.href='{{ url('movimentacao_form', {id: item.id}) }}'">
 								<i class="fas fa-wrench" aria-hidden="true"></i>
 							</button>
 
-							<button type="button" class="btn btn-danger" data-url="{{ url('movimentacao_delete', {id: item.id}) }}"
-								data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal" data-toggle="modal">
+							<button type="button" class="btn btn-danger"
+								data-url="{{ url('movimentacao_delete', {id: item.id}) }}"
+								data-token="{{ csrf_token('delete') }}"
+								data-target="#confirmationModal" data-toggle="modal">
 								<i class="fa fa-trash" aria-hidden="true"></i>
 							</button>
 						</td>
@@ -84,16 +95,22 @@
 
 					<div class="form-group">
 						<label for="p_descricao">Descrição</label>
-						<input type="text" class="form-control" id="filter[descricao]" name="filter[descricao]" value="{{ filter.descricao|default('') }}">
+						<input type="text" class="form-control" id="filter[descricao]"
+							name="filter[descricao]"
+							value="{{ filter.descricao|default('') }}">
 					</div>
 					<div class="form-group">
 						<label>Data</label>
 						<div class="row">
 							<div class="col">
-								<input type="date" size="15" class="form-control" name="filter[dtUtil][i]" value="{{ filter.dtUtil.i|default('') }}">
+								<input type="date" size="15" class="form-control"
+									name="filter[dtUtil][i]"
+									value="{{ filter.dtUtil.i|default('') }}">
 							</div>
 							<div class="col">
-								<input type="date" size="15" class="form-control" name="filter[dtUtil][f]" value="{{ filter.dtUtil.f|default('') }}">
+								<input type="date" size="15" class="form-control"
+									name="filter[dtUtil][f]"
+									value="{{ filter.dtUtil.f|default('') }}">
 							</div>
 						</div>
 					</div>
@@ -101,40 +118,61 @@
 						<label>Valor</label>
 						<div class="row">
 							<div class="col">
-								<input type="text" size="15" class="form-control crsr-money" name="filter[valorTotal][i]"
+								<input type="text" size="15" class="form-control crsr-money"
+									name="filter[valorTotal][i]"
 									value="{{ filter.valorTotal.i|default('') }}">
 							</div>
 							<div class="col">
-								<input type="text" size="15" class="form-control crsr-money" name="filter[valorTotal][f]"
+								<input type="text" size="15" class="form-control crsr-money"
+									name="filter[valorTotal][f]"
 									value="{{ filter.valorTotal.f|default('') }}">
 							</div>
 						</div>
 					</div>
 					<div class="form-group">
-						<fieldset class="form-group pre-scrollable">
+						<fieldset class="form-group pre-scrollable" style="height: 150px">
 							<legend>Carteiras</legend>
 							{% for carteira in filterDatas.carteiras %}
+							{% 
+                               set checked = ((filter is defined) and (filter.carteira is defined) and (carteira.id in filter.carteira)) ? 'checked' : ''
+							%}
 							<div class="form-check">
-								<input class="form-check-input" type="checkbox" value="{{ carteira.id }}" checked="checked" name="filter[carteira][]">
-								<label class="form-check-label" for="defaultCheck1"> {{ "%03d"|format(carteira.codigo) }} -{{ carteira.descricao }} </label>
+								<input class="form-check-input" type="checkbox"
+									value="{{ carteira.id }}" {{ checked }}
+									name="filter[carteira][]">
+								<label class="form-check-label">
+									{{ "%03d"|format(carteira.codigo) }}
+									-
+									{{ carteira.descricao }}
+								</label>
 							</div>
 							{% endfor %}
 						</fieldset>
 					</div>
+					
 					<div class="form-group">
-						<fieldset class="form-group pre-scrollable">
-							<legend>Carteiras</legend>
-							{% for carteira in filterDatas.carteiras %}
+						<fieldset class="form-group pre-scrollable" style="height: 150px">
+							<legend>Status</legend>
+							{% for status in filterDatas.status %}
+							{% 
+                               set checked = ((filter is defined) and (filter.status is defined) and (status.sigla in filter.status)) ? 'checked' : ''
+							%}
 							<div class="form-check">
-								<input class="form-check-input" type="checkbox" value="{{ carteira.id }}" checked="checked" name="filter[carteira][]">
-								<label class="form-check-label" for="defaultCheck1"> {{ "%03d"|format(carteira.codigo) }} -{{ carteira.descricao }} </label>
+								<input class="form-check-input" type="checkbox"
+									value="{{ status.sigla }}" {{ checked }}
+									name="filter[status][]">
+								<label class="form-check-label">
+									{{ status.label }}
+								</label>
 							</div>
 							{% endfor %}
 						</fieldset>
 					</div>
+
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" id="btnCancelarPesquisa" data-dismiss="modal">
+					<button type="button" class="btn btn-default"
+						id="btnCancelarPesquisa" data-dismiss="modal">
 						<i class="fa fa-ban" aria-hidden="true"></i> Cancelar
 					</button>
 					<button type="submit" class="btn btn-danger" id="btnPesquisar">

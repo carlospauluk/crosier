@@ -34,6 +34,7 @@ class MovimentacaoRepository extends ServiceEntityRepository
         $sql = $qb->getQuery()->getSQL();
         
         // example5: retrieve the associated Query object with the processed DQL
+        $qb->setMaxResults(200);
         $query = $qb->getQuery();
         
         return $query->execute();

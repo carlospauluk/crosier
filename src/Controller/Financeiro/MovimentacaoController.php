@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use App\Utils\Repository\FilterData;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\Status;
 
 class MovimentacaoController extends Controller
 {
@@ -47,14 +48,51 @@ class MovimentacaoController extends Controller
         ));
     }
     
+    /**
+     * Monta os parâmetros para os filtros da listagem.
+     * 
+     * @return \App\Utils\Repository\FilterData[]
+     */
     private function handleFilters($params) {
-        $filters = array(
-            new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
-            new FilterData('dtUtil', 'BETWEEN', $params['filter']['dtUtil']),
-            new FilterData('valorTotal', 'BETWEEN', $params['filter']['valorTotal'], 'decimal')
-        );
+        if (!isset($params['filter'])) return;
+        $filters = array();
+        
+        if (isset($params['filter']['descricao'])) {
+            $filters[] = new FilterData(array('id','descricao'), 'LIKE', $params['filter']['descricao']);
+        }
+        
+        if (isset($params['filter']['dtUtil'])) {
+            $filters[] = new FilterData('dtUtil', 'BETWEEN', $params['filter']['dtUtil']);
+        }
+        
+        if (isset($params['filter']['valorTotal'])) {
+            $filters[] =  new FilterData('valorTotal', 'BETWEEN', $params['filter']['valorTotal'], 'decimal');
+        }
+        
+        if (isset($params['filter']['carteira'])) {
+            $filters[] = new FilterData('carteira', 'IN', $params['filter']['carteira']);
+        }
+        
+        if (isset($params['filter']['status'])) {
+            $filters[] = new FilterData('status', 'IN', $params['filter']['status']);
+        }
         
         return $filters;
+    }
+    
+    /**
+     * Monta os dados para os campos de filtragem.
+     */
+    private function buildFilterDatas() {
+        $filterDatas = array();
+        
+        $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
+        $carteiras = $repoCarteira->findAll();
+        $filterDatas['carteiras'] = $carteiras;
+        
+        $filterDatas['status'] = Status::ALL;
+        
+        return $filterDatas;
     }
 
     /**
@@ -84,14 +122,12 @@ class MovimentacaoController extends Controller
         }
         
         
-        $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
-        $carteiras = $repoCarteira->findAll();
-        $filterDatas = array('carteiras' => $carteiras);
+        
         
         return $this->render('Financeiro/movimentacaoList.html.twig', array(
             'dados' => $dados,
             'filter' => $params['filter'],
-            'filterDatas' => $filterDatas
+            'filterDatas' => $this->buildFilterDatas()
         ));
     }
 

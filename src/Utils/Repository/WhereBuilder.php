@@ -30,62 +30,73 @@ class WhereBuilder
      */
     public static function build(QueryBuilder &$qb, $filters)
     {
-        
         $andX = $qb->expr()->andX();
         
         foreach ($filters as $filter) {
             
-            switch ($filter->compar) {
-                case 'EQ':
-                    $andX->add($qb->expr()
-                        ->eq('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'NEQ':
-                    $andX->add($qb->expr()
-                        ->neq('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'LT':
-                    $andX->add($qb->expr()
-                        ->lt('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'LTE':
-                    $andX->add($qb->expr()
-                        ->lte('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'GT':
-                    $andX->add($qb->expr()
-                        ->gt('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'GTE':
-                    $andX->add($qb->expr()
-                        ->gte('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'IS_NULL':
-                    $andX->add($qb->expr()
-                        ->isNull('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'IS_NOT_NULL':
-                    $andX->add($qb->expr()
-                        ->isNotNull('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'IN':
-                    // $exprs[] = $qb->expr()->isNotNull('e.' . $filter->field, $filter->val);
-                    break;
-                case 'NOT_IN':
-                    // $exprs[] = $qb->expr()->isNotNull('e.' . $filter->field, $filter->val);
-                    break;
-                case 'LIKE':
-                    $andX->add($qb->expr()
-                        ->like('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'NOT_LIKE':
-                    $andX->add($qb->expr()
-                        ->notLike('e.' . $filter->field, ':' . $filter->field));
-                    break;
-                case 'BETWEEN':
-                    $andX->add(WhereBuilder::handleBetween($filter, $qb));
-                    break;
+            $field_array = is_array($filter->field) ? $filter->field : array(
+                $filter->field
+            );
+            
+            $orX = $qb->expr()->orX();
+            
+            foreach ($field_array as $field) {
+                
+                
+                switch ($filter->compar) {
+                    case 'EQ':
+                        $orX->add($qb->expr()
+                            ->eq('e.' . $field, ':' . $field));
+                        break;
+                    case 'NEQ':
+                        $orX->add($qb->expr()
+                            ->neq('e.' . $field, ':' . $field));
+                        break;
+                    case 'LT':
+                        $orX->add($qb->expr()
+                            ->lt('e.' . $field, ':' . $field));
+                        break;
+                    case 'LTE':
+                        $orX->add($qb->expr()
+                            ->lte('e.' . $field, ':' . $field));
+                        break;
+                    case 'GT':
+                        $orX->add($qb->expr()
+                            ->gt('e.' . $field, ':' . $field));
+                        break;
+                    case 'GTE':
+                        $orX->add($qb->expr()
+                            ->gte('e.' . $field, ':' . $field));
+                        break;
+                    case 'IS_NULL':
+                        $orX->add($qb->expr()
+                            ->isNull('e.' . $field, ':' . $field));
+                        break;
+                    case 'IS_NOT_NULL':
+                        $orX->add($qb->expr()
+                            ->isNotNull('e.' . $field, ':' . $field));
+                        break;
+                    case 'IN':
+                        $orX->add($qb->expr()
+                            ->in('e.' . $field, ':' . $field));
+                        break;
+                    case 'NOT_IN':
+                        // $exprs[] = $qb->expr()->isNotNull('e.' . $field, $val);
+                        break;
+                    case 'LIKE':
+                        $orX->add($qb->expr()
+                            ->like('e.' . $field, ':' . $field));
+                        break;
+                    case 'NOT_LIKE':
+                        $orX->add($qb->expr()
+                            ->notLike('e.' . $field, ':' . $field));
+                        break;
+                    case 'BETWEEN':
+                        $orX->add(WhereBuilder::handleBetween($filter, $qb));
+                        break;
+                }
             }
+            $andX->add($orX);
         }
         
         $qb->where($andX);
@@ -94,19 +105,27 @@ class WhereBuilder
             
             WhereBuilder::parseVal($filter);
             
-            switch ($filter->compar) {
-                case 'BETWEEN':
-                    if ($filter->val['i'])
-                        $qb->setParameter($filter->field . '_i', $filter->val['i']);
-                    if ($filter->val['f'])
-                        $qb->setParameter($filter->field . '_f', $filter->val['f']);
-                    break;
-                case 'LIKE':
-                    $qb->setParameter($filter->field, '%' . $filter->val . '%');
-                    break;
-                default:
-                    $qb->setParameter($filter->field, $filter->val);
-                    break;
+            $field_array = is_array($filter->field) ? $filter->field : array(
+                $filter->field
+            );
+            
+            foreach ($field_array as $field) {
+                
+                
+                switch ($filter->compar) {
+                    case 'BETWEEN':
+                        if ($filter->val['i'])
+                            $qb->setParameter($field . '_i', $filter->val['i']);
+                        if ($filter->val['f'])
+                            $qb->setParameter($field . '_f', $filter->val['f']);
+                        break;
+                    case 'LIKE':
+                        $qb->setParameter($field, '%' . $filter->val . '%');
+                        break;
+                    default:
+                        $qb->setParameter($field, $filter->val);
+                        break;
+                }
             }
         }
     }
@@ -125,10 +144,11 @@ class WhereBuilder
             return $qb->expr()->between('e.' . $filter->field, ':' . $filter->field . '_i', ':' . $filter->field . '_f');
         }
     }
-    
-    private static function parseVal(FilterData $filter) {
+
+    private static function parseVal(FilterData $filter)
+    {
         if ($filter->fieldType == 'decimal') {
-            if (!is_array($filter->val)) {
+            if (! is_array($filter->val)) {
                 $filter->val = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($filter->val);
             } else {
                 if ($filter->val['i']) {

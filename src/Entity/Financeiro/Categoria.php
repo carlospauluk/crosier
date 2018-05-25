@@ -2,11 +2,11 @@
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
+use App\Utils\StringUtils;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\ArrayCollection;
-use App\Utils\StringUtils;
-use Doctrine\Common\Collections\Collection;
 
 /**
  *
