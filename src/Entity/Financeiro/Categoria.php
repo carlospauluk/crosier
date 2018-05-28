@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  *
@@ -29,7 +30,7 @@ class Categoria extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\JoinColumn(name="pai_id",nullable=true)
      *
      * @var $pai Categoria
      */
@@ -43,6 +44,7 @@ class Categoria extends EntityId
      *      targetEntity="Categoria",
      *      mappedBy="pai"
      * )
+     * @Groups({"private"})
      */
     private $subCategs;
 
@@ -79,7 +81,7 @@ class Categoria extends EntityId
 
     /**
      * Informa se esta categoria necessita que o CentroCusto seja informado (ou se ele será automático).
-     * 
+     *
      * @ORM\Column(name="centro_custo_dif", type="boolean", nullable=false)
      * @Assert\NotNull()
      */
@@ -87,8 +89,8 @@ class Categoria extends EntityId
 
     /**
      * Informa quais ROLES possuem acesso as informações (categoria.descricao e movimentacao.descricao).
-	 * Para mais de uma, informar separado por vírgula.
-	 * 
+     * Para mais de uma, informar separado por vírgula.
+     *
      * @ORM\Column(name="roles_acess", type="string", nullable=true, length=2000)
      */
     private $rolesAcess;
@@ -104,11 +106,19 @@ class Categoria extends EntityId
 
     /**
      * Atalho para não precisar ficar fazendo parse.
-     * 
+     *
      * @ORM\Column(name="codigo_super", type="bigint", nullable=true)
      * @Assert\NotNull()
      */
     private $codigoSuper;
+
+    /**
+     * Atalho para não precisar ficar fazendo parse.
+     *
+     * @ORM\Column(name="codigo_ord", type="bigint", nullable=true)
+     * @Assert\NotNull()
+     */
+    private $codigoOrd;
 
     /**
      */
@@ -224,6 +234,16 @@ class Categoria extends EntityId
     public function setCodigoSuper($codigoSuper)
     {
         $this->codigoSuper = $codigoSuper;
+    }
+
+    public function getCodigoOrd()
+    {
+        return $this->codigoOrd;
+    }
+
+    public function setCodigoOrd($codigoOrd)
+    {
+        $this->codigoOrd = $codigoOrd;
     }
 
     /**

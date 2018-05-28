@@ -4,12 +4,14 @@ namespace App\Controller\Financeiro;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Form\Financeiro\CarteiraType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use App\Utils\Repository\FilterData;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Status;
+use App\Entity\Financeiro\Modo;
+use App\Entity\Financeiro\Categoria;
+use App\Form\Financeiro\MovimentacaoType;
 
 class MovimentacaoController extends Controller
 {
@@ -27,7 +29,7 @@ class MovimentacaoController extends Controller
             $movimentacao->setUpdated(new \DateTime('now'));
         }
         
-        $form = $this->createForm(CarteiraType::class, $movimentacao);
+        $form = $this->createForm(MovimentacaoType::class, $movimentacao);
         
         $form->handleRequest($request);
         
@@ -77,6 +79,14 @@ class MovimentacaoController extends Controller
             $filters[] = new FilterData('status', 'IN', $params['filter']['status']);
         }
         
+        if (isset($params['filter']['modo'])) {
+            $filters[] = new FilterData('modo', 'IN', $params['filter']['modo']);
+        }
+        
+        if (isset($params['filter']['categoria'])) {
+            $filters[] = new FilterData('categoria', 'IN', $params['filter']['categoria']);
+        }
+        
         return $filters;
     }
     
@@ -91,6 +101,14 @@ class MovimentacaoController extends Controller
         $filterDatas['carteiras'] = $carteiras;
         
         $filterDatas['status'] = Status::ALL;
+        
+        $repoModo = $this->getDoctrine()->getRepository(Modo::class);
+        $modos = $repoModo->findAll();
+        $filterDatas['modos'] = $modos;
+        
+        $repoCateg = $this->getDoctrine()->getRepository(Categoria::class);
+        $categorias = $repoCateg->buildTreeList();
+        $filterDatas['categorias'] = $categorias;
         
         return $filterDatas;
     }
