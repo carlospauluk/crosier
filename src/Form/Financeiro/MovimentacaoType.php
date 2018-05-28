@@ -9,6 +9,7 @@ use App\Entity\Financeiro\Carteira;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use App\Entity\Financeiro\Modo;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class MovimentacaoType extends AbstractType
 {
@@ -42,6 +43,11 @@ class MovimentacaoType extends AbstractType
             'choice_label' => function (Modo $modo) {
                 return $modo->getCodigo() . " - " . $modo->getDescricao();
             }
+        ));
+        
+        $builder->add('categoria_ac', TextType::class, array(
+            'label' => 'Categoria',
+            'mapped' => false
         ));
     }
 
