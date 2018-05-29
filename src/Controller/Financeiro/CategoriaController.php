@@ -117,7 +117,7 @@ class CategoriaController extends Controller
     
     /**
      *
-     * @Route("/fin/categoria/treelist/", name="categoria_delete")
+     * @Route("/fin/categoria/treelist/", name="categoria_treelist")
      * @Method("GET")
      *
      */

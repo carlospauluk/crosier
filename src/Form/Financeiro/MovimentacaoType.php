@@ -10,6 +10,8 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use App\Entity\Financeiro\Modo;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use App\Form\EntityIdAutoCompleteType;
+use App\Entity\Financeiro\Categoria;
 
 class MovimentacaoType extends AbstractType
 {
@@ -45,10 +47,16 @@ class MovimentacaoType extends AbstractType
             }
         ));
         
-        $builder->add('categoria_ac', TextType::class, array(
-            'label' => 'Categoria',
-            'mapped' => false
-        ));
+        
+        $repoCategoria = $this->doctrine->getRepository(Categoria::class);
+        $categorias = $repoCategoria->findAll();
+        
+        $builder->add('categoria', EntityType::class, array(
+            'class' => Categoria::class,
+            'choices' => $categorias,
+            'choice_label' => 'descricaoMontada'));
+        
+        
     }
 
     public function configureOptions(OptionsResolver $resolver)

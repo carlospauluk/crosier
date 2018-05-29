@@ -26,14 +26,13 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="id_sistema_antigo", type="bigint", nullable=true)
-     * @Assert\Range(min=1)
      */
     private $idSistemaAntigo;
 
     /**
      *
      * @ORM\Column(name="status", type="string", nullable=false, length=50)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(message="status bll")
      *
      */
     private $status;
@@ -42,7 +41,7 @@ class Movimentacao extends EntityId
      * Tipo de lançamento que originou esta movimentação.
      *
      * @ORM\Column(name="tipo_lancto", type="string", nullable=false, length=50)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(message="tipoLancto bll")
      *
      * @var $tipoLancto TipoLancto
      */
@@ -106,7 +105,7 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="plano_pagto_cartao", type="string", nullable=false, length=50)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(message="planoPagtoCartao bll")
      *
      * @var $planoPagtoCartao PlanoPagtoCartao
      */
@@ -115,8 +114,7 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=500)
-     * @Assert\NotBlank()
-     * @Assert\Range(min=3, max=500)
+     * @Assert\NotBlank(message="descricao bll")
      */
     private $descricao;
 
@@ -124,16 +122,13 @@ class Movimentacao extends EntityId
      * Campo para manter como único uma movimentação que tenha todas as características de outra movimentação do mesmo
      * dia/carteira/valor/categoria etc.
      *
-     * @ORM\Column(name="unq_controle", type="string", nullable=false, length=15)
-     * @Assert\NotBlank()
-     * @Assert\Range(min=15, max=15)
+     * @ORM\Column(name="unq_controle", type="string", nullable=true, length=15)
      */
     private $unqControle;
 
     /**
      *
      * @ORM\Column(name="obs", type="string", nullable=true, length=5000)
-     * @Assert\Range(max=5000)
      */
     private $obs;
 
@@ -150,7 +145,6 @@ class Movimentacao extends EntityId
      * Caso a movimentação seja uma parcela, informa qual.
      *
      * @ORM\Column(name="num_parcela", type="integer", nullable=true)
-     * @Assert\Range(min=1)
      */
     private $numParcela;
 
@@ -158,7 +152,6 @@ class Movimentacao extends EntityId
      * Inclui aqui para não precisar dar um SELECT na tabela de parcelamentos toda hora que quiser a qtde de parcelas.
      *
      * @ORM\Column(name="qtde_parcelas", type="integer", nullable=true)
-     * @Assert\Range(min=1)
      */
     private $qtdeParcelas;
 
@@ -175,7 +168,6 @@ class Movimentacao extends EntityId
      * Caso a movimentação faça parte de uma cadeia, informa em qual posição.
      *
      * @ORM\Column(name="cadeia_ordem", type="integer", nullable=true)
-     * @Assert\Range(min=1)
      */
     private $cadeiaOrdem;
 
@@ -184,8 +176,6 @@ class Movimentacao extends EntityId
      * (boleto, código transferência bancária, nota fiscal, etc).
      *
      * @ORM\Column(name="documento_num", type="string", nullable=true, length=100)
-     * @Assert\NotBlank()
-     * @Assert\Range(max=100)
      */
     private $documentoNum;
 
@@ -205,8 +195,6 @@ class Movimentacao extends EntityId
      * FIXME: mas o documentoNum já não é isso?
      *
      * @ORM\Column(name="documento_fiscal", type="string", nullable=true, length=255)
-     * @Assert\NotBlank()
-     * @Assert\Range(max=255)
      */
     private $documentoFiscal;
 
@@ -214,8 +202,6 @@ class Movimentacao extends EntityId
      * Informa o número do código do pedido.
      *
      * @ORM\Column(name="codigo_pedido", type="string", nullable=true, length=255)
-     * @Assert\NotBlank()
-     * @Assert\Range(max=255)
      */
     private $codigoPedido;
 
@@ -278,7 +264,6 @@ class Movimentacao extends EntityId
      * Data em que a movimentação foi paga.
      *
      * @ORM\Column(name="dt_pagto", type="datetime", nullable=true)
-     * @Assert\NotNull()
      * @Assert\Type("\DateTime")
      */
     private $dtPagto;
@@ -297,7 +282,7 @@ class Movimentacao extends EntityId
      *
      * @ORM\Column(name="valor", type="decimal", nullable=false, precision=15, scale=2)
      * @Assert\NotNull()
-     * @Assert\Type("double")
+     * @Assert\Type("numeric")
      */
     private $valor;
 
@@ -305,8 +290,7 @@ class Movimentacao extends EntityId
      * Possíveis descontos (sempre negativo).
      *
      * @ORM\Column(name="descontos", type="decimal", nullable=true, precision=15, scale=2)
-     * @Assert\NotNull()
-     * @Assert\Type("double")
+     * @Assert\Type("numeric")
      */
     private $descontos;
 
@@ -314,8 +298,7 @@ class Movimentacao extends EntityId
      * Possíveis acréscimos (sempre positivo).
      *
      * @ORM\Column(name="acrescimos", type="decimal", nullable=true, precision=15, scale=2)
-     * @Assert\NotNull()
-     * @Assert\Type("double")
+     * @Assert\Type("numeric")
      */
     private $acrescimos;
 
@@ -325,7 +308,7 @@ class Movimentacao extends EntityId
      *
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
      * @Assert\NotNull()
-     * @Assert\Type("double")
+     * @Assert\Type("numeric", message="valorTotal")
      */
     private $valorTotal;
 
@@ -372,15 +355,13 @@ class Movimentacao extends EntityId
 
     /**
      *
-     * @ORM\Column(name="recorr_frequencia", type="string", nullable=false, length=50)
-     * @Assert\NotBlank()
+     * @ORM\Column(name="recorr_frequencia", type="string", nullable=true, length=50)
      */
     private $recorrFrequencia;
 
     /**
      *
-     * @ORM\Column(name="recorr_tipo_repet", type="string", nullable=false, length=50)
-     * @Assert\NotBlank()
+     * @ORM\Column(name="recorr_tipo_repet", type="string", nullable=true, length=50)
      */
     private $recorrTipoRepet;
 
@@ -389,9 +370,7 @@ class Movimentacao extends EntityId
      *
      * FIXME: meio burro isso (podia usar o 31 mesmo).
      *
-     * @ORM\Column(name="recorr_dia", type="integer", nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\Range(min = 1, max = 32)
+     * @ORM\Column(name="recorr_dia", type="integer", nullable=true)
      */
     private $recorrDia;
 
@@ -401,10 +380,12 @@ class Movimentacao extends EntityId
      *
      * FIXME: meio burro isso (podia usar o 31 mesmo).
      *
-     * @ORM\Column(name="recorr_variacao", type="integer", nullable=false)
-     * @Assert\NotBlank()
+     * @ORM\Column(name="recorr_variacao", type="integer", nullable=true)
      */
     private $recorrVariacao;
+    
+    // ---------------------------------------------------------------------------------------
+    
 
     public function getId()
     {
