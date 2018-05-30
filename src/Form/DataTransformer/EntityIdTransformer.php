@@ -1,20 +1,24 @@
 <?php
 namespace App\Form\DataTransformer;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use App\Entity\Base\EntityId;
-use App\Entity\Financeiro\Categoria;
+use Doctrine\Common\Persistence\ObjectRepository;
 
 class EntityIdTransformer implements DataTransformerInterface
 {
 
-    private $entityManager;
+    private $repo;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function getRepo(): ObjectRepository
     {
-        $this->entityManager = $entityManager;
+        return $this->repo;
+    }
+
+    public function setRepo(ObjectRepository $repo)
+    {
+        $this->repo = $repo;
     }
 
     /**
@@ -45,7 +49,7 @@ class EntityIdTransformer implements DataTransformerInterface
             return;
         }
         
-        $entity = $this->entityManager->getRepository(Categoria::class)->find($id);
+        $entity = $this->getRepo()->find($id);
         
         if (null === $entity) {
             // causes a validation error

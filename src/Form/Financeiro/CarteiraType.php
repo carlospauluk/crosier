@@ -29,7 +29,8 @@ class CarteiraType extends AbstractType
         $builder->add('dtConsolidado', DateType::class, array(
             'widget' => 'single_text',
             'format' => 'dd/MM/yyyy',
-            'label' => 'Dt Entrada'
+            'label' => 'Dt Entrada',
+            'attr' => array('class' => 'crsr-date')
         ));
         
         $builder->add('concreta', ChoiceType::class, array(

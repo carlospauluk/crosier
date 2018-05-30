@@ -8,6 +8,12 @@
 #}
 
 {% block entity_id_auto_complete_widget %}
-    jhkjhk
+    
+
+        
+<select {{ block('widget_attributes') }} class="form-control">
+{%- set options = choices -%}
+{{- block('choice_widget_options') -}}
+</select>
         
 {% endblock %}

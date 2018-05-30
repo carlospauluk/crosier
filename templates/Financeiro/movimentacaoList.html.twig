@@ -52,13 +52,13 @@
 
 				<tbody>
 					{% for item in dados %}
-					<tr class="{{ item.categoria.codigo|first == '1' ? 'table-success' : 'table-danger' }}">
+					<tr>
 						<td>{{ item.id }}</td>
 						<td>{{ item.status }}<br /> {{ item.modo.descricao }}</td>
 						<td>{{ item.categoria.codigoM ~ ' - ' ~ item.categoria.descricao }}<br /> {{ item.carteira.descricao }}</td>
 						<td>{{ item.descricao }}</td>
 						<td>{{ item.dtUtil|date('d/m/Y') }}</td>
-						<td class="text-right">{{ item.valorTotal|number_format(2,',','.') }}</td>
+						<td class="text-right {{ item.categoria.codigo|first == '1' ? 'table-success' : 'table-danger' }}">{{ item.valorTotal|number_format(2,',','.') }}</td>
 						<td class="text-right">
 							<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('movimentacao_form', {id: item.id}) }}'">
 								<i class="fas fa-wrench" aria-hidden="true"></i>

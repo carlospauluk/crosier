@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Entidade 'Pessoa'.
  *
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\Base\PessoaRepository")
  * @ORM\Table(name="bon_pessoa")
  */
 class Pessoa extends EntityId

@@ -1,22 +1,30 @@
 <?php
 namespace App\Form\Financeiro;
 
-use App\Entity\Financeiro\Movimentacao;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use App\Entity\Base\Pessoa;
 use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\Categoria;
+use App\Entity\Financeiro\CentroCusto;
+use App\Entity\Financeiro\Modo;
+use App\Entity\Financeiro\Movimentacao;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use App\Entity\Financeiro\Modo;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use App\Form\DataTransformer\EntityIdTransformer;
 use App\Form\EntityIdAutoCompleteType;
-use App\Entity\Financeiro\Categoria;
 
 class MovimentacaoType extends AbstractType
 {
 
     private $doctrine;
+
+    private $entityIdTransformer;
 
     public function __construct(RegistryInterface $doctrine)
     {
@@ -47,17 +55,95 @@ class MovimentacaoType extends AbstractType
             }
         ));
         
-        
         $repoCategoria = $this->doctrine->getRepository(Categoria::class);
         $categorias = $repoCategoria->findAll();
         
         $builder->add('categoria', EntityType::class, array(
             'class' => Categoria::class,
             'choices' => $categorias,
-            'choice_label' => 'descricaoMontada'));
+            'choice_label' => 'descricaoMontada'
+        ));
+        
+        $builder->add('dtMoviment', DateType::class, array(
+            'widget' => 'single_text',
+            'format' => 'dd/MM/yyyy',
+            'label' => 'Dt Moviment',
+            'attr' => array(
+                'class' => 'crsr-date'
+            )
+        ));
+        
+        $builder->add('dtVencto', DateType::class, array(
+            'widget' => 'single_text',
+            'format' => 'dd/MM/yyyy',
+            'label' => 'Dt Vencto',
+            'attr' => array(
+                'class' => 'crsr-date'
+            )
+        ));
+        
+        $builder->add('dtVenctoEfetiva', DateType::class, array(
+            'widget' => 'single_text',
+            'format' => 'dd/MM/yyyy',
+            'label' => 'Dt Vencto Efet',
+            'attr' => array(
+                'class' => 'crsr-date'
+            )
+        ));
+        
+        $pessoas = array();
+        if ($builder->getData()->getPessoa() and $builder->getData()->getPessoa()->getId()) {
+            $repoPessoa = $this->doctrine->getRepository(Pessoa::class);
+            $pessoa = $repoPessoa->find($builder->getData()->getPessoa()->getId());
+            $pessoas[] = $pessoa;
+        }
+        $builder->add('pessoa', EntityIdAutoCompleteType::class, array(
+            'class' => Pessoa::class,
+            'choices' => $pessoas,
+            'choice_label' => 'nome',
+            'repo' => $this->doctrine->getRepository(Pessoa::class)
+        ));
+
+//         $builder->add('pessoa', EntityIdAutoCompleteType::class, array(
+//             'label' => 'Pessoa',
+//             'choices' => $pessoas,
+//             'repo' => $this->doctrine->getRepository(Pessoa::class)
+//         ));
+        
+        
+        
+        // Adicionando lógicas para exibição do formulário
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, array(
+            $this,
+            'onPreSetData'
+        ));
+        
+    }
+
+    /**
+     *
+     * @param FormEvent $event
+     */
+    public function onPreSetData(FormEvent $event)
+    {
+        $movimentacao = $event->getData();
+        $form = $event->getForm();
+        
+        if ($movimentacao->getCategoria()->getCentroCustoDif()) {
+            
+            $repo = $this->doctrine->getRepository(CentroCusto::class);
+            $centrosCusto = $repo->findAll();
+            
+            $form->add('centroCusto', EntityType::class, array(
+                'class' => CentroCusto::class,
+                'choices' => $centrosCusto,
+                'choice_label' => 'descricao'
+            ));
+        }
         
         
     }
+
 
     public function configureOptions(OptionsResolver $resolver)
     {
