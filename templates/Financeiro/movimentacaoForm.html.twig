@@ -5,10 +5,6 @@
 
 {% block page_content %}
 
-<select id="testando">
-<option value="234908490328">blabla</option>
-</select>
-
 <div class="card">
 	<div class="card-header">
 
@@ -81,33 +77,6 @@
 
 	// In your Javascript (external .js resource or <script> tag)
 	$(document).ready(function() {
-
-		var data2 = [
-		    {
-		        id: 0,
-		        text: 'enhancement'
-		    },
-		    {
-		        id: 1,
-		        text: 'bug'
-		    },
-		    {
-		        id: 2,
-		        text: 'duplicate'
-		    },
-		    {
-		        id: 3,
-		        text: 'invalid'
-		    },
-		    {
-		        id: 4,
-		        text: 'wontfix'
-		    }
-		];
-
-		$("#testando").select2({
-		  data: data2
-		});
 		
 	    $("#movimentacao_pessoa").select2({
 	    	  ajax: {

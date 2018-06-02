@@ -7,13 +7,12 @@
    See https://symfony.com/doc/current/cookbook/form/create_custom_field_type.html#creating-a-template-for-the-field
 #}
 
-{% block entity_id_auto_complete_widget %}
+{% block entity_id_auto_ccomplete_widget %}
     
 
         
+{{ bla1 }}
 <select {{ block('widget_attributes') }} class="form-control">
-{%- set options = choices -%}
-{{- block('choice_widget_options') -}}
 </select>
         
 {% endblock %}
