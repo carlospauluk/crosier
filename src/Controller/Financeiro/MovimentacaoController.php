@@ -27,6 +27,9 @@ class MovimentacaoController extends Controller
             
             $movimentacao->setInserted(new \DateTime('now'));
             $movimentacao->setUpdated(new \DateTime('now'));
+            $movimentacao->setUserInserted(1);
+            $movimentacao->setUserUpdated(1);
+            $movimentacao->setEstabelecimento(1);
         }
         
         $form = $this->createForm(MovimentacaoType::class, $movimentacao);

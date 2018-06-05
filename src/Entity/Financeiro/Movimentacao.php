@@ -32,7 +32,7 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="status", type="string", nullable=false, length=50)
-     * @Assert\NotBlank(message="status bll")
+     * @Assert\NotBlank(message="O campo 'Status' deve ser informado")
      *
      */
     private $status;
@@ -41,9 +41,9 @@ class Movimentacao extends EntityId
      * Tipo de lançamento que originou esta movimentação.
      *
      * @ORM\Column(name="tipo_lancto", type="string", nullable=false, length=50)
-     * @Assert\NotBlank(message="tipoLancto bll")
+     * @Assert\NotBlank(message="O campo 'Tipo de Lancto' deve ser informado")
      *
-     * @var $tipoLancto TipoLancto
+     * @var $tipoLancto
      */
     private $tipoLancto;
 
@@ -51,6 +51,7 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=false)
+     * @Assert\NotNull(message="O campo 'Carteira' deve ser informado")
      *
      * @var $carteira Carteira
      */
@@ -62,7 +63,7 @@ class Movimentacao extends EntityId
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_destino_id", nullable=true)
      *
-     * @var $carteira Carteira
+     * @var $carteiraDestino Carteira
      */
     private $carteiraDestino;
 
@@ -70,8 +71,9 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\CentroCusto")
      * @ORM\JoinColumn(name="centrocusto_id", nullable=false)
+     * @Assert\NotNull(message="O campo 'Centro de Custo' deve ser informado")
      *
-     * @var $carteira Carteira
+     * @var $centroCusto CentroCusto
      */
     private $centroCusto;
 
@@ -79,6 +81,7 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Modo")
      * @ORM\JoinColumn(name="modo_id", nullable=false)
+     * @Assert\NotNull(message="O campo 'Modo' deve ser informado")
      *
      * @var $modo Modo
      */
@@ -88,7 +91,7 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\BandeiraCartao")
      * @ORM\JoinColumn(name="bandeira_cartao_id", nullable=true)
-     *
+     * 
      * @var $bandeiraCartao BandeiraCartao
      */
     private $bandeiraCartao;
@@ -104,17 +107,15 @@ class Movimentacao extends EntityId
 
     /**
      *
-     * @ORM\Column(name="plano_pagto_cartao", type="string", nullable=false, length=50)
-     * @Assert\NotBlank(message="planoPagtoCartao bll")
-     *
+     * @ORM\Column(name="plano_pagto_cartao", type="string", nullable=true, length=50)
      * @var $planoPagtoCartao PlanoPagtoCartao
      */
-    private $planoPagtoCartao = "N_A";
+    private $planoPagtoCartao;
 
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=500)
-     * @Assert\NotBlank(message="descricao bll")
+     * @Assert\NotBlank(message="O campo 'Descrição' deve ser informado")
      */
     private $descricao;
 
@@ -135,7 +136,7 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Parcelamento")
-     * @ORM\JoinColumn(name="parcelamento_id", nullable=false)
+     * @ORM\JoinColumn(name="parcelamento_id", nullable=true)
      *
      * @var $parcelamento Parcelamento
      */
@@ -218,8 +219,8 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
-     * @ORM\JoinColumn(name="categoria_id", nullable=true)
-     *
+     * @ORM\JoinColumn(name="categoria_id", nullable=false)
+     * @Assert\NotNull(message="O campo 'Categoria' deve ser informado")
      * @var $categoria Categoria
      */
     private $categoria;
@@ -237,7 +238,7 @@ class Movimentacao extends EntityId
      * Data em que a movimentação efetivamente aconteceu.
      *
      * @ORM\Column(name="dt_moviment", type="datetime", nullable=false)
-     * @Assert\NotNull()
+     * @Assert\NotNull(message="O campo 'Dt Moviment' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtMoviment;
@@ -246,7 +247,7 @@ class Movimentacao extends EntityId
      * Data prevista para pagamento.
      *
      * @ORM\Column(name="dt_vencto", type="datetime", nullable=false)
-     * @Assert\NotNull()
+     * @Assert\NotNull(message="O campo 'Dt Vencto' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtVencto;
@@ -255,7 +256,7 @@ class Movimentacao extends EntityId
      * Data prevista (postergando para dia útil) para pagamento.
      *
      * @ORM\Column(name="dt_vencto_efetiva", type="datetime", nullable=false)
-     * @Assert\NotNull()
+     * @Assert\NotNull(message="O campo 'Dt Vencto Efet' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtVenctoEfetiva;
@@ -272,7 +273,7 @@ class Movimentacao extends EntityId
      * Se dtPagto != null ? dtPagto : dtVencto.
      *
      * @ORM\Column(name="dt_util", type="datetime", nullable=false)
-     * @Assert\NotNull()
+     * @Assert\NotNull(message="O campo 'Dt Util' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtUtil;
@@ -281,7 +282,7 @@ class Movimentacao extends EntityId
      * Valor bruto da movimentação.
      *
      * @ORM\Column(name="valor", type="decimal", nullable=false, precision=15, scale=2)
-     * @Assert\NotNull()
+     * @Assert\NotNull(message="O campo 'Valor' deve ser informado")
      * @Assert\Type("numeric")
      */
     private $valor;
@@ -307,8 +308,8 @@ class Movimentacao extends EntityId
      * conta por algum motivo).
      *
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
-     * @Assert\NotNull()
-     * @Assert\Type("numeric", message="valorTotal")
+     * @Assert\NotNull(message="O campo 'Valor Total' deve ser informado")
+     * @Assert\Type("numeric", message="O campo 'Valor Total' deve ser numérico")
      */
     private $valorTotal;
 
@@ -349,7 +350,7 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="recorrente", type="boolean", nullable=false)
-     * @Assert\NotNull()
+     * @Assert\NotNull(message = "O campo 'Recorrente' deve ser informado")
      */
     private $recorrente = false;
 
@@ -383,10 +384,8 @@ class Movimentacao extends EntityId
      * @ORM\Column(name="recorr_variacao", type="integer", nullable=true)
      */
     private $recorrVariacao;
-    
-    // ---------------------------------------------------------------------------------------
-    
 
+    // ---------------------------------------------------------------------------------------
     public function getId()
     {
         return $this->id;
@@ -417,12 +416,12 @@ class Movimentacao extends EntityId
         $this->status = $status;
     }
 
-    public function getTipoLancto(): ?TipoLancto
+    public function getTipoLancto()
     {
         return $this->tipoLancto;
     }
 
-    public function setTipoLancto(?TipoLancto $tipoLancto)
+    public function setTipoLancto($tipoLancto)
     {
         $this->tipoLancto = $tipoLancto;
     }
@@ -487,12 +486,12 @@ class Movimentacao extends EntityId
         $this->operadoraCartao = $operadoraCartao;
     }
 
-    public function getPlanoPagtoCartao(): ?PlanoPagtoCartao
+    public function getPlanoPagtoCartao()
     {
         return $this->planoPagtoCartao;
     }
 
-    public function setPlanoPagtoCartao(?PlanoPagtoCartao $planoPagtoCartao)
+    public function setPlanoPagtoCartao($planoPagtoCartao)
     {
         $this->planoPagtoCartao = $planoPagtoCartao;
     }

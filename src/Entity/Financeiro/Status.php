@@ -44,6 +44,15 @@ final class Status
         Status::PREVISTA,
         Status::REALIZADA
     );
+    
+    
+    public static function getChoices() {
+        $arr = array();
+        foreach (Status::ALL as $status) {
+            $arr[$status['label']] = $status['sigla'];
+        }
+        return $arr;
+    }
 
     
 }

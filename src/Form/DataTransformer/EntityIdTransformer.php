@@ -20,6 +20,10 @@ class EntityIdTransformer implements DataTransformerInterface
     {
         $this->repo = $repo;
     }
+    
+    public function __construct($repo) {
+        $this->repo = $repo;
+    }
 
     /**
      * Transforms an object (issue) to a string (number).
