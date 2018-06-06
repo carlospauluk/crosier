@@ -115,7 +115,18 @@
     	$("#movimentacao_valor").blur(function () {resValorTotal()});
     	$("#movimentacao_descontos").blur(function () {resValorTotal()});
     	$("#movimentacao_acrescimos").blur(function () {resValorTotal()});
-	});
+
+
+        $("#movimentacao_dtVenctoEfetiva").focus(
+                function() {
+        			$.get( 
+                			"{{ url('findProximoDiaUtilFinanceiro') }}/?dia=" + encodeURIComponent($("#movimentacao_dtVencto").val()), 
+				        	function( data ) {
+                				$("#movimentacao_dtVenctoEfetiva").val(data);
+        					});
+        		});
+            	
+	}); // $(document).ready(function() {
 	
 	
 	
