@@ -20,7 +20,8 @@
 
 
 							<form action="{{ path('login') }}" method="post">
-								<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+								<input type="hidden" name="_csrf_token"
+									value="{{ csrf_token('authenticate') }}">
 
 								<p class="text-muted">Informe seus dados</p>
 								<div class="input-group mb-3">
@@ -28,21 +29,31 @@
 										<span class="input-group-text"> <i class="icon-user"></i>
 										</span>
 									</div>
-									<input type="text" class="form-control" placeholder="Usuário" id="username" name="_username" value="{{ last_username }}">
+									<input type="text" style="text-transform: none;"
+										class="form-control" placeholder="Usuário" id="username"
+										name="_username" value="{{ last_username }}">
 								</div>
 								<div class="input-group mb-4">
 									<div class="input-group-prepend">
 										<span class="input-group-text"> <i class="icon-lock"></i>
 										</span>
 									</div>
-									<input type="password" class="form-control" placeholder="Senha" id="password" name="_password">
+									<input type="password" style="text-transform: none;"
+										class="form-control" placeholder="Senha" id="password"
+										name="_password">
 								</div>
+								<div class="input-group mb-4">
+									<input type="checkbox" id="remember_me" name="_remember_me"
+										checked /> <label for="remember_me">Mantenha-me
+										logado</label>
+								</div>
+
 								<div class="row">
 									<div class="col-6">
 										<button type="submit" class="btn btn-primary px-4">Login</button>
 									</div>
 									<div class="col-6 text-right">
-										<button type="button" class="btn btn-link px-0">Forgot password?</button>
+										<button type="button" class="btn btn-link px-0">Esqueceu sua senha?</button>
 									</div>
 								</div>
 							</form>
@@ -52,12 +63,16 @@
 						</div>
 
 					</div>
-					<div class="card text-white bg-primary py-5 d-md-down-none" style="width: 44%">
+					<div class="card text-white bg-primary py-5 d-md-down-none"
+						style="width: 44%">
 						<div class="card-body text-center">
 							<div>
 								<h2>Sign up</h2>
-								<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-								<button type="button" class="btn btn-primary active mt-3">Register Now!</button>
+								<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+									sed do eiusmod tempor incididunt ut labore et dolore magna
+									aliqua.</p>
+								<button type="button" class="btn btn-primary active mt-3">Register
+									Now!</button>
 							</div>
 						</div>
 					</div>

@@ -1,12 +1,26 @@
 security:
-    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    encoders:
+        App\Entity\Security\User:
+            algorithm: bcrypt
+        
     providers:
-        in_memory: { memory: ~ }
+        our_db_provider:
+            entity:
+                class: App\Entity\Security\User
+                property: username
+                
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            provider: our_db_provider
+            
+            remember_me:
+                secret:   '%kernel.secret%'
+                lifetime: 604800 # 1 week in seconds
+                path:     /
+            
             anonymous: ~
 
             # activate different ways to authenticate
@@ -28,5 +42,5 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/, roles: IS_AUTHENTICATED_REMEMBERED }
         # - { path: ^/profile, roles: ROLE_USER }

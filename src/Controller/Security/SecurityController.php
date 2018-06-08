@@ -5,6 +5,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use App\Entity\Security\User;
+use Symfony\Component\HttpFoundation\Response;
 
 class SecurityController extends Controller
 {
@@ -26,6 +29,24 @@ class SecurityController extends Controller
             'last_username' => $lastUsername,
             'error' => $error
         ));
+    }
+    
+    
+    /**
+     *
+     * @Route("/sec/hash", name="hash")
+     */
+    public function register(Request $request, UserPasswordEncoderInterface $encoder)
+    {
+        $params = $request->query->all();
+        
+        $raw = array_key_exists('raw', $params) ? $params['raw'] : "";
+        
+        // whatever *your* User object is
+        $user = new User();
+        $encoded = $encoder->encodePassword($user, $raw);
+               
+        return new Response($encoded);
     }
 }
 

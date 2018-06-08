@@ -12,6 +12,7 @@ use App\Entity\Financeiro\Status;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Categoria;
 use App\Form\Financeiro\MovimentacaoType;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 class MovimentacaoController extends Controller
 {
@@ -43,7 +44,9 @@ class MovimentacaoController extends Controller
             $entityManager->persist($movimentacao);
             $entityManager->flush();
             $this->addFlash('success', 'Registro salvo com sucesso!');
-            return $this->redirectToRoute('movimentacao_form', array('id' => $movimentacao->getId()) );
+            return $this->redirectToRoute('movimentacao_form', array(
+                'id' => $movimentacao->getId()
+            ));
         } else {
             $form->getErrors(true, false);
         }
@@ -52,18 +55,23 @@ class MovimentacaoController extends Controller
             'form' => $form->createView()
         ));
     }
-    
+
     /**
      * Monta os parâmetros para os filtros da listagem.
-     * 
+     *
      * @return \App\Utils\Repository\FilterData[]
      */
-    private function handleFilters($params) {
-        if (!isset($params['filter'])) return;
+    private function handleFilters($params)
+    {
+        if (! isset($params['filter']))
+            return;
         $filters = array();
         
         if (isset($params['filter']['descricao'])) {
-            $filters[] = new FilterData(array('id','descricao'), 'LIKE', $params['filter']['descricao']);
+            $filters[] = new FilterData(array(
+                'id',
+                'descricao'
+            ), 'LIKE', $params['filter']['descricao']);
         }
         
         if (isset($params['filter']['dtUtil'])) {
@@ -71,7 +79,7 @@ class MovimentacaoController extends Controller
         }
         
         if (isset($params['filter']['valorTotal'])) {
-            $filters[] =  new FilterData('valorTotal', 'BETWEEN', $params['filter']['valorTotal'], 'decimal');
+            $filters[] = new FilterData('valorTotal', 'BETWEEN', $params['filter']['valorTotal'], 'decimal');
         }
         
         if (isset($params['filter']['carteira'])) {
@@ -92,11 +100,12 @@ class MovimentacaoController extends Controller
         
         return $filters;
     }
-    
+
     /**
      * Monta os dados para os campos de filtragem.
      */
-    private function buildFilterDatas() {
+    private function buildFilterDatas()
+    {
         $filterDatas = array();
         
         $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
@@ -119,6 +128,7 @@ class MovimentacaoController extends Controller
     /**
      *
      * @Route("/fin/movimentacao/list/", name="movimentacao_list")
+     * @Security("has_role('ROLE_FINANCEIRO_ADMIN')")
      */
     public function list(Request $request)
     {
@@ -141,9 +151,6 @@ class MovimentacaoController extends Controller
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
         }
-        
-        
-        
         
         return $this->render('Financeiro/movimentacaoList.html.twig', array(
             'dados' => $dados,
@@ -175,5 +182,4 @@ class MovimentacaoController extends Controller
         
         return $this->redirectToRoute('movimentacao_list');
     }
-
 }
