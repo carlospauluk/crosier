@@ -36,7 +36,7 @@ class SecurityController extends Controller
      *
      * @Route("/sec/hash", name="hash")
      */
-    public function register(Request $request, UserPasswordEncoderInterface $encoder)
+    public function hash(Request $request, UserPasswordEncoderInterface $encoder)
     {
         $params = $request->query->all();
         
