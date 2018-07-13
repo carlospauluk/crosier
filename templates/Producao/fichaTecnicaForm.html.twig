@@ -1,0 +1,112 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+<div class="card">
+	<div class="card-header">
+
+		<div class="row">
+			<div class="col-8">
+				<h3>Ficha Técnica</h3>
+			</div>
+			<div class="col-4 text-right">
+				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('movimentacao_list') }}'">
+					<i class="fas fa-sync" aria-hidden="true"></i>
+					Listar
+				</button>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="card-body">
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2 form-control-label required" for="instituicao">Instituição</label>
+			<div class="col-sm-10">
+				<select id="instituicao" name="instituicao" class="form-control"></select>
+			</div>
+		</div>
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2 form-control-label required" for="tipoArtigo">Tipo de Artigo</label>
+			<div class="col-sm-8">
+				<select id="tipoArtigo" name="tipoArtigo" class="form-control"></select>
+			</div>
+			<div class="col-sm-2 form-check">
+				<input class="form-check-input" type="checkbox" value="" id="defaultCheck1"> <label class="form-check-label"
+					for="defaultCheck1"> Somente da Instituição </label>
+			</div>
+		</div>
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2 form-control-label required" for="confeccao">Confecção</label>
+			<div class="col-sm-10">
+				<select id="confeccao" name="confeccao" class="form-control"></select>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+
+{% block down_scripts %}
+
+
+<script>
+	
+
+	$(document).ready(function() {
+			
+	    $("#instituicao").select2({
+	    	  ajax: {
+	    	    delay: 500,
+	    	    url: function (params) {
+					console.log(params);
+	    	        return '{{ url('instituicao_findbynome') }}' + '/' + params.term;
+	    	    },
+	    	    dataType: 'json',
+	    	    processResults: function (data, params) {
+					var dataNew = $.map(data.results, function (obj) {
+						obj.text = obj.nome;
+						return obj;
+					});
+    				return { results: dataNew };
+				},
+	    	    cache: true
+	    	  },
+	    	  minimumInputLength: 1
+	    	});
+
+	    $('#instituicao').on('select2:select', function (e) {
+	        var instituicao = e.params.data;
+	        console.log(instituicao);
+	        // faz um call no tipoartigo_findbyinstituicaoid e monta o select2 pro tipoArtigo	        
+	        
+	        $("#tipoArtigo").select2({
+		        data: data
+		        });
+	    });
+
+
+	    
+            	
+	});
+	
+	
+	
+	
+	
+
+</script>
+
+{% endblock %}

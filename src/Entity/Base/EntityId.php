@@ -43,6 +43,12 @@ class EntityId
      * @Assert\NotNull(message = "O campo 'user_updated_id' precisa ser informado")
      */
     public $userUpdated;
+    
+    public function __construct()
+    {
+        ORM\Annotation::class;
+        Assert\All::class;
+    }
 
     public function getInserted()
     {
