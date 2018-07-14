@@ -23,7 +23,11 @@ class FichaTecnicaController extends Controller
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
     {
-        return $this->render('Producao/fichaTecnicaForm.html.twig', array(
-        ));
+        
+        $queryParams = $request->query->all();
+        
+        $params = array();
+        
+        return $this->render('Producao/fichaTecnicaForm.html.twig', $params);
     }
 }

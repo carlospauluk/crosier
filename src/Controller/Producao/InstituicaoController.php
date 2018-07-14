@@ -35,10 +35,6 @@ class InstituicaoController extends Controller
         );
         
         $normalizer = new ObjectNormalizer();
-        $normalizer->setIgnoredAttributes(array(
-            'inserted',
-            'updated'
-        ));
         $encoder = new JsonEncoder();
         
         $serializer = new Serializer(array(

@@ -37,7 +37,7 @@
 				<select id="tipoArtigo" name="tipoArtigo" class="form-control"></select>
 			</div>
 			<div class="col-sm-2 form-check">
-				<input class="form-check-input" type="checkbox" value="" id="defaultCheck1"> <label class="form-check-label"
+				<input class="form-check-input" type="checkbox" value="" id="defaultCheck1" checked="checked"> <label class="form-check-label"
 					for="defaultCheck1"> Somente da Instituição </label>
 			</div>
 		</div>
@@ -68,6 +68,11 @@
 	$(document).ready(function() {
 			
 	    $("#instituicao").select2({
+	    	placeholder: {
+	    	    id: '-1', // the value of the option
+	    	    text: 'Selecione...'
+	    	  },
+	    	minimumInputLength: 1,
 	    	  ajax: {
 	    	    delay: 500,
 	    	    url: function (params) {
@@ -87,18 +92,68 @@
 	    	  minimumInputLength: 1
 	    	});
 
-	    $('#instituicao').on('select2:select', function (e) {
+	    // Quando selecionar uma instituição, monta o tipoArtigo
+	    $('#instituicao').on('select2:select', function(e) {
 	        var instituicao = e.params.data;
 	        console.log(instituicao);
 	        // faz um call no tipoartigo_findbyinstituicaoid e monta o select2 pro tipoArtigo	        
+
 	        
-	        $("#tipoArtigo").select2({
-		        data: data
-		        });
+	        
+	        $.ajax({
+	            url: '{{ url('prod_findAllByInstituicao') }}' + '/' + instituicao.id,
+	            dataType: 'json',
+	            success: function(result) {
+		            
+					// Remonto o array no formato aceito pelo select2
+	            	var dataNew = $.map(result.results, function(obj) {
+	                    obj.text = obj.descricao;
+	                    return obj;
+	                });
+
+					// Adiciono o "Selecione..." como primeiro elemento do array
+					dataNew.unshift({"id":"-1","text":"Selecione..."});
+
+	                $("#tipoArtigo").select2({
+	                	placeholder: {
+	        	    	    id: '-1', // the value of the option
+	        	    	    text: 'Selecione...'
+	        	    	  },
+	                    data: dataNew
+	                });
+	            }
+	        });
 	    });
 
+	    // Quando selecionar o tipoArtigo, monta as confecções
+	    $('#tipoArtigo').on('select2:select', function(e) {
+	        var tipoArtigo = e.params.data;
+	        console.log(tipoArtigo);
+	        // faz um call no tipoartigo_findbyinstituicaoid e monta o select2 pro tipoArtigo	        
 
-	    
+	        var instituicao = $('#instituicao').val();      
+	        
+	        $.ajax({
+	            url: '{{ url('prod_findAllByTipoArtigoInstituicao') }}' + '/' + instituicao + '/' + tipoArtigo.id ,
+	            dataType: 'json',
+	            success: function(result) {
+					// Remonto o array no formato aceito pelo select2
+	            	var dataNew = $.map(result.results, function(obj) {
+	                    obj.text = obj.descricao;
+	                    return obj;
+	                });
+	            	dataNew.unshift({"id":"-1","text":"Selecione..."});
+
+	                $("#confeccao").select2({
+	                	placeholder: {
+	        	    	    id: '-1', // the value of the option
+	        	    	    text: 'Selecione...'
+	        	    	  },
+	                    data: dataNew
+	                });
+	            }
+	        });
+	    });
             	
 	});
 	
