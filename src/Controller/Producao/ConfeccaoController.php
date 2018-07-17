@@ -25,7 +25,7 @@ class ConfeccaoController extends Controller
 
     /**
      *
-     * @Route("/prod/confeccao/findAllByTipoArtigoInstituicao/{instituicao}/{tipoArtigo}", name="prod_findAllByTipoArtigoInstituicao", defaults={"instituicao"=null,"tipoArtigo"=null}, requirements={"instituicao"="\d+","tipoArtigo"="\d+"})
+     * @Route("/prod/confeccao/findAllByTipoArtigoInstituicao/{instituicao}/{tipoArtigo}", name="prod_confeccao_findAllByTipoArtigoInstituicao", defaults={"instituicao"=null,"tipoArtigo"=null}, requirements={"instituicao"="\d+","tipoArtigo"="\d+"})
      */
     public function findAllByTipoArtigoInstituicao(Request $request, Instituicao $instituicao, TipoArtigo $tipoArtigo)
     {

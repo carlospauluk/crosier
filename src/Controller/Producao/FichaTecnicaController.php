@@ -1,33 +1,94 @@
 <?php
 namespace App\Controller\Producao;
 
-use App\Entity\Financeiro\Movimentacao;
+use App\Entity\Producao\Confeccao;
+use App\Service\EntityIdSerializerService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Producao\TipoArtigo;
 
 class FichaTecnicaController extends Controller
 {
 
-    public function __construct()
+    private $eSerializer;
+    
+    public function __construct(EntityIdSerializerService $eSerializer)
     {
         Route::class;
         Method::class;
+        $this->eSerializer = $eSerializer;
     }
 
     /**
      *
-     * @Route("/prod/fichatecnica/form/{id}", name="fichatecnica_form", defaults={"id"=null}, requirements={"id"="\d+"})
-     * 
+     * @Route("/prod/fichatecnica/inicial/{confeccao}", name="prod_fichaTecnica_inicial", defaults={"confeccao"=null})
+     *
      */
-    public function form(Request $request, Movimentacao $movimentacao = null)
+    public function inicial(Request $request, Confeccao $confeccao = null)
     {
-        
-        $queryParams = $request->query->all();
-        
         $params = array();
         
-        return $this->render('Producao/fichaTecnicaForm.html.twig', $params);
+        // Se mandou o id da confecção na URL...
+        if ($confeccao instanceof Confeccao) {                        
+            $params['instituicao']['id'] = $confeccao->getInstituicao()->getId();
+            $params['instituicao']['nome'] = $confeccao->getInstituicao()->getNome();
+            
+            // Já pré-carrega todos os tipos de artigos para o select2
+            $repo = $this->getDoctrine()->getRepository(TipoArtigo::class);
+            $tiposArtigos = $repo->findAllByInstituicao($confeccao->getInstituicao());
+            
+            $params['tiposArtigos'] = array();
+            foreach ($tiposArtigos as $t) {
+                $pTipoArtigo = array();
+                if ($t->getId() == $confeccao->getTipoArtigo()->getId()) {
+                    $pTipoArtigo['selected'] = true;
+                }
+                $pTipoArtigo['id'] = $t->getId();
+                $pTipoArtigo['text'] = $t->getDescricao();
+                $params['tiposArtigos'][] = $pTipoArtigo;
+            }
+            
+            $params['tiposArtigos'] = json_encode($params['tiposArtigos'] );
+            
+            // Já pré-carrega todas as confecções para o select2
+            $repo = $this->getDoctrine()->getRepository(Confeccao::class);
+            $confeccoes = $repo->findAllByTipoArtigoInstituicao($confeccao->getInstituicao(),$confeccao->getTipoArtigo());
+                
+            $params['confeccoes'] = array();
+            foreach ($confeccoes as $c) {
+                $pConfeccao = array();
+                if ($c->getId() == $confeccao->getId()) {
+                    $pConfeccao['selected'] = true;
+                }
+                $pConfeccao['id'] = $c->getId();
+                $pConfeccao['text'] = $c->getDescricao();
+                $params['confeccoes'][] = $pConfeccao;
+            }
+            
+            $params['confeccoes'] = json_encode($params['confeccoes'] );
+        }
+        
+        return $this->render('Producao/FichaTecnica/inicial.html.twig', $params);
+    }
+    
+    /**
+     *
+     * @Route("/prod/fichatecnica/form/{id}", name="prod_fichaTecnica_form", defaults={"id"=null})
+     *
+     */
+    public function form(Request $request, Confeccao $confeccao = null)
+    {
+        $params = array();
+        
+        $params['confeccao'] = $confeccao;
+        
+        // Carrega a tabela
+        
+        
+        
+        
+        return $this->render('Producao/FichaTecnica/form.html.twig', $params);
     }
 }

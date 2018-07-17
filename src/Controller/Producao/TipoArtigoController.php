@@ -24,7 +24,7 @@ class TipoArtigoController extends Controller
 
     /**
      *
-     * @Route("/prod/tipoartigo/findAllByInstituicao/{id}", name="prod_findAllByInstituicao", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @Route("/prod/tipoartigo/findAllByInstituicao/{id}", name="prod_tipoArtigo_findAllByInstituicao", defaults={"id"=null}, requirements={"id"="\d+"})
      */
     public function findAllByInstituicao(Request $request, Instituicao $instituicao)
     {

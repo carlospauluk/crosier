@@ -21,7 +21,7 @@ class InstituicaoController extends Controller
 
     /**
      *
-     * @Route("/prod/instituicao/findbynome/{str}", name="instituicao_findbynome")
+     * @Route("/prod/instituicao/findbynome/{str}", name="prod_instituicao_findByNome")
      * @Method("GET")
      *
      */

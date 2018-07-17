@@ -1,8 +1,5 @@
 {% extends 'index.html.twig' %}
 
-
-
-
 {% block page_content %}
 
 <div class="card">
@@ -11,12 +8,6 @@
 		<div class="row">
 			<div class="col-8">
 				<h3>Ficha Técnica</h3>
-			</div>
-			<div class="col-4 text-right">
-				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('movimentacao_list') }}'">
-					<i class="fas fa-sync" aria-hidden="true"></i>
-					Listar
-				</button>
 			</div>
 		</div>
 
@@ -36,35 +27,33 @@
 			<div class="col-sm-8">
 				<select id="tipoArtigo" name="tipoArtigo" class="form-control"></select>
 			</div>
-			<div class="col-sm-2 form-check">
-				<input class="form-check-input" type="checkbox" value="" id="defaultCheck1" checked="checked"> <label class="form-check-label"
-					for="defaultCheck1"> Somente da Instituição </label>
+			<div class="col-sm-2 form-check text-right">
+				<input class="form-check-input" type="checkbox" value="" id="somenteDaInstituicao" checked="checked">
+				<label class="form-check-label" for="somenteDaInstituicao"> Somente da Instituição </label>
 			</div>
 		</div>
 
 		<div class="form-group row">
 			<label class="col-form-label col-sm-2 form-control-label required" for="confeccao">Confecção</label>
-			<div class="col-sm-10">
+			<div class="col-sm-8">
 				<select id="confeccao" name="confeccao" class="form-control"></select>
+			</div>
+			<div class="col-sm-2 text-right">
+				<button type="button" class="btn btn-secondary" onclick="window.location.replace('{{ url('prod_fichaTecnica_form') }}' + '/' + $('#confeccao').val())">
+					<i class="fas fa-sync" aria-hidden="true"></i> Carregar
+				</button>
 			</div>
 		</div>
 
 	</div>
 </div>
 
-
-
-
-
 {% endblock %}
-
 
 {% block down_scripts %}
 
 
 <script>
-	
-
 	$(document).ready(function() {
 			
 	    $("#instituicao").select2({
@@ -76,8 +65,8 @@
 	    	  ajax: {
 	    	    delay: 500,
 	    	    url: function (params) {
-					console.log(params);
-	    	        return '{{ url('instituicao_findbynome') }}' + '/' + params.term;
+					// console.log(params);
+	    	        return '{{ url('prod_instituicao_findByNome') }}' + '/' + params.term;
 	    	    },
 	    	    dataType: 'json',
 	    	    processResults: function (data, params) {
@@ -88,20 +77,47 @@
     				return { results: dataNew };
 				},
 	    	    cache: true
-	    	  },
-	    	  minimumInputLength: 1
-	    	});
+	    	  }	    	  
+	    	}
+    	);
 
-	    // Quando selecionar uma instituição, monta o tipoArtigo
-	    $('#instituicao').on('select2:select', function(e) {
-	        var instituicao = e.params.data;
-	        console.log(instituicao);
+	    {% if instituicao is defined %}
+	  	  	var dInstituicao =  
+          		    {
+          		        id: '{{ instituicao.id }}',
+          		        text: '{{ instituicao.nome|raw }}',
+          		        selected: true
+          		    }
+          		;
+	  		var newOption = new Option(dInstituicao.text, dInstituicao.id, false, false);
+	  		$('#instituicao').append(newOption).trigger('change');
+        {% endif %}
+    	
+    	
+	    {% if tiposArtigos is defined %}
+	    $("#tipoArtigo").select2({
+	    	  data: JSON.parse('{{ tiposArtigos|raw }}')
+	    	}
+    	);	    
+	    {% endif %}
+	    
+	    {% if confeccoes is defined %}
+	    $("#confeccao").select2({
+	    	  data: JSON.parse('{{ confeccoes|raw }}')
+	    	}
+    	);
+	    {% endif %}
+	          
+		var onInstituicaoSelect = function() {
+
+			var instituicao_id = $('#instituicao').val();
+
+			// Se não for "somenteDaInstituicao", trás todos
+	        var _url = $('#somenteDaInstituicao').prop('checked') ? '{{ url('prod_tipoArtigo_findAllByInstituicao') }}'+'/'+instituicao_id : '{{ url('prod_tipoArtigo_findAll') }}';
+	        
 	        // faz um call no tipoartigo_findbyinstituicaoid e monta o select2 pro tipoArtigo	        
-
-	        
-	        
 	        $.ajax({
-	            url: '{{ url('prod_findAllByInstituicao') }}' + '/' + instituicao.id,
+	            url: _url ,
 	            dataType: 'json',
 	            success: function(result) {
 		            
@@ -114,6 +130,7 @@
 					// Adiciono o "Selecione..." como primeiro elemento do array
 					dataNew.unshift({"id":"-1","text":"Selecione..."});
 
+					$('#tipoArtigo').empty().trigger("change");					
 	                $("#tipoArtigo").select2({
 	                	placeholder: {
 	        	    	    id: '-1', // the value of the option
@@ -121,9 +138,15 @@
 	        	    	  },
 	                    data: dataNew
 	                });
+
+	                $('#confeccao').empty().trigger("change");
 	            }
 	        });
-	    });
+	    }
+	    
+	    // Quando selecionar uma instituição, monta o tipoArtigo
+	    $('#instituicao').on('select2:select', onInstituicaoSelect);
+	    $('#somenteDaInstituicao').on('click', onInstituicaoSelect);
 
 	    // Quando selecionar o tipoArtigo, monta as confecções
 	    $('#tipoArtigo').on('select2:select', function(e) {
@@ -134,9 +157,12 @@
 	        var instituicao = $('#instituicao').val();      
 	        
 	        $.ajax({
-	            url: '{{ url('prod_findAllByTipoArtigoInstituicao') }}' + '/' + instituicao + '/' + tipoArtigo.id ,
+	            url: '{{ url('prod_confeccao_findAllByTipoArtigoInstituicao') }}' + '/' + instituicao + '/' + tipoArtigo.id ,
 	            dataType: 'json',
 	            success: function(result) {
+
+	            	$('#confeccao').empty().trigger("change");
+		            
 					// Remonto o array no formato aceito pelo select2
 	            	var dataNew = $.map(result.results, function(obj) {
 	                    obj.text = obj.descricao;
@@ -154,12 +180,8 @@
 	            }
 	        });
 	    });
-            	
+
 	});
-	
-	
-	
-	
 	
 
 </script>
