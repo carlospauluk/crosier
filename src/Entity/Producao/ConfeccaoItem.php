@@ -4,6 +4,9 @@ namespace App\Entity\Producao;
 use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 
 /**
  *
@@ -12,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class ConfeccaoItem extends EntityId
 {
+
     /**
      *
      * @ORM\Id()
@@ -19,7 +23,7 @@ class ConfeccaoItem extends EntityId
      * @ORM\Column(type="bigint")
      */
     private $id;
-    
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Producao\Confeccao")
@@ -28,7 +32,7 @@ class ConfeccaoItem extends EntityId
      * @var $confeccao Confeccao
      */
     private $confeccao;
-    
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Producao\Insumo")
@@ -38,11 +42,62 @@ class ConfeccaoItem extends EntityId
      */
     private $insumo;
     
+    /**
+     *
+     * @var ConfeccaoItemQtde[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="ConfeccaoItemQtde",
+     *      mappedBy="confeccaoItem",
+     *      orphanRemoval=true
+     * )
+     */
+    private $qtdesGrade;
+    
+
     public function __construct()
     {
         ORM\Annotation::class;
         Assert\All::class;
+        $this->qtdesGrade = new ArrayCollection();
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function getConfeccao()
+    {
+        return $this->confeccao;
+    }
+
+    public function setConfeccao($confeccao)
+    {
+        $this->confeccao = $confeccao;
+    }
+
+    public function getInsumo()
+    {
+        return $this->insumo;
+    }
+
+    public function setInsumo($insumo)
+    {
+        $this->insumo = $insumo;
     }
     
-    
+    /**
+     *
+     * @return Collection|ConfeccaoItemQtde[]
+     */
+    public function getQtdesGrade(): Collection
+    {
+        return $this->qtdesGrade;
+    }
 }

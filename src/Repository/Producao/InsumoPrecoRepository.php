@@ -18,4 +18,5 @@ class InsumoPrecoRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, InsumoPreco::class);
     }
+    
 }

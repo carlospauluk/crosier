@@ -4,6 +4,9 @@ namespace App\Entity\Estoque;
 use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 
 /**
  *
@@ -43,11 +46,24 @@ class Grade extends EntityId
      * @var $unidadeProduto UnidadeProduto
      */
     private $unidadeProduto;
+    
+    /**
+     *
+     * @var GradeTamanho[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="GradeTamanho",
+     *      mappedBy="grade",
+     *      orphanRemoval=true
+     * )
+     */
+    private $tamanhos;
 
     public function __construct()
     {
         ORM\Annotation::class;
         Assert\All::class;
+        $this->tamanhos = new ArrayCollection();
     }
 
     public function getId()
@@ -88,5 +104,14 @@ class Grade extends EntityId
     public function setUnidadeProduto(?UnidadeProduto $unidadeProduto)
     {
         $this->unidadeProduto = $unidadeProduto;
+    }
+    
+    /**
+     *
+     * @return Collection|GradeTamanho[]
+     */
+    public function getTamanhos(): Collection
+    {
+        return $this->tamanhos;
     }
 }

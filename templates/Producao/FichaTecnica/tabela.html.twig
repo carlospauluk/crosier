@@ -1,0 +1,51 @@
+
+
+<div class="table-responsive-sm">
+	<table class="table table-sm table-striped table-hover">
+
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Insumo</th>
+				<th scope="col">Preço</th>
+
+				{% for gi in tabela.grade %}
+				<th scope="col">{{ gi.tamanho }}</th>
+				{% endfor %}
+
+				<th scope="col"></th>
+			</tr>
+		</thead>
+
+		<tbody>
+			{% for key, tipoInsumo in tabela.tiposInsumos %}
+			<tr>
+				<th colspan="9999">{{ key }}</th>
+			</tr>
+			{% for insumo in tipoInsumo.insumos %}
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>{{ insumo.descricao }}</td>
+				<td>{{ insumo.preco }}</td>
+
+				{% for gi in tabela.grade %}
+					<td scope="col">{{ attribute(insumo,'grade')[gi.ordem] }}</td>
+				{% endfor %}
+
+				<td class="text-right">
+					<button type="button" class="btn btn-primary" onclick="window.location.href='#'">
+						<i class="fas fa-wrench" aria-hidden="true"></i>
+					</button>
+
+					<button type="button" class="btn btn-danger" data-url="" data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal"
+						data-toggle="modal">
+						<i class="fa fa-trash" aria-hidden="true"></i>
+					</button>
+				</td>
+			</tr>
+			{% endfor %}
+			{% endfor %}
+		</tbody>
+
+	</table>
+</div>
