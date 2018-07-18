@@ -2,8 +2,11 @@
 namespace App\Controller\Producao;
 
 use App\Entity\Producao\Confeccao;
+use App\Entity\Producao\ConfeccaoItem;
 use App\Entity\Producao\Instituicao;
 use App\Entity\Producao\TipoArtigo;
+use App\Form\Producao\ConfeccaoItemType;
+use App\Form\Producao\ConfeccaoType;
 use App\Service\EntityIdSerializerService;
 use App\Utils\Repository\FilterData;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -11,13 +14,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Form\Producao\ConfeccaoType;
 
 class ConfeccaoController extends Controller
 {
 
     private $eSerializer;
-    
+
     public function __construct(EntityIdSerializerService $eSerializer)
     {
         Route::class;
@@ -32,7 +34,7 @@ class ConfeccaoController extends Controller
     public function findAllByTipoArtigoInstituicao(Request $request, Instituicao $instituicao, TipoArtigo $tipoArtigo)
     {
         $repo = $this->getDoctrine()->getRepository(Confeccao::class);
-        $rs = $repo->findAllByTipoArtigoInstituicao($instituicao,$tipoArtigo);
+        $rs = $repo->findAllByTipoArtigoInstituicao($instituicao, $tipoArtigo);
         
         $results = array(
             'results' => $rs
@@ -45,7 +47,7 @@ class ConfeccaoController extends Controller
         
         return new Response($json);
     }
-    
+
     /**
      *
      * @Route("/prod/confeccao/form/{id}", name="prod_confeccao_form", defaults={"id"=null}, requirements={"id"="\d+"})
@@ -75,7 +77,9 @@ class ConfeccaoController extends Controller
             $entityManager->persist($confeccao);
             $entityManager->flush();
             $this->addFlash('success', 'Registro salvo com sucesso!');
-            return $this->redirectToRoute('prod_confeccao_form', array('id' => $confeccao->getId()) );
+            return $this->redirectToRoute('prod_confeccao_form', array(
+                'id' => $confeccao->getId()
+            ));
         } else {
             $form->getErrors(true, false);
         }
@@ -84,7 +88,7 @@ class ConfeccaoController extends Controller
             'form' => $form->createView()
         ));
     }
-    
+
     /**
      *
      * @Route("/prod/confeccao/list/", name="prod_confeccao_list")
@@ -120,6 +124,68 @@ class ConfeccaoController extends Controller
         return $this->render('Producao/confeccaoList.html.twig', array(
             'dados' => $dados,
             'filter' => $params['filter']
+        ));
+    }
+
+    /**
+     *
+     * @Route("/prod/confeccao/item/delete/{id}/", name="prod_confeccao_item_delete", requirements={"id"="\d+"})
+     * @Method("POST")
+     *
+     */
+    public function delete(Request $request, ConfeccaoItem $item)
+    {
+        $confeccaoId = $item->getConfeccao()->getId();
+        if (! $this->isCsrfTokenValid('delete', $request->request->get('token'))) {
+            $this->addFlash('error', 'Erro interno do sistema.');
+        } else {
+            try {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($item);
+                $em->flush();
+                $this->addFlash('success', 'post.deleted_successfully');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erro ao deletar.');
+            }
+        }
+        
+        return $this->redirectToRoute('prod_fichaTecnica_form', array(
+            'id' => $confeccaoId
+        ));
+    }
+
+    /**
+     *
+     * @Route("/prod/confeccao/item/form/{id}", name="prod_confeccao_item_form", defaults={"id"=null})
+     *
+     */
+    public function itemForm(Request $request, ConfeccaoItem $item = null)
+    {
+        if (! $item) {
+            $item = new ConfeccaoItem();
+            $item->setInserted(new \DateTime('now'));
+            $item->setUpdated(new \DateTime('now'));
+        }
+        
+        $form = $this->createForm(ConfeccaoItemType::class, $item);
+        
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            $item = $form->getData();
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($item);
+            $entityManager->flush();
+            $this->addFlash('success', 'Registro salvo com sucesso!');
+            return $this->redirectToRoute('prod_confeccao_item_form', array(
+                'id' => $item->getId()
+            ));
+        } else {
+            $form->getErrors(true, false);
+        }
+        
+        return $this->render('Producao/confeccaoItemForm.html.twig', array(
+            'form' => $form->createView()
         ));
     }
 }

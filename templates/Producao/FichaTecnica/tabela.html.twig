@@ -5,14 +5,15 @@
 
 		<thead>
 			<tr>
-				<th>#</th>
+				<th class="text-center">#</th>
 				<th>Insumo</th>
 				<th>Preço</th>
 
 				{% for gi in tabela.grade %}
-				<th class="table-primary">{{ gi.tamanho }}</th>
+				<th class="table-primary text-center">{{ gi.tamanho }}</th>
 				{% endfor %}
 
+				<th></th>
 				<th></th>
 			</tr>
 		</thead>
@@ -20,41 +21,45 @@
 		<tbody>
 			{% for tipoInsumo, r in tabela.tiposInsumos %}
 			<tr>
-				<th colspan="9999" class="table-secondary"><h5 class="text-center">{{ tipoInsumo }}</h5></th>
+				<th colspan="9999" class="table-secondary"><h5 class="text-center">
+						{{ tipoInsumo }}
+					</h5></th>
 			</tr>
-    			{% for insumo in r.insumos %}
-    			<tr>
-    				<td><input type="checkbox" /></td>
-    				<td>{{ insumo.descricao }}</td>
-    				<td class="text-right">{{ insumo.preco|number_format(2, ',', '.') }}</td>
-    
-    				{% for gi in tabela.grade %}
-    					<td class="text-right">{{ attribute(insumo,'grade')[gi.ordem] }}</td>
-    				{% endfor %}
-    
-    				<td class="text-right">
-    					<button type="button" class="btn btn-primary" onclick="window.location.href='#'">
-    						<i class="fas fa-wrench" aria-hidden="true"></i>
-    					</button>
-    
-    					<button type="button" class="btn btn-danger" data-url="" data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal"
-    						data-toggle="modal">
-    						<i class="fa fa-trash" aria-hidden="true"></i>
-    					</button>
-    				</td>
-    			</tr>
-    			{% endfor %}
-    			<tr>
-    				<td></td>
-    				<td></td>
-    				<td></td>
-    
-    				{% for gi in tabela.grade %}
-    					<td class="text-right">{{ attribute(tabela.totalPorTipoInsumo,tipoInsumo)[gi.ordem] }}</td>
-    				{% endfor %}
-    
-    				<td></td>
-    			</tr>
+			{% for insumo in r.insumos %}
+			<tr>
+				<td class="text-center"><input type="checkbox" /></td>
+				<td>{{ insumo.descricao }}</td>
+				<td class="text-right">{{ insumo.preco|number_format(2, ',', '.') }}</td>
+
+				{% for gi in tabela.grade %}
+				<td class="text-right">{{ attribute(insumo,'grade')[gi.ordem] }}</td>
+				{% endfor %}
+
+				<td class="text-center">
+					<button type="button" class="btn btn-primary" onclick="window.location.href='{{ url('prod_confeccao_item_form', {id: insumo.item.id}) }}'">
+						<i class="fas fa-wrench" aria-hidden="true"></i>
+					</button>
+				</td>
+				<td class="text-center">
+					<button type="button" class="btn btn-danger" data-url="{{ url('prod_confeccao_item_delete', {id: insumo.item.id}) }}"
+						data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal" data-toggle="modal">
+						<i class="fa fa-trash" aria-hidden="true"></i>
+					</button>
+				</td>
+			</tr>
+			{% endfor %}
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+
+				{% for gi in tabela.grade %}
+				<td class="text-right">{{ attribute(tabela.totalPorTipoInsumo,tipoInsumo)[gi.ordem] }}</td>
+				{% endfor %}
+
+				<td></td>
+				<td></td>
+			</tr>
 			{% endfor %}
 		</tbody>
 

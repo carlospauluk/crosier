@@ -39,7 +39,7 @@
 				<select id="confeccao" name="confeccao" class="form-control"></select>
 			</div>
 			<div class="col-sm-2 text-right">
-				<button type="button" class="btn btn-secondary" onclick="window.location.replace('{{ url('prod_fichaTecnica_form') }}' + '/' + $('#confeccao').val())">
+				<button type="button" class="btn btn-secondary" onclick="window.location.assign('{{ url('prod_fichaTecnica_form') }}' + '/' + $('#confeccao').val())">
 					<i class="fas fa-sync" aria-hidden="true"></i> Carregar
 				</button>
 			</div>

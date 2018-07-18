@@ -22,11 +22,11 @@
 			</div>
 			<div class="col-sm-2 text-right">
 				<button type="button" class="btn btn-warning"
-					onclick="window.location.replace('{{ url('prod_confeccao_form') }}' + '/' + {{ confeccao.id }})">
+					onclick="window.location.assign('{{ url('prod_confeccao_form') }}' + '/' + {{ confeccao.id }})">
 					<i class="fas fa-wrench" aria-hidden="true"></i> Editar
 				</button>
 				<button type="button" class="btn btn-secondary"
-					onclick="window.location.replace('{{ url('prod_fichaTecnica_inicial') }}' + '/' + {{ confeccao.id }})">
+					onclick="window.location.assign('{{ url('prod_fichaTecnica_inicial') }}' + '/' + {{ confeccao.id }})">
 					<i class="fas fa-sync" aria-hidden="true"></i> Alternar
 				</button>
 			</div>
@@ -41,6 +41,7 @@
 
 {% block down_scripts %}
 
+{{ include('Util/confirmationModal.html.twig') }}
 
 <script>
 	$(document).ready(function() {

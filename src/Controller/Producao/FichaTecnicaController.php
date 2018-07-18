@@ -17,7 +17,7 @@ class FichaTecnicaController extends Controller
 {
 
     private $eSerializer;
-    
+
     private $logger;
 
     public function __construct(EntityIdSerializerService $eSerializer, LoggerInterface $logger)
@@ -103,13 +103,13 @@ class FichaTecnicaController extends Controller
         
         $tabela['grade'] = $repoGrade->findGradeArray($confeccao->getGrade());
         
-        
         $totalPorTipoInsumo = array();
         foreach ($itens as $ci) {
             $tipoInsumo = $ci->getInsumo()
                 ->getTipoInsumo()
                 ->getDescricao();
             $insumo = array();
+            $insumo['item']['id'] = $ci->getId();
             $insumo['descricao'] = $ci->getInsumo()->getDescricao();
             $precoAtual = $repoInsumo->findPrecoAtual($ci->getInsumo());
             $insumo['preco'] = $precoAtual->getPrecoCusto();
@@ -126,8 +126,6 @@ class FichaTecnicaController extends Controller
         
         return $this->render('Producao/FichaTecnica/form.html.twig', $params);
     }
-    
-        
     
     
 }
