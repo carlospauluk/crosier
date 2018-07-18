@@ -9,6 +9,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class ConfeccaoItemType extends AbstractType
 {
@@ -22,13 +23,15 @@ class ConfeccaoItemType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('confeccao', TextType::class, array(
+        $builder->add('confeccao', EntityType::class, array(
             'label' => 'Confecção',
+            'class' => Confeccao::class,
+            'choice_label' => 'descricao',
             'disabled' => true
         ));
         
-        $repo = $this->doctrine->getRepository(ConfeccaoItem::class);
-        $builder->get('confeccao')->addModelTransformer(new EntityIdTransformer($repo));
+//         $repo = $this->doctrine->getRepository(ConfeccaoItem::class);
+//         $builder->get('confeccao')->addModelTransformer(new EntityIdTransformer($repo));
         
         // $builder->add('confeccao:insumo:descricao', TextType::class, array(
         // 'label' => 'Insumo'
