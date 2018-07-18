@@ -115,7 +115,7 @@ class MovimentacaoType extends AbstractType
         ));
         
         $builder->add('dtUtil', HiddenType::class);
-        $builder->get('dtUtil')->addViewTransformer(new DateTimeToLocalizedStringTransformer(null, null, -1, -1, 0, 'dd/MM/yyyy'));
+        $builder->get('dtUtil')->addViewTransformer(new DateTimeToLocalizedStringTransformer(null, null, - 1, - 1, 0, 'dd/MM/yyyy'));
         
         $builder->add('pessoa', ChoiceType::class, array(
             'choice_loader' => new ChoiceLoader($builder, $this->doctrine->getRepository(Pessoa::class), 'getPessoa', function ($pessoa) {
@@ -206,18 +206,13 @@ class MovimentacaoType extends AbstractType
             'data' => $centroCusto,
             'data_class' => null
         ));
-        $builder->get('centroCusto')->addViewTransformer(
-            new CallbackTransformer(
-                
-                function ($entityId) {
-                    return $entityId->getId();
-                }
-                ,
-                function ($id) {
-                    return $this->doctrine->getRepository(CentroCusto::class)->find($id);
-                }
-            )
-        );
+        $builder->get('centroCusto')->addViewTransformer(new CallbackTransformer(
+        function ($entityId) {
+            return $entityId->getId();
+        }, function ($id) {
+            return $this->doctrine->getRepository(CentroCusto::class)
+                ->find($id);
+        }));
         
         // Adicionando lógicas para exibição do formulário
         $builder->addEventListener(FormEvents::PRE_SET_DATA, array(

@@ -1,49 +1,60 @@
 
 
 <div class="table-responsive-sm">
-	<table class="table table-sm table-striped table-hover">
+	<table class="table table-sm table-bordered table-hover">
 
 		<thead>
 			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Insumo</th>
-				<th scope="col">Preço</th>
+				<th>#</th>
+				<th>Insumo</th>
+				<th>Preço</th>
 
 				{% for gi in tabela.grade %}
-				<th scope="col">{{ gi.tamanho }}</th>
+				<th class="table-primary">{{ gi.tamanho }}</th>
 				{% endfor %}
 
-				<th scope="col"></th>
+				<th></th>
 			</tr>
 		</thead>
 
 		<tbody>
-			{% for key, tipoInsumo in tabela.tiposInsumos %}
+			{% for tipoInsumo, r in tabela.tiposInsumos %}
 			<tr>
-				<th colspan="9999">{{ key }}</th>
+				<th colspan="9999" class="table-secondary"><h5 class="text-center">{{ tipoInsumo }}</h5></th>
 			</tr>
-			{% for insumo in tipoInsumo.insumos %}
-			<tr>
-				<td><input type="checkbox" /></td>
-				<td>{{ insumo.descricao }}</td>
-				<td>{{ insumo.preco }}</td>
-
-				{% for gi in tabela.grade %}
-					<td scope="col">{{ attribute(insumo,'grade')[gi.ordem] }}</td>
-				{% endfor %}
-
-				<td class="text-right">
-					<button type="button" class="btn btn-primary" onclick="window.location.href='#'">
-						<i class="fas fa-wrench" aria-hidden="true"></i>
-					</button>
-
-					<button type="button" class="btn btn-danger" data-url="" data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal"
-						data-toggle="modal">
-						<i class="fa fa-trash" aria-hidden="true"></i>
-					</button>
-				</td>
-			</tr>
-			{% endfor %}
+    			{% for insumo in r.insumos %}
+    			<tr>
+    				<td><input type="checkbox" /></td>
+    				<td>{{ insumo.descricao }}</td>
+    				<td class="text-right">{{ insumo.preco|number_format(2, ',', '.') }}</td>
+    
+    				{% for gi in tabela.grade %}
+    					<td class="text-right">{{ attribute(insumo,'grade')[gi.ordem] }}</td>
+    				{% endfor %}
+    
+    				<td class="text-right">
+    					<button type="button" class="btn btn-primary" onclick="window.location.href='#'">
+    						<i class="fas fa-wrench" aria-hidden="true"></i>
+    					</button>
+    
+    					<button type="button" class="btn btn-danger" data-url="" data-token="{{ csrf_token('delete') }}" data-target="#confirmationModal"
+    						data-toggle="modal">
+    						<i class="fa fa-trash" aria-hidden="true"></i>
+    					</button>
+    				</td>
+    			</tr>
+    			{% endfor %}
+    			<tr>
+    				<td></td>
+    				<td></td>
+    				<td></td>
+    
+    				{% for gi in tabela.grade %}
+    					<td class="text-right">{{ attribute(tabela.totalPorTipoInsumo,tipoInsumo)[gi.ordem] }}</td>
+    				{% endfor %}
+    
+    				<td></td>
+    			</tr>
 			{% endfor %}
 		</tbody>
 

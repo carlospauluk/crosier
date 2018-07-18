@@ -7,6 +7,7 @@ use App\Entity\Producao\ConfeccaoItem;
 use App\Entity\Producao\Insumo;
 use App\Entity\Producao\TipoArtigo;
 use App\Service\EntityIdSerializerService;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,12 +17,15 @@ class FichaTecnicaController extends Controller
 {
 
     private $eSerializer;
+    
+    private $logger;
 
-    public function __construct(EntityIdSerializerService $eSerializer)
+    public function __construct(EntityIdSerializerService $eSerializer, LoggerInterface $logger)
     {
         Route::class;
         Method::class;
         $this->eSerializer = $eSerializer;
+        $this->logger = $logger;
     }
 
     /**
@@ -99,21 +103,31 @@ class FichaTecnicaController extends Controller
         
         $tabela['grade'] = $repoGrade->findGradeArray($confeccao->getGrade());
         
+        
+        $totalPorTipoInsumo = array();
         foreach ($itens as $ci) {
-            
+            $tipoInsumo = $ci->getInsumo()
+                ->getTipoInsumo()
+                ->getDescricao();
             $insumo = array();
             $insumo['descricao'] = $ci->getInsumo()->getDescricao();
             $precoAtual = $repoInsumo->findPrecoAtual($ci->getInsumo());
             $insumo['preco'] = $precoAtual->getPrecoCusto();
             
             $insumo['grade'] = $repoConfeccaoItem->findGradeMontada($ci);
+            foreach ($insumo['grade'] as $gOrdem => $gQtde) {
+                $totalPorTipoInsumo[$tipoInsumo][$gOrdem] = isset($totalPorTipoInsumo[$tipoInsumo][$gOrdem]) ? $totalPorTipoInsumo[$tipoInsumo][$gOrdem] + $gQtde : $gQtde;
+            }
             
-            $tabela['tiposInsumos'][$ci->getInsumo()
-                ->getTipoInsumo()
-                ->getDescricao()]['insumos'][] = $insumo;
+            $tabela['tiposInsumos'][$tipoInsumo]['insumos'][] = $insumo;
         }
+        $tabela['totalPorTipoInsumo'] = $totalPorTipoInsumo;
         $params['tabela'] = $tabela;
         
         return $this->render('Producao/FichaTecnica/form.html.twig', $params);
     }
+    
+        
+    
+    
 }

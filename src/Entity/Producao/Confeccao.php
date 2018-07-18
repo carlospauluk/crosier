@@ -52,6 +52,20 @@ class Confeccao extends EntityId
 
     /**
      *
+     * @ORM\Column(name="margem_padrao", type="decimal", precision=15, scale=2, nullable=false)
+     * @Assert\NotBlank(message="O campo 'margem_padrao' deve ser informado")
+     */
+    private $margemPadrao;
+
+    /**
+     *
+     * @ORM\Column(name="custo_operacional_padrao", type="decimal", precision=15, scale=2, nullable=false)
+     * @Assert\NotBlank(message="O campo 'custo_operacional_padrao' deve ser informado")
+     */
+    private $custoOperacionalPadrao;
+
+    /**
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\Producao\Instituicao")
      * @ORM\JoinColumn(name="instituicao_id", nullable=false)
      *
@@ -179,6 +193,26 @@ class Confeccao extends EntityId
     public function getCustoFinanceiroPadrao()
     {
         return $this->custoFinanceiroPadrao;
+    }
+
+    public function getMargemPadrao()
+    {
+        return $this->margemPadrao;
+    }
+
+    public function setMargemPadrao($margemPadrao)
+    {
+        $this->margemPadrao = $margemPadrao;
+    }
+
+    public function getCustoOperacionalPadrao()
+    {
+        return $this->custoOperacionalPadrao;
+    }
+
+    public function setCustoOperacionalPadrao($custoOperacionalPadrao)
+    {
+        $this->custoOperacionalPadrao = $custoOperacionalPadrao;
     }
 
     public function setCustoFinanceiroPadrao($custoFinanceiroPadrao)

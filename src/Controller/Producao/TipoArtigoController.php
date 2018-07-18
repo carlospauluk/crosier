@@ -45,12 +45,12 @@ class TipoArtigoController extends Controller
     
     /**
      *
-     * @Route("/prod/tipoartigo/findAll", name="prod_tipoArtigo_findAll")
+     * @Route("/prod/tipoartigo/findAll/{str}", name="prod_tipoArtigo_findAll", defaults={"str"=null})
      */
-    public function findAll(Request $request)
+    public function findAll(Request $request, $str)
     {
         $repo = $this->getDoctrine()->getRepository(TipoArtigo::class);
-        $rs = $repo->findAll();
+        $rs = $repo->findAll($str);
         
         $results = array(
             'results' => $rs
