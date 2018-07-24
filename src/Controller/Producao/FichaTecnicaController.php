@@ -111,6 +111,7 @@ class FichaTecnicaController extends Controller
             $insumo = array();
             $insumo['item']['id'] = $ci->getId();
             $insumo['descricao'] = $ci->getInsumo()->getDescricao();
+            $insumo['unidadeProduto'] = $ci->getInsumo()->getUnidadeProduto()->getLabel();
             $precoAtual = $repoInsumo->findPrecoAtual($ci->getInsumo());
             $insumo['preco'] = $precoAtual->getPrecoCusto();
             

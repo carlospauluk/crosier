@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Producao\ConfeccaoItemQtde;
 
 class ConfeccaoController extends Controller
 {
@@ -161,31 +162,75 @@ class ConfeccaoController extends Controller
      */
     public function itemForm(Request $request, ConfeccaoItem $item = null)
     {
-        if (! $item) {
-            $item = new ConfeccaoItem();
-            $item->setInserted(new \DateTime('now'));
-            $item->setUpdated(new \DateTime('now'));
+        $itemA = array();
+        if ($item) {
+            $itemA['id'] = $item->getId();
+            $itemA['confeccao_id'] = $item->getConfeccao()->getId();
+            $itemA['unidade_produto_id'] = $item->getInsumo()->getUnidadeProduto()->getId();
+            $itemA['grade_id'] = $item->getConfeccao()->getGrade()->getId();
+            
+            $r = $this->getDoctrine()->getRepository(ConfeccaoItem::class);
+            $gradeMontada = $r->findGradeMontada($item);
+            
+            foreach ($gradeMontada as $key=>$value) {
+                $itemA['qtde_gt_' . $key] = $value;
+            }
         }
         
-        $form = $this->createForm(ConfeccaoItemType::class, $item);
+        $form = $this->createForm(ConfeccaoItemType::class, $itemA);
         
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
             $item = $form->getData();
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($item);
-            $entityManager->flush();
+            
+            $this->persistConfeccaoItem($item);
+            
             $this->addFlash('success', 'Registro salvo com sucesso!');
             return $this->redirectToRoute('prod_confeccao_item_form', array(
-                'id' => $item->getId()
+                'id' => $item['id']
             ));
         } else {
             $form->getErrors(true, false);
         }
         
         return $this->render('Producao/confeccaoItemForm.html.twig', array(
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'confeccaoId' => $itemA['confeccao_id']
         ));
     }
+    
+    public function persistConfeccaoItem($itemArr) {
+        $entityManager = $this->getDoctrine()->getManager();        
+        
+        // deleta todos os prod_confeccao_item_qtde
+        $r = $this->getDoctrine()->getRepository(ConfeccaoItem::class);
+        $ci = $r->find($itemArr['id']);
+        $r->deleteAllQtdes($ci);
+        
+        
+        $r = $this->getDoctrine()->getRepository(ConfeccaoItem::class);
+        $gradeMontada = $r->findGradeMontada($ci);
+        
+        foreach ($ci->getConfeccao()->getGrade()->getTamanhos() as $gt) {
+        
+//         foreach ($gradeMontada as $key=>$value) {
+            $item = new ConfeccaoItemQtde();
+            $qtde = $itemArr['qtde_gt_' . $gt->getOrdem()];
+            $item->setQtde($qtde);
+            $item->setConfeccaoItem($ci);
+            $item->setGradeTamanho($gt);
+            
+            $item->setEstabelecimento(1);
+            $item->setInserted(new \DateTime('now'));
+            $item->setUpdated(new \DateTime('now'));
+            $item->setUserInserted(1);
+            $item->setUserUpdated(1);
+            
+            $entityManager->persist($item);
+        }
+        
+        $entityManager->flush();
+    }
+    
 }

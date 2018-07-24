@@ -55,4 +55,13 @@ class ConfeccaoItemRepository extends ServiceEntityRepository
         
         return $mGrade;
     }
+    
+    public function deleteAllQtdes(ConfeccaoItem $ci) {
+        $ql = "DELETE FROM App\Entity\Producao\ConfeccaoItemQtde ciq WHERE ciq.confeccaoItem = :confeccaoItem";
+        $query = $this->getEntityManager()->createQuery($ql);
+        $query->setParameters(array(
+            'confeccaoItem' => $ci
+        ));
+        $query->execute();
+    }
 }

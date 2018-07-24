@@ -28,7 +28,8 @@
 			{% for insumo in r.insumos %}
 			<tr>
 				<td class="text-center"><input type="checkbox" /></td>
-				<td>{{ insumo.descricao }}</td>
+				<td><div class="text-left" style="float:left">{{ insumo.descricao }}</div>
+				<div class="text-right">{{ insumo.unidadeProduto }}</div></td>
 				<td class="text-right">{{ insumo.preco|number_format(2, ',', '.') }}</td>
 
 				{% for gi in tabela.grade %}
