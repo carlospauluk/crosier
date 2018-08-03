@@ -3,7 +3,7 @@ namespace App\Repository\Producao;
 
 use App\Entity\Producao\Instituicao;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Instituicao.
@@ -14,7 +14,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 class InstituicaoRepository extends ServiceEntityRepository
 {
 
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Instituicao::class);
     }

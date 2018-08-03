@@ -3,7 +3,7 @@ namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\Grade;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Grade.
@@ -14,7 +14,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 class GradeRepository extends ServiceEntityRepository
 {
 
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Grade::class);
     }
@@ -38,5 +38,23 @@ class GradeRepository extends ServiceEntityRepository
         }
         
         return $r;
+    }
+    
+    public function findByGradeCodigoAndTamanho($gradeCodigo, $tamanho) {
+        
+        $ql = "SELECT gt FROM App\Entity\Estoque\GradeTamanho gt JOIN App\Entity\Estoque\Grade g WHERE gt.grade = g AND g.codigo = :gradeCodigo AND gt.tamanho = :tamanho";
+        $query = $this->getEntityManager()->createQuery($ql);
+        $query->setParameters(array(
+            'gradeCodigo' => $gradeCodigo,
+            'tamanho' => $tamanho
+        ));
+        
+        $results = $query->getResult();
+        
+        if (count($results) > 1) {
+            throw new \Exception('Mais de um gradeTamanho encontrado para [' . $gradeCodigo . '] e [' . $tamanho . ']');
+        }
+        
+        return count($results) == 1 ? $results[0] : null;
     }
 }

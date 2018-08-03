@@ -8,7 +8,6 @@ use App\Entity\Producao\Insumo;
 use App\Entity\Producao\TipoArtigo;
 use App\Service\EntityIdSerializerService;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,7 +22,6 @@ class FichaTecnicaController extends Controller
     public function __construct(EntityIdSerializerService $eSerializer, LoggerInterface $logger)
     {
         Route::class;
-        Method::class;
         $this->eSerializer = $eSerializer;
         $this->logger = $logger;
     }

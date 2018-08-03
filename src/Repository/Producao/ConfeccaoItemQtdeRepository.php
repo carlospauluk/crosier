@@ -1,9 +1,9 @@
 <?php
 namespace App\Repository\Producao;
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use App\Entity\Producao\ConfeccaoItemQtde;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade ConfeccaoItemQtde.
@@ -13,7 +13,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class ConfeccaoItemQtdeRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, ConfeccaoItemQtde::class);
     }

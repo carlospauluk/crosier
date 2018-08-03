@@ -4,7 +4,7 @@ namespace App\Repository\Producao;
 use App\Entity\Producao\Confeccao;
 use App\Entity\Producao\ConfeccaoItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade ConfeccaoItem.
@@ -15,7 +15,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 class ConfeccaoItemRepository extends ServiceEntityRepository
 {
 
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, ConfeccaoItem::class);
     }

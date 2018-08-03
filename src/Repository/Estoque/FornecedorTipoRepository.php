@@ -3,7 +3,7 @@ namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\FornecedorTipo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade FornecedorTipo.
@@ -14,7 +14,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 class FornecedorTipoRepository extends ServiceEntityRepository
 {
 
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, FornecedorTipo::class);
     }

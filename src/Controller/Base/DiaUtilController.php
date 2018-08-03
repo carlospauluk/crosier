@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
 class DiaUtilController extends Controller
 {
@@ -14,13 +13,11 @@ class DiaUtilController extends Controller
     public function __construct()
     {
         Route::class;
-        Method::class;
     }
     
     /**
      *
      * @Route("/base/diautil/findProximoDiaUtilFinanceiro/", name="findProximoDiaUtilFinanceiro")
-     * @Method("GET")
      *
      */
     public function findProximoDiaUtilFinanceiro(Request $request) {

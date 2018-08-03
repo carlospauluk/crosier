@@ -22,3 +22,7 @@ div.paceDiv {
    
    display: none;
 }
+
+.email {
+	text-transform: lowercase;
+}

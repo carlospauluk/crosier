@@ -4,7 +4,6 @@ namespace App\Controller\Producao;
 use App\Entity\Producao\Instituicao;
 use App\Entity\Producao\TipoArtigo;
 use App\Service\EntityIdSerializerService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +17,6 @@ class TipoArtigoController extends Controller
     public function __construct(EntityIdSerializerService $eSerializer)
     {
         Route::class;
-        Method::class;
         $this->eSerializer = $eSerializer;
     }
 

@@ -54,6 +54,22 @@ class Pessoa extends EntityId
      */
     private $nomeFantasia;
 
+    // Abaixo os atributos 'calculados': Somente afins de agilidade para setar e recuperar um endereço principal da pessoa em determinada situação.
+    
+    // Mais tarde isso deveria estar na tabela 'relacionamento' como campos reais.
+    
+    /**
+     *
+     * @var Endereco
+     */
+    private $endereco;
+
+    private $fone1;
+
+    private $fone2;
+
+    private $email;
+
     public function getId()
     {
         return $this->id;
@@ -102,6 +118,46 @@ class Pessoa extends EntityId
     public function setNomeFantasia($nomeFantasia)
     {
         $this->nomeFantasia = $nomeFantasia;
+    }
+
+    public function getEndereco(): ?Endereco
+    {
+        return $this->endereco;
+    }
+
+    public function setEndereco(?Endereco $endereco)
+    {
+        $this->endereco = $endereco;
+    }
+
+    public function getFone1()
+    {
+        return $this->fone1;
+    }
+
+    public function setFone1($fone1)
+    {
+        $this->fone1 = $fone1;
+    }
+
+    public function getFone2()
+    {
+        return $this->fone2;
+    }
+
+    public function setFone2($fone2)
+    {
+        $this->fone2 = $fone2;
+    }
+
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    public function setEmail($email)
+    {
+        $this->email = $email;
     }
 }
 

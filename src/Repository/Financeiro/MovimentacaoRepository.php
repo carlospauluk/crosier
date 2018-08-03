@@ -2,9 +2,9 @@
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Movimentacao;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use App\Utils\Repository\WhereBuilder;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Movimentacao.
@@ -15,7 +15,7 @@ use App\Utils\Repository\WhereBuilder;
 class MovimentacaoRepository extends ServiceEntityRepository
 {
 
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Movimentacao::class);
     }

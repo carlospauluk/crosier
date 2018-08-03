@@ -1,22 +1,22 @@
 <?php
 namespace App\Form\DataTransformer;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use App\Entity\Base\EntityId;
-use Doctrine\Common\Persistence\ObjectRepository;
 
 class EntityIdTransformer implements DataTransformerInterface
 {
 
     private $repo;
 
-    public function getRepo(): ObjectRepository
+    public function getRepo(): ServiceEntityRepository
     {
         return $this->repo;
     }
 
-    public function setRepo(ObjectRepository $repo)
+    public function setRepo(ServiceEntityRepository $repo)
     {
         $this->repo = $repo;
     }

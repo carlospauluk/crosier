@@ -24,7 +24,6 @@ class ConfeccaoController extends Controller
     public function __construct(EntityIdSerializerService $eSerializer)
     {
         Route::class;
-        Method::class;
         $this->eSerializer = $eSerializer;
     }
 

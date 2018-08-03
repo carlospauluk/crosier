@@ -1,0 +1,78 @@
+
+<div class="card">
+	<div class="card-header">
+
+		<div class="row">
+			<div class="col-12">
+				<h3>Emissão Fiscal - PV</h3>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="card-body" style="display:;">
+
+		{{ include('Util/flashes.html.twig') }}
+
+
+		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+
+		{{ form_start(form) }}
+		
+		{{ form_widget(form.pessoa_id) }}
+
+		{{ form_row(form.tipo) }}
+		{{ form_row(form.tipoPessoa) }}
+
+		{{ form_row(form.cpf) }}
+		{{ form_row(form.nome) }}
+
+		{{ form_row(form.cnpj) }}
+		{{ form_row(form.razao_social) }}
+		{{ form_row(form.nome_fantasia) }}
+
+		{{ form_row(form.fone1) }}
+		{{ form_row(form.email) }}
+
+
+		<div class="form-group row">
+			{{ form_label(form.cep) }}
+			<div class="col-sm-5">
+				{{ form_errors(form.cep) }}
+				{{ form_widget(form.cep) }}
+				{{ form_help(form.cep) }}
+			</div>
+			<div class="col-sm-5">
+				<button type="button" value="Consultar" class="btn btn-warning" id="pesquisar_cep">
+					<i class="fas fa-undo" aria-hidden="true"></i> Consultar
+				</button>
+			</div>
+		</div>
+
+
+		{{ form_row(form.logradouro) }}
+		{{ form_row(form.numero) }}
+		{{ form_row(form.complemento) }}
+		{{ form_row(form.bairro) }}
+		{{ form_row(form.cidade) }}
+		{{ form_row(form.estado) }}
+
+
+		<div class="row">
+			<div class="col text-right">
+				<button type="submit" class="btn btn-primary btn-lg" value="Faturar">
+					<i class="fas fa-save" aria-hidden="true"></i> Faturar
+				</button>
+
+				<button type="button" value="Resetar" class="btn btn-secondary" data-url="{{ url('fis_emissaofiscalpv_form', {id: venda.id}) }}"
+					data-target="#confirmationModal" data-toggle="modal">
+					<i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+				</button>
+			</div>
+		</div>
+		{{ form_end(form, {'render_rest': false}) }}
+
+
+	</div>
+</div>
+

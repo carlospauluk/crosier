@@ -3,8 +3,8 @@ namespace App\Repository\Base;
 
 use App\Entity\Base\DiaUtil;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade DiaUtil.
@@ -17,7 +17,7 @@ class DiaUtilRepository extends ServiceEntityRepository
 
     private $logger;
 
-    public function __construct(ManagerRegistry $registry, LoggerInterface $logger)
+    public function __construct(RegistryInterface $registry, LoggerInterface $logger)
     {
         parent::__construct($registry, DiaUtil::class);
         $this->logger = $logger;

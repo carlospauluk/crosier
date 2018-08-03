@@ -1,10 +1,10 @@
 <?php
 namespace App\Repository\Producao;
 
+use App\Entity\Producao\Instituicao;
 use App\Entity\Producao\TipoArtigo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
-use App\Entity\Producao\Instituicao;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade TipoArtigo .
@@ -15,7 +15,7 @@ use App\Entity\Producao\Instituicao;
 class TipoArtigoRepository extends ServiceEntityRepository
 {
 
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, TipoArtigo::class);
     }
