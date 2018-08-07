@@ -18,7 +18,9 @@
 		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 
 		{{ form_start(form) }}
-		
+
+		{{ form_row(form._info_status) }}
+
 		{{ form_widget(form.pessoa_id) }}
 
 		{{ form_row(form.tipo) }}

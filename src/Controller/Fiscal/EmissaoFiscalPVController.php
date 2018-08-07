@@ -10,18 +10,22 @@ use App\Form\Fiscal\EmissaoFiscalPVType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Business\Fiscal\NotaFiscalBusiness;
 
 class EmissaoFiscalPVController extends Controller
 {
 
     private $vendaBusiness;
 
-    public function __construct(VendaBusiness $vendaBusiness)
+    private $notaFiscalBusiness;
+
+    public function __construct(VendaBusiness $vendaBusiness, NotaFiscalBusiness $notaFiscalBusiness)
     {
         Route::class;
         $this->vendaBusiness = $vendaBusiness;
+        $this->notaFiscalBusiness = $notaFiscalBusiness;
     }
-    
+
     /**
      *
      * @Route("/fis/emissaofiscalpv/ini/", name="fis_emissaofiscalpv_ini")
@@ -30,7 +34,6 @@ class EmissaoFiscalPVController extends Controller
     {
         return $this->render('Fiscal/emissaoFiscalPV/ini.html.twig');
     }
-    
 
     /**
      *
@@ -43,11 +46,10 @@ class EmissaoFiscalPVController extends Controller
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         }
         
-        // Se foi passado via post
-        $data = $request->request->get('emissao_fiscal_pv');
-        
         $notaFiscal = null;
         
+        // Se foi passado via post
+        $data = $request->request->get('emissao_fiscal_pv');
         if (! $data) {
             // Verifica se a venda já tem uma NotaFiscal associada
             $notaFiscal = $this->getDoctrine()
@@ -61,26 +63,27 @@ class EmissaoFiscalPVController extends Controller
                 $pessoaDestinatario = new Pessoa();
                 $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
                 $pessoaDestinatario->setTipoPessoa('PESSOA_FISICA');
+            } else {
+                $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
             }
             $data = $this->notaFiscal2FormData($notaFiscal);
         } else {
-            $this->vendaBusiness->saveNotaFiscalVenda($venda, $data);
+            $notaFiscal = $this->vendaBusiness->saveNotaFiscalVenda($venda, $data);
+            $this->notaFiscalBusiness->faturar($notaFiscal);
         }
+        
         
         $form = $this->createForm(EmissaoFiscalPVType::class, $data);
         
         // Chamado aqui para setar os 'totalItem'
         $this->vendaBusiness->recalcularTotais($venda);
         
-        return $this->render('Fiscal/emissaoFiscalPV/form.html.twig', array(
+        $response = $this->render('Fiscal/emissaoFiscalPV/form.html.twig', array(
             'form' => $form->createView(),
             'venda' => $venda,
             'notaFiscal' => $notaFiscal
         ));
-    }
-    
-    public function findPessoaByDocumento(Request $request) {
-        
+        return $response;
     }
 
     /**
@@ -98,6 +101,21 @@ class EmissaoFiscalPVController extends Controller
         } else {
             $tipoPessoa = 'PESSOA_FISICA';
         }
+        
+        $formData['permiteFaturamento'] = $this->notaFiscalBusiness->permiteFaturamento($notaFiscal);
+        
+        $formData['uuid'] = $notaFiscal->getUuid();
+        $formData['dtEmissao'] = $notaFiscal->getDtEmissao();
+        $formData['dtSaiEnt'] = $notaFiscal->getDtSaiEnt();
+        $formData['numero'] = $notaFiscal->getNumero();
+        $formData['serie'] = $notaFiscal->getSerie();
+        $formData['ambiente'] = $notaFiscal->getAmbiente();
+        $formData['spartacusStatus'] = $notaFiscal->getSpartacusStatus();
+        $formData['spartacusStatusReceita'] = $notaFiscal->getSpartacusStatusReceita();
+        $formData['spartacusMensretornoReceita'] = $notaFiscal->getSpartacusMensretornoReceita();
+        $formData['spartacusMensretorno'] = $notaFiscal->getSpartacusMensretorno();
+        
+        $formData['_info_status'] = $notaFiscal->getInfoStatus();
         
         $formData['tipo'] = $notaFiscal->getTipoNotaFiscal();
         $formData['tipoPessoa'] = $tipoPessoa;

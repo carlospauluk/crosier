@@ -8,14 +8,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
- * 
- *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NotaFiscalVendaRepository")
  * @ORM\Table(name="fis_nf_venda")
  */
 class NotaFiscalVenda extends EntityId
 {
-    
+
     /**
      *
      * @ORM\Id()
@@ -47,6 +45,16 @@ class NotaFiscalVenda extends EntityId
     {
         ORM\Annotation::class;
         Assert\All::class;
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     public function getNotaFiscal(): ?NotaFiscal

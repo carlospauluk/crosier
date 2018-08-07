@@ -10,8 +10,13 @@
 	<div class="card-header">
 
 		<div class="row">
-			<div class="col-12">
-				<h3>Emissão Fiscal - PV</h3>
+			<div class="col-8">
+				<h3>Emissão Fiscal por PV</h3>
+			</div>
+			<div class="col-4 text-right">
+				<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('fis_emissaofiscalpv_ini') }}'">
+					<i class="fas fa-sync" aria-hidden="true"></i> Voltar
+				</button>
 			</div>
 		</div>
 
@@ -81,9 +86,7 @@
 
 			</table>
 		</div>
-
 		{{ include('Fiscal/emissaoFiscalPV/formFiscal.html.twig') }}
-
 	</div>
 </div>
 

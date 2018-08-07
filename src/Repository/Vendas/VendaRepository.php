@@ -21,6 +21,7 @@ class VendaRepository extends ServiceEntityRepository
     
     public function findByDtVendaAndPV(\DateTime $dtVenda, $pv)
     {
+        $dtVenda->setTime(0,0,0,0);
         $ql = "SELECT v FROM App\Entity\Vendas\Venda v WHERE v.dtVenda = :dtVenda AND v.pv = :pv";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(

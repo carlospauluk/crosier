@@ -70,6 +70,8 @@ class Pessoa extends EntityId
 
     private $email;
 
+    private $inscricaoEstadual;
+
     public function getId()
     {
         return $this->id;
@@ -158,6 +160,16 @@ class Pessoa extends EntityId
     public function setEmail($email)
     {
         $this->email = $email;
+    }
+
+    public function getInscricaoEstadual()
+    {
+        return $this->inscricaoEstadual;
+    }
+
+    public function setInscricaoEstadual($inscricaoEstadual)
+    {
+        $this->inscricaoEstadual = $inscricaoEstadual;
     }
 }
 

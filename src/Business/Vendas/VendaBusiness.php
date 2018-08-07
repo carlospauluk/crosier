@@ -1,29 +1,29 @@
 <?php
 namespace App\Business\Vendas;
 
+use App\Business\Base\EntityIdBusiness;
+use App\Entity\Base\Pessoa;
 use App\Entity\Estoque\Grade;
 use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\ProdutoPreco;
+use App\Entity\Fiscal\FinalidadeNF;
+use App\Entity\Fiscal\IndicadorFormaPagto;
 use App\Entity\Fiscal\NCM;
+use App\Entity\Fiscal\NotaFiscal;
+use App\Entity\Fiscal\NotaFiscalItem;
+use App\Entity\Fiscal\NotaFiscalVenda;
 use App\Entity\RH\Funcionario;
 use App\Entity\Vendas\PlanoPagto;
 use App\Entity\Vendas\TipoVenda;
 use App\Entity\Vendas\Venda;
 use App\Entity\Vendas\VendaItem;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use App\Entity\Fiscal\NotaFiscal;
-use App\Entity\Base\Config;
-use App\Entity\Fiscal\IndicadorFormaPagto;
-use App\Entity\Base\Pessoa;
-use App\Entity\Fiscal\NotaFiscalItem;
-use App\Entity\Fiscal\NotaFiscalVenda;
-use App\Business\Base\EntityIdBusiness;
 
 class VendaBusiness
 {
 
     private $doctrine;
-    
+
     private $entityIdBusiness;
 
     public function __construct(RegistryInterface $doctrine, EntityIdBusiness $entityIdBusiness)
@@ -77,6 +77,7 @@ class VendaBusiness
             $pv = $cabecalho[1];
             
             $dtVenda = \DateTime::createFromFormat('d/m/Y', $cabecalho[7]);
+            $dtVenda->setTime(0, 0, 0, 0);
             
             $vendaRepo = $this->doctrine->getRepository(Venda::class);
             $venda = $vendaRepo->findByDtVendaAndPV($dtVenda, $pv);
@@ -85,6 +86,9 @@ class VendaBusiness
                 $venda = new Venda();
                 $venda->setPv($pv);
                 $venda->setDtVenda($dtVenda);
+                
+                $venda->setMesano($dtVenda->format('Ym'));
+                
                 $venda->setTipoVenda($this->doctrine->getRepository(TipoVenda::class)
                     ->find(1));
                 $planoPagto = $this->doctrine->getRepository(PlanoPagto::class)->findByDescricao($cabecalho[3]);
@@ -98,8 +102,12 @@ class VendaBusiness
                 
                 $venda->setDeletado(false);
                 
-                $venda->setDescontoPlano($cabecalho[6]);
-                $venda->setValorTotal($cabecalho[5]);
+                $descontoPlano = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($cabecalho[6]);
+                $venda->setDescontoPlano($descontoPlano);
+                
+                $valorTotal = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($cabecalho[5]);
+                $venda->setValorTotal($valorTotal);
+                
                 $venda->setSubTotal(abs($venda->getValorTotal()) - abs($venda->getDescontoPlano()));
                 $venda->setDescontoEspecial(0.0);
                 
@@ -119,6 +127,7 @@ class VendaBusiness
                     $vendaItem = new VendaItem();
                     $venda->addItem($vendaItem);
                     $vendaItem->setVenda($venda);
+                    $this->entityIdBusiness->handlePersist($vendaItem);
                     $vendaItem->setNcm($ncm);
                     
                     $vendaItem->setNcmExistente($this->doctrine->getRepository(NCM::class)
@@ -126,8 +135,11 @@ class VendaBusiness
                     
                     $vendaItem->setOrdem($ordem);
                     
-                    $vendaItem->setQtde($linhaItem[5]);
-                    $vendaItem->setPrecoVenda($linhaItem[6]);
+                    $qtde = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($linhaItem[5]);
+                    $vendaItem->setQtde($qtde);
+                    
+                    $precoVenda = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($linhaItem[6]);
+                    $vendaItem->setPrecoVenda($precoVenda);
                     
                     if ($reduzido == '88888') {
                         $vendaItem->setGradeTamanho(null);
@@ -150,7 +162,11 @@ class VendaBusiness
                         
                         $precoAtual = $this->doctrine->getRepository(ProdutoPreco::class)->findPrecoEmDataVenda($produto, $dtVenda);
                         
-                        $vendaItem->setAlteracaoPreco($precoAtual->getPrecoPrazo() != $vendaItem->getPrecoVenda());
+                        if ($precoAtual and $precoAtual->getPrecoPrazo() != $vendaItem->getPrecoVenda()) {
+                            $vendaItem->setAlteracaoPreco(true);
+                        } else {
+                            $vendaItem->setAlteracaoPreco(false);
+                        }
                     }
                 }
             }
@@ -158,6 +174,7 @@ class VendaBusiness
             $venda->setStatus('PREVENDA');
             
             $entityManager = $this->doctrine->getManager();
+            $this->entityIdBusiness->handlePersist($venda);
             $entityManager->persist($venda);
             $entityManager->flush();
             
@@ -176,138 +193,162 @@ class VendaBusiness
      */
     public function saveNotaFiscalVenda(Venda $venda, $dataNotaFiscal)
     {
-        $this->doctrine->getManager()->beginTransaction();
-        
-        $notaFiscal = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
-        
-        if ($notaFiscal) {
-            $editando = true;
-        } else {
-            $notaFiscal = new NotaFiscal();
-        }
-        
-        if (! $editando) {
-            // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
-            $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
+        try {
+            $this->doctrine->getManager()->beginTransaction();
             
-            $notaFiscal->setIndicadorFormaPagto($venda->getPlanoPagto()
-                ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA : IndicadorFormaPagto::PRAZO);
-            $ambiente = $this->doctrine->getRepository(Config::class)->findByChave("bonsucesso.fiscal.ambiente");
-            if (! $ambiente) {
-                throw new \Exception("'bonsucesso.fiscal.ambiente' não informado");
-            }
-            $notaFiscal->setAmbiente($ambiente);
-            
-            $chave = "bonsucesso.fiscal." . strtolower($dataNotaFiscal['tipo']) . ".serie";
-            $serie = $this->doctrine->getRepository(Config::class)
-                ->findByChave($chave)
-                ->getValor();
-            if (! $serie) {
-                throw new \Exception("'" . $chave . "' não informado");
-            }
-            $notaFiscal->setSerie($serie);
-            $nnf = $this->doctrine->getRepository(NotaFiscal::class)->findProxNumFiscal($ambiente == 'PROD', $notaFiscal->getSerie(), $dataNotaFiscal['tipo']);
-            $notaFiscal->setNumero($nnf);
-            $notaFiscal->setEntrada(false);
-            $notaFiscal->setTipoNotaFiscal($dataNotaFiscal['tipo']);
-            $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
-            $notaFiscal->setPessoaEmitente($emitente);
-        }
-        
-        $dtEmissao = new \DateTime();
-        $dtEmissao->modify('-4 minutes');
-        $notaFiscal->setDtEmissao($dtEmissao);
-        
-        if ($dataNotaFiscal['pessoa_id']) {
-            $pessoa = $this->doctrine->getRepository(Pessoa::class)->find($dataNotaFiscal['pessoa_id']);
-            $notaFiscal->setPessoaDestinatario($pessoa);
-        }
-        
-        $notaFiscal->getItens()->clear();
-        $this->doctrine->getManager()->flush();
-        
-        // Atenção, aqui tem que verificar a questão do arredondamento
-        if ($venda->getSubTotal() > 0.0) {
-            $fatorDesconto = 1 - ($venda->getValorTotal() / $venda->getSubTotal());
-        } else {
-            $fatorDesconto = 1;
-        }
-        
-        $somaDescontosItens = 0.0;
-        $ordem = 1;
-        foreach ($venda->getItens() as $vendaItem) {
-            
-            $nfItem = new NotaFiscalItem();
-            $nfItem->setNotaFiscal($notaFiscal);
-            
-            if ($vendaItem->getNcm()) {
-                $nfItem->setNcm($vendaItem->getNcm());
+            $notaFiscal = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
+            if ($notaFiscal) {
+                $editando = true;
             } else {
-                $nfItem->setNcm('62179000');
+                $editando = false;
+                $notaFiscal = new NotaFiscal();
             }
             
-            $existe = $this->doctrine->getRepository(NCM::class)->findByNCM($nfItem->getNcm());
-            $nfItem->setNcmExistente($existe ? true : false);
+            if (! $notaFiscal->getUuid()) {
+                $notaFiscal->setUuid(md5(uniqid(rand(), true)));
+            }
             
-            $nfItem->setOrdem($ordem ++);
+            if (! $editando) {
+                // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
+                $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
+                
+                $cNF = rand(10000000, 99999999);
+                $notaFiscal->setCnf($cNF);
+                
+                // para ser usado depois como 'chave' nas comunicações com a SEFAZ
+                
+                $notaFiscal->setIndicadorFormaPagto($venda->getPlanoPagto()
+                    ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
+                $ambiente = getenv("BONSUCESSO_FISCAL_AMBIENTE");
+                if (! $ambiente) {
+                    throw new \Exception("'BONSUCESSO_FISCAL_AMBIENTE' não informado");
+                }
+                $notaFiscal->setAmbiente($ambiente);
+                
+                $chave = "BONSUCESSO_FISCAL_" . strtoupper($dataNotaFiscal['tipo']) . "_SERIE";
+                $serie = getenv($chave);
+                if (! $serie) {
+                    throw new \Exception("'" . $chave . "' não informado");
+                }
+                $notaFiscal->setSerie($serie);
+                $nnf = $this->doctrine->getRepository(NotaFiscal::class)->findProxNumFiscal($ambiente == 'PROD', $notaFiscal->getSerie(), $dataNotaFiscal['tipo']);
+                $notaFiscal->setNumero($nnf);
+                $notaFiscal->setEntrada(false);
+                $notaFiscal->setTipoNotaFiscal($dataNotaFiscal['tipo']);
+                $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
+                $notaFiscal->setPessoaEmitente($emitente);
+                
+                $notaFiscal->setNaturezaOperacao('VENDA');
+                $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['codigo']);
+            }
             
-            $nfItem->setQtde($vendaItem->getQtde());
-            $nfItem->setValorUnit($vendaItem->getPrecoVenda());
-            $nfItem->setValorTotal($vendaItem->getTotalItem());
+            $dtEmissao = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
+            $dtEmissao->modify('-4 minutes');
+            $notaFiscal->setDtEmissao($dtEmissao);
+            $notaFiscal->setDtSaiEnt($dtEmissao);
             
-            $vDesconto = $vendaItem->getPrecoVenda() * $vendaItem->getQtde() * $fatorDesconto;
-            $nfItem->setValorDesconto($vDesconto);
+            if ($dataNotaFiscal['pessoa_id']) {
+                $pessoa = $this->doctrine->getRepository(Pessoa::class)->find($dataNotaFiscal['pessoa_id']);
+                $notaFiscal->setPessoaDestinatario($pessoa);
+            }
             
-            $somaDescontosItens += $vDesconto;
+            $notaFiscal->getItens()->clear();
+            $this->doctrine->getManager()->flush();
             
-            $nfItem->setSubTotal($vendaItem->getQtde() * $vendaItem->getPrecoVenda());
-            
-            $nfItem->setIcmsAliquota(0.0);
-            $nfItem->setCfop("5102");
-            $nfItem->setUnidade($vendaItem->getGradeTamanho()
-                ->getTamanho() != null ? $vendaItem->getGradeTamanho()
-                ->getTamanho() : $vendaItem->getNcGradeTamanho());
-            
-            if ($vendaItem->getProduto() != null) {
-                $nfItem->setCodigo($vendaItem->getProduto()
-                    ->getReduzido());
-                $nfItem->setDescricao($vendaItem->getProduto()
-                    ->getDescricao() . " (" . $vendaItem->getGradeTamanho()
-                    ->getTamanho() . ")");
+            // Atenção, aqui tem que verificar a questão do arredondamento
+            if ($venda->getSubTotal() > 0.0) {
+                $fatorDesconto = 1 - ($venda->getValorTotal() / $venda->getSubTotal());
             } else {
-                $nfItem->setCodigo($vendaItem->getNcReduzido());
-                $nfItem->setDescricao($vendaItem->getNcDescricao() . " (" + $vendaItem->getNcGradeTamanho() . ")");
+                $fatorDesconto = 1;
             }
             
-            $this->entityIdBusiness->handlePersist($nfItem);
+            $somaDescontosItens = 0.0;
+            $ordem = 1;
+            foreach ($venda->getItens() as $vendaItem) {
+                
+                $nfItem = new NotaFiscalItem();
+                $nfItem->setNotaFiscal($notaFiscal);
+                
+                if ($vendaItem->getNcm()) {
+                    $nfItem->setNcm($vendaItem->getNcm());
+                } else {
+                    $nfItem->setNcm('62179000');
+                }
+                
+                $existe = $this->doctrine->getRepository(NCM::class)->findByNCM($nfItem->getNcm());
+                $nfItem->setNcmExistente($existe ? true : false);
+                
+                $nfItem->setOrdem($ordem ++);
+                
+                $nfItem->setQtde($vendaItem->getQtde());
+                $nfItem->setValorUnit($vendaItem->getPrecoVenda());
+                $nfItem->setValorTotal($vendaItem->getTotalItem());
+                
+                $vDesconto = $vendaItem->getPrecoVenda() * $vendaItem->getQtde() * $fatorDesconto;
+                $nfItem->setValorDesconto($vDesconto);
+                
+                $somaDescontosItens += $vDesconto;
+                
+                $nfItem->setSubTotal($vendaItem->getQtde() * $vendaItem->getPrecoVenda());
+                
+                $nfItem->setIcmsAliquota(0.0);
+                $nfItem->setCfop("5102");
+                $nfItem->setUnidade($vendaItem->getGradeTamanho()
+                    ->getTamanho() != null ? $vendaItem->getGradeTamanho()
+                    ->getTamanho() : $vendaItem->getNcGradeTamanho());
+                
+                if ($vendaItem->getProduto() != null) {
+                    $nfItem->setCodigo($vendaItem->getProduto()
+                        ->getReduzido());
+                    $nfItem->setDescricao($vendaItem->getProduto()
+                        ->getDescricao() . " (" . $vendaItem->getGradeTamanho()
+                        ->getTamanho() . ")");
+                } else {
+                    $nfItem->setCodigo($vendaItem->getNcReduzido());
+                    $nfItem->setDescricao($vendaItem->getNcDescricao() . " (" + $vendaItem->getNcGradeTamanho() . ")");
+                }
+                
+                $this->entityIdBusiness->handlePersist($nfItem);
+                
+                $notaFiscal->addItem($nfItem);
+            }
             
-            $notaFiscal->addItem($nfItem);
+            $totalDescontos = bcsub($venda->getSubTotal(), $venda->getValorTotal(), 2);
+            $notaFiscal->setSubtotal($venda->getSubTotal());
+            $notaFiscal->setValorTotal($venda->getValorTotal());
+            $notaFiscal->setTotalDescontos($totalDescontos);
+            
+            if (bcsub(abs($totalDescontos), abs($somaDescontosItens), 2) != 0) {
+                $diferenca = $totalDescontos - $somaDescontosItens;
+                $notaFiscal->getItens()
+                    ->get(0)
+                    ->setValorDesconto($notaFiscal->getItens()
+                    ->get(0)
+                    ->getValorDesconto() + $diferenca);
+                $notaFiscal->getItens()
+                    ->get(0)
+                    ->calculaTotais();
+            }
+            
+            $this->entityIdBusiness->handlePersist($notaFiscal);
+            $this->doctrine->getManager()->persist($notaFiscal);
+            $this->doctrine->getManager()->flush();
+            
+            if (! $editando) {
+                $notaFiscalVenda = new NotaFiscalVenda();
+                $notaFiscalVenda->setNotaFiscal($notaFiscal);
+                $notaFiscalVenda->setVenda($venda);
+                $this->entityIdBusiness->handlePersist($notaFiscalVenda);
+                $this->doctrine->getManager()->persist($notaFiscalVenda);
+            }
+            
+            $this->doctrine->getManager()->commit();
+            return $notaFiscal;
+        } catch (\Exception $e) {
+            $this->doctrine->getManager()->rollback();
+            $erro = "Erro ao gerar registro da Nota Fiscal";
+            throw new \Exception($erro, null, $e);
         }
-        
-        $totalDescontos = $venda->getSubTotal() - $venda->getValorTotal();
-        $notaFiscal->setSubtotal($venda->getSubTotal());
-        $notaFiscal->setValorTotal($venda->getValorTotal());
-        $notaFiscal->setTotalDescontos($totalDescontos);
-        
-        if (abs($totalDescontos) - abs($somaDescontosItens) != 0) {
-            $diferenca = $totalDescontos - $somaDescontosItens;
-            $notaFiscal->getItens()
-                ->get(0)
-                ->setValorDesconto($notaFiscal->getItens()
-                ->get(0)
-                ->getValorDesconto() + $diferenca);
-            $notaFiscal->getItens()
-                ->get(0)
-                ->calculaTotais();
-        }
-        
-        $this->entityIdBusiness->handlePersist($notaFiscal);
-        $this->doctrine->getManager()->persist($notaFiscal);
-        $this->doctrine->getManager()->flush();
-        
-        
-        $this->doctrine->getManager()->commit();
-        return $notaFiscal;
     }
 
     /**

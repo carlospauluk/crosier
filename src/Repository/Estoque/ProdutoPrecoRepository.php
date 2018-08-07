@@ -21,13 +21,13 @@ class ProdutoPrecoRepository extends ServiceEntityRepository
     }
     
     public function findPrecoEmDataVenda(Produto $produto, $dtVenda) {
-        $ql = "SELECT pp FROM App\Entity\Estoque\ProdutoPreco pp JOIN App\Entity\Estoque\Produto p WHERE pp.produto = p AND pp.dtPrecoVenda >= :dtVenda ORDER BY pp.dtPrecoVenda DESC";
+        $ql = "SELECT pp FROM App\Entity\Estoque\ProdutoPreco pp JOIN App\Entity\Estoque\Produto p WHERE pp.produto = p AND p = :produto AND pp.dtPrecoVenda <= :dtVenda ORDER BY pp.dtPrecoVenda DESC";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(
             'produto' => $produto,
             'dtVenda' => $dtVenda
         ));
-        
+        $query->setMaxResults(1);
         $results = $query->getResult();
         return count($results) >= 1 ? $results[0] : null;
     }

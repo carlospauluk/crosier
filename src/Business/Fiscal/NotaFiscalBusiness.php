@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Business\Fiscal;
 
-use App\Entity\Base\Config;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\Entity\Estoque\Fornecedor;
@@ -11,58 +9,15 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class NotaFiscalBusiness
 {
-    
+
     private $doctrine;
-    
-    public function __construct(RegistryInterface $doctrine)
+
+    private $unimakeBusiness;
+
+    public function __construct(RegistryInterface $doctrine, UnimakeBusiness $unimakeBusiness)
     {
         $this->doctrine = $doctrine;
-    }
-
-    /**
-     * Só exibe o botão faturar se tiver nestas condições.
-     * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
-     *
-     * @param
-     *            venda
-     * @return
-     */
-    public function permiteFaturamento(\App\Entity\Fiscal\NotaFiscal $notaFiscal)
-    {
-        // Se o status for 100, não precisa refaturar.
-        if ($notaFiscal->getSpartacusStatus() != null) {
-            // aprovada
-            if ("100" == $notaFiscal->getSpartacusStatus()) {
-                return false;
-            }
-            // cancelada
-            if ("101" == $notaFiscal->getSpartacusStatus()) {
-                return false;
-            }
-            if ("204" == $notaFiscal->getSpartacusStatus()) {
-                return false;
-            }
-            
-            if ("0" == $notaFiscal->getSpartacusStatus()) {
-                if (strpos($notaFiscal->getSpartacusMensRetornoReceita(), 'DUPLICIDADE DE NF') !== FALSE) {
-                    return false;
-                }
-                if ("AGUARDANDO FATURAMENTO" == $notaFiscal->getSpartacusMensRetornoReceita()) {
-                    if ($notaFiscal->getDtSpartacusStatus() != null) {
-                        $dtStatus = $notaFiscal->getDtSpartacusStatus();
-                        $agora = new \DateTime();
-                        $dif = $agora->diff($dtStatus)->i;
-                        // mais que 3 minutos
-                        if ($dif > 3) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-        }
-        
-        return true;
+        $this->unimakeBusiness = $unimakeBusiness;
     }
 
     public function handleNotaSaida(NotaFiscal $nf)
@@ -71,7 +26,7 @@ class NotaFiscalBusiness
             throw new \Exception("Nota Fiscal já tratada.");
         }
         
-        $ambiente = $this->doctrine->getRepository(Config::class)->findByChave("bonsucesso.fiscal.ambiente");
+        $ambiente = getenv("BONSUCESSO_FISCAL_AMBIENTE");
         if (! $ambiente) {
             throw new \Exception("Ambiente não encontrado");
         }
@@ -80,9 +35,9 @@ class NotaFiscalBusiness
         
         // O Spartacus está utilizando o campo SERIE para decidir quais notas imprimir automaticamente
         // Serie 2 (Bonsucesso), Serie 3 (Ipê)
-        $chave = "bonsucesso.fiscal." + strtolower($nf->getTipoNotaFiscal()) + ".serie";
-        $serie = $this->doctrine->getRepository(Config::class)->findByChave($chave);
-        if (!$serie) {
+        $chave = "BONSUCESSO_FISCAL_" + strtoupper($nf->getTipoNotaFiscal()) + "_SERIE";
+        $serie = getenv($chave);
+        if (! $serie) {
             throw new \Exception('Erro ao pesquisar chave [' . $chave . ']');
         }
         $nf->setSerie($serie);
@@ -93,9 +48,6 @@ class NotaFiscalBusiness
         
         $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
         $nf->setPessoaEmitente($emitente);
-        
-        $serie = $this->doctrine->getRepository(Config::class)->findByChave("bonsucesso.fiscal.nfce.serie");
-        $nf->setSerie($serie);
     }
 
     /**
@@ -163,5 +115,67 @@ class NotaFiscalBusiness
         $entityManager->flush();
         
         return $nf;
+    }
+
+    public function faturar(NotaFiscal $notaFiscal)
+    {
+        $this->unimakeBusiness->genNFeXML($notaFiscal);
+    }
+
+    public function consultarStatus(NotaFiscal $notaFiscal)
+    {
+        return $this->unimakeBusiness->consultarStatus($notaFiscal);
+    }
+
+    /**
+     * Só exibe o botão faturar se tiver nestas condições.
+     * Lembrando que o botão "Faturar" serve tanto para faturar a primeira vez, como para tentar faturar novamente nos casos de erros.
+     *
+     * @param
+     *            venda
+     * @return
+     */
+    public function permiteFaturamento(NotaFiscal $notaFiscal)
+    {
+        // Se o status for 100, não precisa refaturar.
+        if ($notaFiscal->getSpartacusStatus()) {
+            // aprovada
+            if ("100" == $notaFiscal->getSpartacusStatus()) {
+                return false;
+            }
+            // cancelada
+            if ("101" == $notaFiscal->getSpartacusStatus()) {
+                return false;
+            }
+            if ("204" == $notaFiscal->getSpartacusStatus()) {
+                return false;
+            }
+            
+            if ("0" == $notaFiscal->getSpartacusStatus()) {
+                
+                if (strpos($notaFiscal->getSpartacusMensRetornoReceita(), "DUPLICIDADE DE NF") !== FALSE) {
+                    return false;
+                }
+                
+                if ("AGUARDANDO FATURAMENTO" == $notaFiscal->getSpartacusMensRetornoReceita()) {
+                    if ($notaFiscal->getDtSpartacusStatus()) {
+                        $dtStatus = $notaFiscal->getDtSpartacusStatus();
+                        
+                        $agora = new \DateTime();
+                        $diff = $agora->diff($dtStatus);
+                        
+                        $minutos = $diff->i;
+                        
+                        // Se já passou 3 minutos, então permite refaturar.
+                        if ($minutos > 2) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        
+        return true;
     }
 }

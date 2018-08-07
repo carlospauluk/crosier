@@ -146,6 +146,7 @@ class Venda extends EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="VendaItem",
+     *      cascade={"persist"},
      *      mappedBy="venda",
      *      orphanRemoval=true)
      * @ORM\OrderBy({"ordem" = "ASC"})

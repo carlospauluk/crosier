@@ -27,11 +27,32 @@ class NotaFiscal extends EntityId
 
     /**
      *
+     * @ORM\Column(name="uuid", type="string", nullable=true, length=32)
+     */
+    private $uuid;
+
+    /**
+     * $cNF = rand(10000000, 99999999);
+     *
+     * @ORM\Column(name="cnf", type="string", nullable=true, length=8)
+     */
+    private $cnf;
+
+    /**
+     *
      * @ORM\Column(name="dt_emissao", type="datetime", nullable=true)
      * @Assert\NotNull(message="O campo 'dt_emissao' deve ser informado")
      * @Assert\Type("\DateTime", message="O campo 'dt_emissao' deve ser do tipo data/hora")
      */
     private $dtEmissao;
+
+    /**
+     *
+     * @ORM\Column(name="dt_saient", type="datetime", nullable=true)
+     * @Assert\NotNull(message="O campo 'dt_saient' deve ser informado")
+     * @Assert\Type("\DateTime", message="O campo 'dt_saient' deve ser do tipo data/hora")
+     */
+    private $dtSaiEnt;
 
     /**
      *
@@ -50,8 +71,8 @@ class NotaFiscal extends EntityId
     private $valorTotal;
 
     /**
-	 * Se for de saída, é a própria empresa, se for de entrada é o fornecedor.
-	 * 
+     * Se for de saída, é a própria empresa, se for de entrada é o fornecedor.
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa")
      * @ORM\JoinColumn(name="pessoa_emitente_id", nullable=false)
      *
@@ -81,8 +102,8 @@ class NotaFiscal extends EntityId
     private $serie;
 
     /**
-	 * Aqui pode ser null, pois pode ser uma NFCe anônima.
-	 * 
+     * Aqui pode ser null, pois pode ser uma NFCe anônima.
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa")
      * @ORM\JoinColumn(name="pessoa_destinatario_id", nullable=true)
      * @Assert\NotNull(message="O campo 'Pessoa_destinatario' deve ser informado")
@@ -269,7 +290,7 @@ class NotaFiscal extends EntityId
      * @ORM\Column(name="spartacus_mensretorno", type="string", nullable=true)
      */
     private $spartacusMensretorno;
-    
+
     /**
      *
      * @var NotaFiscalItem[]|ArrayCollection
@@ -301,14 +322,44 @@ class NotaFiscal extends EntityId
         $this->id = $id;
     }
 
-    public function getDtEmissao()
+    public function getUuid()
+    {
+        return $this->uuid;
+    }
+
+    public function setUuid($uuid)
+    {
+        $this->uuid = $uuid;
+    }
+
+    public function getCnf()
+    {
+        return $this->cnf;
+    }
+
+    public function setCnf($cnf)
+    {
+        $this->cnf = $cnf;
+    }
+
+    public function getDtEmissao(): ?\DateTime
     {
         return $this->dtEmissao;
     }
 
-    public function setDtEmissao($dtEmissao)
+    public function setDtEmissao(?\DateTime $dtEmissao)
     {
         $this->dtEmissao = $dtEmissao;
+    }
+
+    public function getDtSaiEnt(): ?\DateTime
+    {
+        return $this->dtSaiEnt;
+    }
+
+    public function setDtSaiEnt(?\DateTime $dtSaiEnt)
+    {
+        $this->dtSaiEnt = $dtSaiEnt;
     }
 
     public function getNumero()
@@ -356,7 +407,7 @@ class NotaFiscal extends EntityId
         return $this->entrada;
     }
 
-    public function setEntradaSaida($entrada)
+    public function setEntrada($entrada)
     {
         $this->entrada = $entrada;
     }
@@ -640,7 +691,7 @@ class NotaFiscal extends EntityId
     {
         $this->spartacusMensretorno = $spartacusMensretorno;
     }
-    
+
     /**
      *
      * @return Collection|NotaFiscalItem[]
@@ -649,10 +700,25 @@ class NotaFiscal extends EntityId
     {
         return $this->itens;
     }
-    
-    public function addItem(NotaFiscalItem $item) {
+
+    public function addItem(NotaFiscalItem $item)
+    {
         if (! $this->itens->contains($item)) {
             $this->itens->add($item);
         }
+    }
+
+    public function getInfoStatus()
+    {
+        $infoStatus = "NÃO PROCESSADA";
+        if ($this->getSpartacusStatus()) {
+            
+            $infoStatus = $this->getSpartacusStatus() . " - " . $this->getSpartacusMensretornoReceita() . " (NNF/Série: " . $this->getNumero() . "/" . $this->getSerie() . ")";
+            
+            if ($this->getDtEmissao()) {
+                $infoStatus .= "(Emissão: " . $this->getDtEmissao()->format('d/m/Y H:i:s') . ")";
+            }
+        }
+        return $infoStatus;
     }
 }
