@@ -22,10 +22,11 @@
 		<div class="form-group row">
 			<label class="col-form-label col-sm-2 form-control-label required" for="confeccao">PV</label>
 			<div class="col-sm-8">
-				<input type="number" id="pv" name="pv" class="form-control" min="1" step="1" pattern="\d*"></select>
+				<input type="number" id="pv" name="pv" class="form-control" min="1" step="1" pattern="\d*" autofocus="autofocus"></select>
 			</div>
 			<div class="col-sm-2 text-right">
-				<button type="button" class="btn btn-secondary" onclick="window.location.assign('{{ url('fis_emissaofiscalpv_processarPV') }}' + '/' + $('#pv').val())">
+				<button type="button" id="carregar" class="btn btn-secondary"
+					onclick="window.location.assign('{{ url('fis_emissaofiscalpv_processarPV') }}' + '/' + $('#pv').val())">
 					<i class="fas fa-sync" aria-hidden="true"></i> Carregar
 				</button>
 			</div>
@@ -47,7 +48,13 @@
 
 $(document).ready(function() {
 
-		
+	$('#pv').keypress(function (e) {
+	  if (e.which == 13) {
+	    $('#carregar').click();
+	    return false;    //<---- Add this line
+	  }
+	});
+	
 });
 
 	

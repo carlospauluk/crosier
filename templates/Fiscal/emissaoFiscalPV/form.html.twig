@@ -27,31 +27,22 @@
 		<div class="form-group row">
 			<label class="col-form-label col-sm-2 form-control-label">PV</label>
 			<div class="col-sm-10">
-				<input type="text" readonly="readonly" value="{{ venda.pv }}">
+				<input type="text" class="form-control" readonly="readonly" value="{{ "%06d"|format(venda.pv) }} de {{ venda.dtVenda|date("d/m/Y") }}. Vendedor: {{ venda.vendedor.pessoa.nome }}">
 			</div>
-		</div>
-		<div class="form-group row">
-			<label class="col-form-label col-sm-2 form-control-label">Dt Venda</label>
-			<div class="col-sm-10">
-				<input type="text" readonly="readonly" value="{{ venda.dtVenda|date("d/m/Y") }}">
-			</div>
-		</div>
-		<div class="form-group row">
-			<label class="col-form-label col-sm-2 form-control-label">Vendedor</label>
-			<div class="col-sm-10">
-				<input type="text" readonly="readonly" value="{{ venda.vendedor.pessoa.nome }}">
-			</div>
-		</div>
+		</div>		
 		<div class="form-group row">
 			<label class="col-form-label col-sm-2 form-control-label">Plano Pagto</label>
-			<div class="col-sm-10">
-				<input type="text" readonly="readonly" value="{{ venda.planoPagto.descricao }}">
+			<div class="col-sm-6">
+				<input type="text" class="form-control" readonly="readonly" value="{{ venda.planoPagto.descricao }}">
+			</div>
+			<div class="col-sm-4 text-right">
+				<input type="text" class="form-control" readonly="readonly" value="{{ venda.valorTotal|number_format(2,',','.') }}" class="crsr-dec2">
 			</div>
 		</div>
 		<div class="form-group row">
 			<label class="col-form-label col-sm-2 form-control-label">Valor</label>
 			<div class="col-sm-10">
-				<input type="text" readonly="readonly" value="{{ venda.valorTotal|number_format(2,',','.') }}" class="crsr-dec2">
+				
 			</div>
 		</div>
 
@@ -86,7 +77,11 @@
 
 			</table>
 		</div>
+
+
 		{{ include('Fiscal/emissaoFiscalPV/formFiscal.html.twig') }}
+		
+		{{ include('Fiscal/emissaoFiscalPV/historicos.html.twig') }}
 	</div>
 </div>
 
@@ -107,18 +102,18 @@
 
 		$(".TIPO_FISCAL").change(
 				function() {
-					showHideFiscalDivs();
+					prepareForm();
 				}
 			);
 					
 				
 		$(".TIPO_PESSOA").change(
 				function() {
-					showHideFiscalDivs();
+					prepareForm();
 				}
 			);
 
-		function showHideFiscalDivs() {
+		function prepareForm() {
 
 			// quando muda de NFE pra NFCE e vice-versa, esconde os campos
 			tipoFiscal = $(".TIPO_FISCAL").find(':checked').val();
@@ -138,9 +133,13 @@
 				$(".PESSOA_FISICA").parent().parent().css('display', 'none');
 				$(".PESSOA_JURIDICA").parent().parent().css('display', '');
 			}
+
+			if ($('input[id*=_pessoa_id]').val() != '') {
+				$('.DADOSPESSOA').prop('disabled', true);
+			}
 		}
 
-		showHideFiscalDivs();
+		prepareForm();
 
 
 		$('#pesquisar_cep').click(function(){
@@ -184,7 +183,11 @@
 					$('input[id*=_complemento]').val(data.endereco.complemento);					
 					$('input[id*=_bairro]').val(data.endereco.bairro);					
 					$('input[id*=_cidade]').val(data.endereco.cidade);					
-					$('select[id*=_estado]').val(data.endereco.estado).change();					
+					$('select[id*=_estado]').val(data.endereco.estado).change();
+
+					if (data.id) {
+						$('.DADOSPESSOA').prop('disabled', true);
+					}					
 				}
 			});
 		} 

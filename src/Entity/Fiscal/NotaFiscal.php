@@ -10,9 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Entidade Nota Fiscal.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NotaFiscalRepository")
  * @ORM\Table(name="fis_nf")
+ *
+ * @author Carlos Eduardo Pauluk
  */
 class NotaFiscal extends EntityId
 {
@@ -37,6 +40,20 @@ class NotaFiscal extends EntityId
      * @ORM\Column(name="cnf", type="string", nullable=true, length=8)
      */
     private $cnf;
+
+    /**
+     * *
+     *
+     * @ORM\Column(name="chave_acesso", type="string", nullable=true, length=44)
+     */
+    private $chaveAcesso;
+
+    /**
+     * *
+     *
+     * @ORM\Column(name="protocolo_autoriz", type="string", nullable=true, length=255)
+     */
+    private $protocoloAutorizacao;
 
     /**
      *
@@ -293,6 +310,18 @@ class NotaFiscal extends EntityId
 
     /**
      *
+     * @ORM\Column(name="carta_correcao", type="string", nullable=true)
+     */
+    private $cartaCorrecao;
+
+    /**
+     *
+     * @ORM\Column(name="carta_correcao_seq", type="integer", nullable=true)
+     */
+    private $cartaCorrecaoSeq;
+
+    /**
+     *
      * @var NotaFiscalItem[]|ArrayCollection
      *
      * @ORM\OneToMany(
@@ -304,12 +333,25 @@ class NotaFiscal extends EntityId
      */
     private $itens;
 
+    /**
+     *
+     * @var NotaFiscalHistorico[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="NotaFiscalHistorico",
+     *      mappedBy="notaFiscal",
+     *      orphanRemoval=true
+     * )
+     */
+    private $historicos;
+
     public function __construct()
     {
         ORM\Annotation::class;
         Assert\All::class;
         
         $this->itens = new ArrayCollection();
+        $this->historicos = new ArrayCollection();
     }
 
     public function getId()
@@ -692,6 +734,26 @@ class NotaFiscal extends EntityId
         $this->spartacusMensretorno = $spartacusMensretorno;
     }
 
+    public function getChaveAcesso()
+    {
+        return $this->chaveAcesso;
+    }
+
+    public function setChaveAcesso($chaveAcesso)
+    {
+        $this->chaveAcesso = $chaveAcesso;
+    }
+
+    public function getProtocoloAutorizacao()
+    {
+        return $this->protocoloAutorizacao;
+    }
+
+    public function setProtocoloAutorizacao($protocoloAutorizacao)
+    {
+        $this->protocoloAutorizacao = $protocoloAutorizacao;
+    }
+
     /**
      *
      * @return Collection|NotaFiscalItem[]
@@ -708,15 +770,51 @@ class NotaFiscal extends EntityId
         }
     }
 
+    /**
+     *
+     * @return Collection|NotaFiscalHistorico[]
+     */
+    public function getHistoricos(): Collection
+    {
+        return $this->historicos;
+    }
+
+    public function addHistorico(NotaFiscalHistorico $historico)
+    {
+        if (! $this->historicos->contains($historico)) {
+            $this->historicos->add($historico);
+        }
+    }
+
+    public function getCartaCorrecao()
+    {
+        return $this->cartaCorrecao;
+    }
+
+    public function setCartaCorrecao($cartaCorrecao)
+    {
+        $this->cartaCorrecao = $cartaCorrecao;
+    }
+
+    public function getCartaCorrecaoSeq()
+    {
+        return $this->cartaCorrecaoSeq;
+    }
+
+    public function setCartaCorrecaoSeq($cartaCorrecaoSeq)
+    {
+        $this->cartaCorrecaoSeq = $cartaCorrecaoSeq;
+    }
+
     public function getInfoStatus()
     {
         $infoStatus = "NÃO PROCESSADA";
-        if ($this->getSpartacusStatus()) {
+        if ($this->getSpartacusStatus() !== null) {
             
             $infoStatus = $this->getSpartacusStatus() . " - " . $this->getSpartacusMensretornoReceita() . " (NNF/Série: " . $this->getNumero() . "/" . $this->getSerie() . ")";
             
             if ($this->getDtEmissao()) {
-                $infoStatus .= "(Emissão: " . $this->getDtEmissao()->format('d/m/Y H:i:s') . ")";
+                $infoStatus .= " (Emissão: " . $this->getDtEmissao()->format('d/m/Y H:i:s') . ")";
             }
         }
         return $infoStatus;

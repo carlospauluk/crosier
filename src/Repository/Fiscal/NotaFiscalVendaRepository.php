@@ -22,10 +22,11 @@ class NotaFiscalVendaRepository extends ServiceEntityRepository
     
     public function findNotaFiscalByVenda(Venda $venda)
     {
-        $ql = "SELECT nf FROM App\Entity\Fiscal\NotaFiscalVenda nfv JOIN App\Entity\Fiscal\NotaFiscal nf WHERE nfv.notaFiscal = nf AND nfv.venda = :venda";
+        $ql = "SELECT nf FROM App\Entity\Fiscal\NotaFiscalVenda nfv JOIN App\Entity\Fiscal\NotaFiscal nf WHERE nfv.notaFiscal = nf AND nfv.venda = :venda AND nf.ambiente = :ambiente";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(
-            'venda' => $venda
+            'venda' => $venda,
+            'ambiente' => getenv('BONSUCESSO_FISCAL_AMBIENTE')
         ));
         
         $results = $query->getResult();

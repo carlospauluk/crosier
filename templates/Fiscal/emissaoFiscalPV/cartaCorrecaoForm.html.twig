@@ -1,0 +1,81 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+
+<div class="card">
+	<div class="card-header">
+
+		<div class="row">
+			<div class="col-8">
+				<h3>Carta de Correção</h3>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="card-body">
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2 form-control-label">PV</label>
+			<div class="col-sm-10">
+				<input type="text" class="form-control" disabled="true"
+					value="{{ "%06d"|format(venda.pv) }} de {{ venda.dtVenda|date("d/m/Y") }}. Vendedor: {{ venda.vendedor.pessoa.nome }}">
+			</div>
+		</div>
+
+		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+
+		{{ form_start(form) }}
+		
+		{{ form_row(form._token) }}
+
+		{{ form_row(form._info_status) }}
+
+		{{ form_row(form.carta_correcao) }}
+
+
+
+		<div class="row">
+			<div class="col text-right">
+
+
+		{% if permiteCancelamento %}
+				<button type="button" value="Enviar" class="btn btn-warning"
+					data-form="emissao_fiscal_pv" data-target="#confirmationModal"
+					data-toggle="modal">
+					<i class="fas fa-ban" aria-hidden="true"></i> Enviar
+				</button>
+		{% endif %}
+		
+		{% if permiteReimpressaoCancelamento %}
+				<button type="button" value="Reimprimir Carta de Correção" class="btn btn-secondary"
+					data-url="{{ url('fis_emissaofiscalpv_reimprimirCartaCorrecao', {notaFiscal: notaFiscal.id, venda: venda.id}) }}"
+					data-target="#confirmationModal" data-toggle="modal">
+					<i class="fas fa-envelope-square" aria-hidden="true"></i> Reimprimir Carta de Correção
+				</button>
+		{% endif %}
+				
+		</div>
+
+
+		{{ form_end(form, {'render_rest': false}) }}
+
+	</div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+
+{% block down_scripts %}
+
+
+{% endblock %}

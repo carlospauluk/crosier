@@ -4,13 +4,13 @@
 
 		<div class="row">
 			<div class="col-12">
-				<h3>Emissão Fiscal - PV</h3>
+				<h4>Dados do Cliente</h4>
 			</div>
 		</div>
 
 	</div>
 
-	<div class="card-body" style="display:;">
+	<div class="card-body">
 
 		{{ include('Util/flashes.html.twig') }}
 
@@ -18,6 +18,8 @@
 		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 
 		{{ form_start(form) }}
+		
+		{{ form_row(form._token) }}
 
 		{{ form_row(form._info_status) }}
 
@@ -45,7 +47,7 @@
 				{{ form_help(form.cep) }}
 			</div>
 			<div class="col-sm-5">
-				<button type="button" value="Consultar" class="btn btn-warning" id="pesquisar_cep">
+				<button type="button" value="Consultar" class="btn btn-warning DADOSPESSOA" id="pesquisar_cep">
 					<i class="fas fa-undo" aria-hidden="true"></i> Consultar
 				</button>
 			</div>
@@ -60,18 +62,61 @@
 		{{ form_row(form.estado) }}
 
 
+
+
+
+
 		<div class="row">
 			<div class="col text-right">
-				<button type="submit" class="btn btn-primary btn-lg" value="Faturar">
+			
+		{% if permiteFaturamento %}
+				<button type="button" value="Cancelar" class="btn btn-primary btn-lg"
+					data-form="emissao_fiscal_pv" data-target="#confirmationModal"
+					data-toggle="modal">
 					<i class="fas fa-save" aria-hidden="true"></i> Faturar
 				</button>
-
+				
+		{% endif %}
+		
+		{% if permiteReimpressao %}
+				<button type="button" value="Reimprimir" class="btn btn-secondary"
+					data-url="{{ url('fis_emissaofiscalpv_reimprimir', {notaFiscal: notaFiscal.id, venda: venda.id}) }}"
+					data-target="#confirmationModal" data-toggle="modal">
+					<i class="fas fa-print" aria-hidden="true"></i> Reimprimir
+				</button>
+		{% endif %}
+		
+		
+		{% if permiteCancelamento or permiteReimpressaoCancelamento %}
+				<button type="button" id="Cancelar" class="btn btn-warning"
+					onclick="window.location.assign('{{ url('fis_emissaofiscalpv_cancelarForm', {notaFiscal: notaFiscal.id, venda: venda.id}) }}')">
+					<i class="fas fa-ban" aria-hidden="true"></i> Cancelar
+				</button>
+		{% endif %}
+		
+		{% if permiteCartaCorrecao %}
+				<button type="button" id="Carta de Correção" class="btn btn-warning"
+					onclick="window.location.assign('{{ url('fis_emissaofiscalpv_cartaCorrecaoForm', {notaFiscal: notaFiscal.id, venda: venda.id}) }}')">
+					<i class="fas fa-envelope-square" aria-hidden="true"></i> Carta de Correção
+				</button>
+		{% endif %}
+		
+		{% if notaFiscal.id %}
+				<button type="button" value="Consultar Status" class="btn btn-secondary" data-url="{{ url('fis_emissaofiscalpv_consultarStatus', {notaFiscal: notaFiscal.id, venda: venda.id}) }}"
+					data-target="#confirmationModal" data-toggle="modal">
+					<i class="fab fa-searchengin" aria-hidden="true"></i> Consultar Status
+				</button>
+		{% endif %}
+				
 				<button type="button" value="Resetar" class="btn btn-secondary" data-url="{{ url('fis_emissaofiscalpv_form', {id: venda.id}) }}"
 					data-target="#confirmationModal" data-toggle="modal">
 					<i class="fas fa-undo" aria-hidden="true"></i> Recarregar
 				</button>
+				
 			</div>
 		</div>
+
+		
 		{{ form_end(form, {'render_rest': false}) }}
 
 

@@ -8,8 +8,9 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Validator\Constraints\Length;
 
-class EmissaoFiscalPVType extends AbstractType
+class EmissaoFiscalType extends AbstractType
 {
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -18,7 +19,8 @@ class EmissaoFiscalPVType extends AbstractType
             $data = $event->getData();
             $builder = $event->getForm();
             
-            if ($data) {
+            $disabled = false;
+            if ($data and array_key_exists('permiteFaturamento', $data)) {
                 $disabled = $data['permiteFaturamento'] == false;
             }
             
@@ -53,7 +55,7 @@ class EmissaoFiscalPVType extends AbstractType
                     'CNPJ' => 'PESSOA_JURIDICA'
                 ),
                 'attr' => array(
-                    'class' => 'TIPO_PESSOA'
+                    'class' => 'TIPO_PESSOA DADOSPESSOA'
                 ),
                 'disabled' => $disabled
             ));
@@ -76,7 +78,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('nome', TextType::class, array(
                 'label' => 'Nome',
                 'attr' => array(
-                    'class' => 'PESSOA_FISICA'
+                    'class' => 'PESSOA_FISICA DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -85,7 +87,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('cnpj', TextType::class, array(
                 'label' => 'CNPJ',
                 'attr' => array(
-                    'class' => 'PESSOA_JURIDICA cnpj'
+                    'class' => 'PESSOA_JURIDICA cnpj DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -95,7 +97,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('razao_social', TextType::class, array(
                 'label' => 'Razão Social',
                 'attr' => array(
-                    'class' => 'PESSOA_JURIDICA'
+                    'class' => 'PESSOA_JURIDICA DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -104,7 +106,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('nome_fantasia', TextType::class, array(
                 'label' => 'Nome Fantasia',
                 'attr' => array(
-                    'class' => 'PESSOA_JURIDICA'
+                    'class' => 'PESSOA_JURIDICA DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -113,7 +115,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('fone1', TextType::class, array(
                 'label' => 'Telefone',
                 'attr' => array(
-                    'class' => 'NFE telefone'
+                    'class' => 'NFE telefone DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -121,7 +123,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('email', TextType::class, array(
                 'label' => 'E-mail',
                 'attr' => array(
-                    'class' => 'NFE email'
+                    'class' => 'NFE email DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -130,7 +132,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('cep', TextType::class, array(
                 'label' => 'CEP',
                 'attr' => array(
-                    'class' => 'NFE cep'
+                    'class' => 'NFE cep DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -139,7 +141,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('logradouro', TextType::class, array(
                 'label' => 'Logradouro',
                 'attr' => array(
-                    'class' => 'NFE'
+                    'class' => 'NFE DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -147,7 +149,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('numero', TextType::class, array(
                 'label' => 'Número',
                 'attr' => array(
-                    'class' => 'NFE'
+                    'class' => 'NFE DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -155,7 +157,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('complemento', TextType::class, array(
                 'label' => 'Complemento',
                 'attr' => array(
-                    'class' => 'NFE'
+                    'class' => 'NFE DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -163,7 +165,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('bairro', TextType::class, array(
                 'label' => 'Bairro',
                 'attr' => array(
-                    'class' => 'NFE'
+                    'class' => 'NFE DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -171,7 +173,7 @@ class EmissaoFiscalPVType extends AbstractType
             $builder->add('cidade', TextType::class, array(
                 'label' => 'Cidade',
                 'attr' => array(
-                    'class' => 'NFE'
+                    'class' => 'NFE DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -210,9 +212,31 @@ class EmissaoFiscalPVType extends AbstractType
                 ),
                 'required' => false,
                 'attr' => array(
-                    'class' => 'NFE'
+                    'class' => 'NFE DADOSPESSOA'
                 ),
                 'disabled' => $disabled
+            ));
+            
+            $builder->add('cancelamento_motivo', TextType::class, array(
+                'label' => 'Motivo do Cancelamento',
+                'required' => true,
+                'constraints' => array(
+                    new Length(array(
+                        'min' => 15,
+                        'max' => 255
+                    ))
+                )
+            ));
+            
+            $builder->add('carta_correcao', TextType::class, array(
+                'label' => 'Carta de Correção',
+                'required' => true,
+                'constraints' => array(
+                    new Length(array(
+                        'min' => 15,
+                        'max' => 1000
+                    ))
+                )
             ));
         });
     }

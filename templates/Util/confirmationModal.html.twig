@@ -21,6 +21,7 @@
 <script>
 	$('#confirmationModal').on('show.bs.modal', function(e) {
 		$('#btnConfirmationModalYes', this)
+			.data('form', $(e.relatedTarget).data('form'))
 			.data('url', $(e.relatedTarget).data('url'))
 			.data('token', $(e.relatedTarget).data('token'));
 	});
@@ -29,13 +30,17 @@
 			'click',
 			'#btnConfirmationModalYes',
 			function(e) {
-				var url = $(this).data('url');
-				var token = $(this).data('token');
-				var form = $('<form></form>').attr("method", "post").attr(
-						"action", url);
-				form.append($('<input></input>').attr("type", "hidden").attr(
-						"name", "token").attr("value", token));
-				$(form).appendTo('body').submit();
+				if ($(this).data('url')) {
+    				var url = $(this).data('url');
+    				var token = $(this).data('token');
+    				var form = $('<form></form>').attr("method", "post").attr(
+    						"action", url);
+    				form.append($('<input></input>').attr("type", "hidden").attr(
+    						"name", "token").attr("value", token));
+    				$(form).appendTo('body').submit();
+				} else if ($(this).data('form')) {
+					$("[name='" + $(this).data('form') + "']").submit();
+				}
 
 			});
 </script>
