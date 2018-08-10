@@ -1,0 +1,339 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+
+<div class="card">
+	<div class="card-header">
+
+		<div class="row">
+			<div class="col-8">
+				<h3>Emissão de NFe</h3>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="card-body">
+
+		{{ include('Util/flashes.html.twig') }}
+
+
+		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+
+		{{ form_start(form) }}
+
+		{{ form_row(form._token) }}
+
+		{{ form_row(form._info_status) }}
+
+		{{ form_widget(form.pessoa_id) }}
+
+		{{ form_row(form.tipo) }}
+
+		{{ form_row(form.tipoPessoa) }}
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2 form-control-label">Número/Série (UUID)</label>
+			<div class="col-sm-2">
+				{{ form_widget(form.numero_nf) }}
+			</div>
+			<div class="col-sm-2">
+				{{ form_widget(form.serie) }}
+			</div>
+			<div class="col-sm-6">
+				{{ form_widget(form.uuid) }}
+			</div>
+		</div>
+
+		{{ form_row(form.natureza_operacao) }}
+		{{ form_row(form.finalidade_nf) }}
+		{{ form_row(form.entrada_saida) }}
+
+		{{ form_row(form.cpf) }}
+		{{ form_row(form.nome) }}
+
+		{{ form_row(form.cnpj) }}
+		{{ form_row(form.razao_social) }}
+		{{ form_row(form.nome_fantasia) }}
+
+		{{ form_row(form.fone1) }}
+		{{ form_row(form.email) }}
+
+
+		<div class="form-group row">
+			{{ form_label(form.cep) }}
+			<div class="col-sm-5">
+				{{ form_errors(form.cep) }}
+				{{ form_widget(form.cep) }}
+				{{ form_help(form.cep) }}
+			</div>
+			<div class="col-sm-5">
+				<button type="button" value="Consultar" class="btn btn-warning DADOSPESSOA" id="pesquisar_cep">
+					<i class="fas fa-undo" aria-hidden="true"></i> Consultar
+				</button>
+			</div>
+		</div>
+
+
+		{{ form_row(form.logradouro) }}
+		{{ form_row(form.numero) }}
+		{{ form_row(form.complemento) }}
+		{{ form_row(form.bairro) }}
+		{{ form_row(form.cidade) }}
+		{{ form_row(form.estado) }}
+
+		{{ form_row(form.transp_modalidade_frete) }}
+		{{ form_row(form.indicador_forma_pagto) }}
+
+		<div class="card">
+			<div class="card-header">
+
+				<div class="row">
+					<div class="col-8">
+						<h5>Itens</h5>
+					</div>
+					<div class="col-4 text-right">
+						<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url('fis_emissaonfe_formItem', {notaFiscal: notaFiscal.id} ) }}'">
+							<i class="fas fa-list-ul" aria-hidden="true"></i> Novo Item
+						</button>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="card-body">
+
+				<div class="table-responsive-sm">
+					<table class="table table-striped table-hover">
+
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Código</th>
+								<th scope="col">Descrição</th>
+								<th scope="col">Unidade</th>
+								<th scope="col">NCM</th>
+								<th scope="col">CFOP</th>
+								<th scope="col">Qtde</th>
+								<th scope="col">Vlr Unit</th>
+								<th scope="col">Vlr Total</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							{% for item in notaFiscal.itens %}
+							<tr>
+								<td>{{ item.ordem }}</td>
+								<td>{{ item.codigo }}</td>
+								<td>{{ item.descricao }}</td>
+								<td>{{ item.unidade }}</td>
+								<td>{{ item.ncm }}</td>
+								<td>{{ item.cfop }}</td>
+								<td>{{ item.qtde|number_format(2,',','.') }}</td>
+								<td>{{ item.valorUnit|number_format(2,',','.') }}</td>
+								<td>{{ item.valorTotal|number_format(2,',','.') }}</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+
+					</table>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col text-right">
+
+				{% if permiteFaturamento %}
+				<button type="submit" class="btn btn-primary btn-lg" value="Salvar">
+					<i class="fas fa-save" aria-hidden="true"></i> Salvar
+				</button>
+
+				{% endif %}
+
+				{% if permiteReimpressao %}
+				<button type="button" value="Reimprimir" class="btn btn-secondary"
+					data-url="{{ url('fis_emissaonfe_reimprimir', {notaFiscal: notaFiscal.id}) }}" data-target="#confirmationModal" data-toggle="modal">
+					<i class="fas fa-print" aria-hidden="true"></i> Reimprimir
+				</button>
+				{% endif %}
+
+
+				{% if permiteCancelamento or permiteReimpressaoCancelamento %}
+				<button type="button" id="Cancelar" class="btn btn-warning"
+					onclick="window.location.assign('{{ url('fis_emissaonfe_cancelarForm', {notaFiscal: notaFiscal.id}) }}')">
+					<i class="fas fa-ban" aria-hidden="true"></i> Cancelar
+				</button>
+				{% endif %}
+
+				{% if permiteCartaCorrecao %}
+				<button type="button" id="Carta de Correção" class="btn btn-warning"
+					onclick="window.location.assign('{{ url('fis_emissaonfe_cartaCorrecaoForm', {notaFiscal: notaFiscal.id}) }}')">
+					<i class="fas fa-envelope-square" aria-hidden="true"></i> Carta de Correção
+				</button>
+				{% endif %}
+
+				{% if notaFiscal.id %}
+				<button type="button" value="Consultar Status" class="btn btn-secondary"
+					data-url="{{ url('fis_emissaonfe_consultarStatus', {notaFiscal: notaFiscal.id}) }}" data-target="#confirmationModal"
+					data-toggle="modal">
+					<i class="fab fa-searchengin" aria-hidden="true"></i> Consultar Status
+				</button>
+				{% endif %}
+
+				<button type="button" value="Resetar" class="btn btn-secondary" data-url="{{ url('fis_emissaonfe_form', {notaFiscal: notaFiscal.id}) }}"
+					data-target="#confirmationModal" data-toggle="modal">
+					<i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+				</button>
+
+			</div>
+		</div>
+
+
+		{{ form_end(form, {'render_rest': false}) }}
+
+
+
+		{{ include('Fiscal/emissaoNFe/historicos.html.twig') }}
+	</div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+
+{% block down_scripts %}
+
+
+<script>
+
+	
+	$(document).ready(function() {
+
+		$(".TIPO_FISCAL").change(
+				function() {
+					prepareForm();
+					$('.DADOSPESSOA').val('');
+					$('.DADOSPESSOA').prop('disabled', false);
+				}
+			);
+					
+				
+		$(".TIPO_PESSOA").change(
+				function() {
+					prepareForm();
+					$('.DADOSPESSOA').val('');
+					$('.DADOSPESSOA').prop('disabled', false);
+				}
+			);
+
+		function prepareForm() {
+
+			// quando muda de NFE pra NFCE e vice-versa, esconde os campos
+			tipoFiscal = $(".TIPO_FISCAL").find(':checked').val();
+
+			if (tipoFiscal == 'NFCE') {
+				$(".NFE").parent().parent().css('display', 'none');
+			} else {
+				$(".NFE").parent().parent().css('display', '');
+			}
+			
+			tipoPessoa = $(".TIPO_PESSOA").find(':checked').val();
+
+			if (tipoPessoa == 'PESSOA_FISICA') {
+				$(".PESSOA_FISICA").parent().parent().css('display', '');
+				$(".PESSOA_JURIDICA").parent().parent().css('display', 'none');
+			} else {
+				$(".PESSOA_FISICA").parent().parent().css('display', 'none');
+				$(".PESSOA_JURIDICA").parent().parent().css('display', '');
+			}
+
+			if ($('input[id$=_pessoa_id]').val() != '') {
+				$('.DADOSPESSOA').prop('disabled', true);
+			}
+			
+		}
+
+		prepareForm();
+
+
+		$('#pesquisar_cep').click(function(){
+			$.ajax({
+				url:'http://cep.republicavirtual.com.br/web_cep.php',
+				type:'get',
+				dataType:'json',
+				crossDomain: true,
+				data:{
+					cep: $('input[id$=_cep]').val(), //pega valor do campo
+					formato:'json'
+				},
+				success: function(res){
+					$('input[id$=_logradouro]').val(res.tipo_logradouro + ' ' + res.logradouro);					
+					$('input[id$=_cidade]').val(res.cidade);
+					$('input[id$=_bairro]').val(res.bairro);
+					$('select[id$=_estado]').val(res.uf).change();					
+					
+				}
+			});
+		});
+
+		var documentoAtual;
+		
+		function findPessoaByDocumento(documento) {
+
+			if (documento == documentoAtual) return;
+			documentoAtual = documento;
+			
+			$.ajax({
+				url: '{{ url('bse_pessoa_findByNome') }}' + '/' + documento.replace(/[^0-9]/g, ""),
+				type:'get',
+				dataType:'json',
+				success: function(data){
+					$('input[id$=_nome]').val(data.nome);					
+					$('input[id$=_pessoa_id]').val(data.id);					
+					$('input[id$=_razao_social]').val(data.nome);					
+					$('input[id$=_nome_fantasia]').val(data.nomeFantasia);					
+					$('input[id$=_razao_social]').val(data.razaoSocial);
+										
+					$('input[id$=_fone1]').val(data.fone1);					
+					$('input[id$=_email]').val(data.email);					
+
+					if (data.endereco) {
+    					$('input[id$=_cep]').val(data.endereco.cep);					
+    					$('input[id$=_logradouro]').val(data.endereco.logradouro);					
+    					$('input[id$=_numero]').val(data.endereco.numero);					
+    					$('input[id$=_complemento]').val(data.endereco.complemento);					
+    					$('input[id$=_bairro]').val(data.endereco.bairro);					
+    					$('input[id$=_cidade]').val(data.endereco.cidade);					
+    					$('select[id$=_estado]').val(data.endereco.estado).change();
+    				}
+
+					if (data.id) {
+						$('.DADOSPESSOA').prop('disabled', true);
+					}					
+				}
+			});
+		} 
+		
+		$('input[id$=_cpf]').blur(function() {
+			findPessoaByDocumento(this.value);
+		});
+		$('input[id$=_cnpj]').blur(function() {
+			findPessoaByDocumento(this.value);
+		});
+		
+		
+	});
+
+	
+</script>
+
+{% endblock %}

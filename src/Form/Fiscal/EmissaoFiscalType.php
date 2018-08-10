@@ -9,7 +9,16 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 
+/**
+ * Form que serve tanto para emissão fiscal por PV quanto para NFe.
+ * 
+ * @author Carlos Eduardo Pauluk
+ *
+ */
 class EmissaoFiscalType extends AbstractType
 {
 
@@ -65,7 +74,52 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => $disabled
             ));
             
-            // Adiciona campo CPF
+            $builder->add('numero_nf', IntegerType::class, array(
+                'label' => 'Número NF',
+                'required' => false,
+                'disabled' => true
+            ));
+            $builder->add('serie', IntegerType::class, array(
+                'label' => 'Série NF',
+                'required' => false,
+                'disabled' => true
+            ));
+            $builder->add('uuid', TextType::class, array(
+                'label' => 'UUID',
+                'required' => false,
+                'disabled' => true
+            ));
+            
+            $builder->add('dtEmissao', DateType::class, array(
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy HH:ii:ss',
+                'label' => 'Dt Emissão',
+                'attr' => array('class' => 'crsr-date'),
+                'required' => true,
+                'disabled' => $disabled
+            ));
+            
+            $builder->add('dtSaiEnt', DateType::class, array(
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy HH:ii:ss',
+                'label' => 'Dt Saída/Entrada',
+                'attr' => array('class' => 'crsr-date'),
+                'required' => true,
+                'disabled' => $disabled
+            ));
+            
+            $builder->add('valorTotal', MoneyType::class, array(
+                'label' => 'Limite',
+                'currency' => 'BRL',
+                'grouping' => 'true',
+                'required' => false,
+                'attr' => array(
+                    'class' => 'crsr-money'
+                )
+            ));
+            
+            
+            
             $builder->add('cpf', TextType::class, array(
                 'label' => 'CPF',
                 'attr' => array(
@@ -74,7 +128,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            // Adiciona campo NOME
+            
             $builder->add('nome', TextType::class, array(
                 'label' => 'Nome',
                 'attr' => array(
@@ -87,7 +141,7 @@ class EmissaoFiscalType extends AbstractType
             $builder->add('cnpj', TextType::class, array(
                 'label' => 'CNPJ',
                 'attr' => array(
-                    'class' => 'PESSOA_JURIDICA cnpj DADOSPESSOA'
+                    'class' => 'PESSOA_JURIDICA cnpj'
                 ),
                 'required' => false,
                 'disabled' => $disabled
@@ -237,6 +291,68 @@ class EmissaoFiscalType extends AbstractType
                         'max' => 1000
                     ))
                 )
+            ));
+            
+            $builder->add('natureza_operacao', TextType::class, array(
+                'label' => 'Natureza da Operação',
+                'required' => true,
+                'disabled' => $disabled
+            ));
+            
+            $builder->add('entrada_saida', ChoiceType::class, array(
+                'label' => '',
+                'required' => true,
+                'choices' => array(
+                    'Entrada' => true,
+                    'Saída' => false
+                ),
+                'disabled' => $disabled
+            ));
+            
+            
+            $builder->add('transp_modalidade_frete', ChoiceType::class, array(
+                'label' => 'Modalidade Frete',
+                'required' => true,                
+                'choices' => array(
+                    'Sem frete' => 'SEM_FRETE',
+                    'Por conta do emitente' => 'EMITENTE',
+                    'Por conta do destinatário' => 'DESTINATARIO'
+                ),
+                'disabled' => $disabled
+            ));
+            
+            $builder->add('indicador_forma_pagto', ChoiceType::class, array(
+                'label' => 'Forma Pagto',
+                'required' => true,
+                'choices' => array(
+                    'A vista' => 'VISTA',
+                    'A prazo' => 'PRAZO',
+                    'Outros' => 'OUTROS'
+                ),
+                'disabled' => $disabled
+            ));
+            
+            $builder->add('indicador_forma_pagto', ChoiceType::class, array(
+                'label' => 'Forma Pagto',
+                'required' => true,
+                'choices' => array(
+                    'A vista' => 'VISTA',
+                    'A prazo' => 'PRAZO',
+                    'Outros' => 'OUTROS'
+                ),
+                'disabled' => $disabled
+            ));
+            
+            $builder->add('finalidade_nf', ChoiceType::class, array(
+                'label' => 'Finalidade',
+                'required' => true,
+                'choices' => array(
+                    'Normal' => 'NORMAL',
+                    'Devolução' => 'DEVOLUCAO',
+                    'Ajuste' => 'AJUSTE',
+                    'Complementar' => 'COMPLEMENTAR'
+                ),
+                'disabled' => $disabled
             ));
         });
     }

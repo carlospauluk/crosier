@@ -57,7 +57,7 @@ class EmissaoFiscalPVController extends Controller
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
             $pessoaDestinatario->setTipoPessoa('PESSOA_FISICA');
         } else {
-//             $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
+            // $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
         }
         
         // Se foi passado via post
@@ -90,7 +90,6 @@ class EmissaoFiscalPVController extends Controller
         $permiteReimpressao = $this->notaFiscalBusiness->permiteReimpressao($notaFiscal);
         $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
-        $permiteCartaCorrecao = $this->notaFiscalBusiness->permiteCartaCorrecao($notaFiscal);
         
         $response = $this->render('Fiscal/emissaoFiscalPV/form.html.twig', array(
             'form' => $form->createView(),
@@ -99,8 +98,7 @@ class EmissaoFiscalPVController extends Controller
             'permiteFaturamento' => $permiteFaturamento,
             'permiteCancelamento' => $permiteCancelamento,
             'permiteReimpressao' => $permiteReimpressao,
-            'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento,
-            'permiteCartaCorrecao' => $permiteCartaCorrecao
+            'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento
         ));
         return $response;
     }
@@ -227,18 +225,6 @@ class EmissaoFiscalPVController extends Controller
             'id' => $venda->getId()
         ));
     }
-    
-    /**
-     *
-     * @Route("/fis/emissaofiscalpv/reimprimirCartaCorrecao/{notaFiscal}/{venda}", name="fis_emissaofiscalpv_reimprimirCartaCorrecao")
-     */
-    public function reimprimirCartaCorrecao(Request $request, NotaFiscal $notaFiscal, Venda $venda)
-    {
-        $this->notaFiscalBusiness->imprimirCartaCorrecao($notaFiscal);
-        return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-            'id' => $venda->getId()
-        ));
-    }
 
     /**
      *
@@ -290,60 +276,7 @@ class EmissaoFiscalPVController extends Controller
         ));
         return $response;
     }
-    
-    /**
-     *
-     * @Route("/fis/emissaofiscalpv/cartaCorrecaoForm/{notaFiscal}/{venda}", name="fis_emissaofiscalpv_cartaCorrecaoForm")
-     */
-    public function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal, Venda $venda)
-    {
-        if (! $venda) {
-            $this->addFlash('error', 'Venda não encontrada!');
-            return $this->redirectToRoute('fis_emissaofiscalpv_ini');
-        }
-        if (! $notaFiscal) {
-            $this->addFlash('error', 'Venda não encontrada!');
-            return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-                'id' => $venda->getId()
-            ));
-        }
-        
-        // Se foi passado via post
-        $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-        $dataPosted = $request->request->get('emissao_fiscal_pv');
-        if (is_array($dataPosted)) {
-            $data = array_merge($data, $dataPosted);
-        }
-        $form = $this->createForm(EmissaoFiscalType::class, $data);
-        $form->handleRequest($request);
-        
-        if ($form->isSubmitted()) {
-            if ($form->isValid()) {
-                $notaFiscal->setCartaCorrecao($data['carta_correcao']);
-                $notaFiscal = $this->notaFiscalBusiness->cartaCorrecao($notaFiscal);
-                return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-                    'id' => $venda->getId()
-                ));
-            } else {
-                $form->getErrors(true, true);
-            }
-        }
-        
-        
-        // Mantenho pois as regras pra cancelamento e pra carta de correção são as mesmas
-        $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
-        $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
-        
-        $response = $this->render('Fiscal/emissaoFiscalPV/cartaCorrecaoForm.html.twig', array(
-            'form' => $form->createView(),
-            'venda' => $venda,
-            'notaFiscal' => $notaFiscal,
-            'permiteCancelamento' => $permiteCancelamento,
-            'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento
-        ));
-        return $response;
-    }
-    
+
     /**
      *
      * @Route("/fis/emissaofiscalpv/consultarStatus/{notaFiscal}/{venda}", name="fis_emissaofiscalpv_consultarStatus")

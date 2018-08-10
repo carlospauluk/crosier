@@ -134,7 +134,7 @@
 				$(".PESSOA_JURIDICA").parent().parent().css('display', '');
 			}
 
-			if ($('input[id*=_pessoa_id]').val() != '') {
+			if ($('input[id$=_pessoa_id]').val() != '') {
 				$('.DADOSPESSOA').prop('disabled', true);
 			}
 		}
@@ -149,14 +149,14 @@
 				dataType:'json',
 				crossDomain: true,
 				data:{
-					cep: $('input[id*=_cep]').val(), //pega valor do campo
+					cep: $('input[id$=_cep]').val(), //pega valor do campo
 					formato:'json'
 				},
 				success: function(res){
-					$('input[id*=_logradouro]').val(res.tipo_logradouro + ' ' + res.logradouro);					
-					$('input[id*=_cidade]').val(res.cidade);
-					$('input[id*=_bairro]').val(res.bairro);
-					$('select[id*=_estado]').val(res.uf).change();					
+					$('input[id$=_logradouro]').val(res.tipo_logradouro + ' ' + res.logradouro);					
+					$('input[id$=_cidade]').val(res.cidade);
+					$('input[id$=_bairro]').val(res.bairro);
+					$('select[id$=_estado]').val(res.uf).change();					
 					
 				}
 			});
@@ -168,22 +168,22 @@
 				type:'get',
 				dataType:'json',
 				success: function(data){
-					$('input[id*=_nome]').val(data.nome);					
-					$('input[id*=_pessoa_id]').val(data.id);					
-					$('input[id*=_razao_social]').val(data.nome);					
-					$('input[id*=_nome_fantasia]').val(data.nomeFantasia);					
-					$('input[id*=_razao_social]').val(data.razaoSocial);
+					$('input[id$=_nome]').val(data.nome);					
+					$('input[id$=_pessoa_id]').val(data.id);					
+					$('input[id$=_razao_social]').val(data.nome);					
+					$('input[id$=_nome_fantasia]').val(data.nomeFantasia);					
+					$('input[id$=_razao_social]').val(data.razaoSocial);
 										
-					$('input[id*=_fone1]').val(data.fone1);					
-					$('input[id*=_email]').val(data.email);					
+					$('input[id$=_fone1]').val(data.fone1);					
+					$('input[id$=_email]').val(data.email);					
 
-					$('input[id*=_cep]').val(data.endereco.cep);					
-					$('input[id*=_logradouro]').val(data.endereco.logradouro);					
-					$('input[id*=_numero]').val(data.endereco.numero);					
-					$('input[id*=_complemento]').val(data.endereco.complemento);					
-					$('input[id*=_bairro]').val(data.endereco.bairro);					
-					$('input[id*=_cidade]').val(data.endereco.cidade);					
-					$('select[id*=_estado]').val(data.endereco.estado).change();
+					$('input[id$=_cep]').val(data.endereco.cep);					
+					$('input[id$=_logradouro]').val(data.endereco.logradouro);					
+					$('input[id$=_numero]').val(data.endereco.numero);					
+					$('input[id$=_complemento]').val(data.endereco.complemento);					
+					$('input[id$=_bairro]').val(data.endereco.bairro);					
+					$('input[id$=_cidade]').val(data.endereco.cidade);					
+					$('select[id$=_estado]').val(data.endereco.estado).change();
 
 					if (data.id) {
 						$('.DADOSPESSOA').prop('disabled', true);
@@ -192,10 +192,10 @@
 			});
 		} 
 		
-		$('input[id*=_cpf]').blur(function() {
+		$('input[id$=_cpf]').blur(function() {
 			findPessoaByDocumento(this.value);
 		});
-		$('input[id*=_cnpj]').blur(function() {
+		$('input[id$=_cnpj]').blur(function() {
 			findPessoaByDocumento(this.value);
 		});
 		

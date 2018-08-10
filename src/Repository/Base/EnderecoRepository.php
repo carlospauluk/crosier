@@ -44,9 +44,13 @@ class EnderecoRepository extends ServiceEntityRepository
         $query->setParameter(2, $pessoa->getId());
         $query->setParameter(3, $pessoa->getId());
         $results = $query->getResult();
-        $id = $results[0]->getId();
-        $this->getEntityManager()->flush();
-        $endereco = $this->find($id);
-        return $endereco;
+        if ($results) {
+            $id = $results[0]->getId();
+            $this->getEntityManager()->flush();
+            $endereco = $this->find($id);
+            return $endereco;
+        } else {
+            return null;
+        }
     }
 }

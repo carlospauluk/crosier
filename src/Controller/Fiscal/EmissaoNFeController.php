@@ -2,24 +2,28 @@
 namespace App\Controller\Fiscal;
 
 use App\Business\Fiscal\NotaFiscalBusiness;
-use App\Business\Vendas\VendaBusiness;
 use App\Entity\Base\Pessoa;
 use App\Entity\Fiscal\NotaFiscal;
-use App\Entity\Vendas\Venda;
 use App\Form\Fiscal\EmissaoFiscalType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Fiscal\NotaFiscalItem;
+use App\Form\Fiscal\NotaFiscalItemType;
+use App\Business\Base\EntityIdBusiness;
 
 class EmissaoNFeController extends Controller
 {
 
     private $notaFiscalBusiness;
+    
+    private $entityIdBusiness;
 
-    public function __construct(VendaBusiness $vendaBusiness, NotaFiscalBusiness $notaFiscalBusiness)
+    public function __construct(NotaFiscalBusiness $notaFiscalBusiness, EntityIdBusiness $entityIdBusiness)
     {
         Route::class;
         $this->notaFiscalBusiness = $notaFiscalBusiness;
+        $this->entityIdBusiness = $entityIdBusiness;
     }
 
     /**
@@ -31,6 +35,7 @@ class EmissaoNFeController extends Controller
         if (! $notaFiscal) {
             $notaFiscal = new NotaFiscal();
             $notaFiscal->setTipoNotaFiscal('NFE');
+            $notaFiscal->setEntrada(false);
             $pessoaDestinatario = new Pessoa();
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
             $pessoaDestinatario->setTipoPessoa('PESSOA_JURIDICA');
@@ -38,7 +43,12 @@ class EmissaoNFeController extends Controller
         
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-        $dataPosted = $request->request->get('emissao_fiscal_pv');
+        $dataPosted = $request->request->get('emissao_fiscal');
+        
+        if (! $dataPosted) {
+            $dataPosted['tipoPessoa'] = 'PESSOA_JURIDICA';
+        }
+        
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }
@@ -48,9 +58,10 @@ class EmissaoNFeController extends Controller
         
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $notaFiscal = $this->notaFiscalBusiness->faturar($notaFiscal);
+                $notaFiscal = $this->notaFiscalBusiness->formData2NotaFiscal($data);
+                $notaFiscal = $this->notaFiscalBusiness->saveNotaFiscal($notaFiscal);
                 $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-                return $this->redirectToRoute('fis_emissaoNFE_form', array(
+                return $this->redirectToRoute('fis_emissaonfe_form', array(
                     'notaFiscal' => $notaFiscal->getId()
                 ));
             } else {
@@ -76,22 +87,16 @@ class EmissaoNFeController extends Controller
         return $response;
     }
 
-    
-
     /**
      *
-     * @Route("/fis/emissaofiscalpv/cancelarForm/{notaFiscal}/{venda}", name="fis_emissaofiscalpv_cancelarForm")
+     * @Route("/fis/emissaonfe/cancelarForm/{notaFiscal}", name="fis_emissaonfe_cancelarForm")
      */
-    public function cancelarForm(Request $request, NotaFiscal $notaFiscal, Venda $venda)
+    public function cancelarForm(Request $request, NotaFiscal $notaFiscal)
     {
-        if (! $venda) {
-            $this->addFlash('error', 'Venda não encontrada!');
-            return $this->redirectToRoute('fis_emissaofiscalpv_ini');
-        }
         if (! $notaFiscal) {
-            $this->addFlash('error', 'Venda não encontrada!');
-            return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-                'id' => $venda->getId()
+            $this->addFlash('error', 'Nota Fiscal não encontrada!');
+            return $this->redirectToRoute('fis_emissaonfe_form', array(
+                'notaFiscal' => $notaFiscal->getId()
             ));
         }
         
@@ -108,8 +113,8 @@ class EmissaoNFeController extends Controller
             if ($form->isValid()) {
                 $notaFiscal->setMotivoCancelamento($data['cancelamento_motivo']);
                 $notaFiscal = $this->notaFiscalBusiness->cancelar($notaFiscal);
-                return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-                    'id' => $venda->getId()
+                return $this->redirectToRoute('fis_emissaonfe_form', array(
+                    'notaFiscal' => $notaFiscal->getId()
                 ));
             } else {
                 $form->getErrors(true, true);
@@ -119,9 +124,8 @@ class EmissaoNFeController extends Controller
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
         $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
         
-        $response = $this->render('Fiscal/emissaoFiscalPV/cancelarForm.html.twig', array(
+        $response = $this->render('Fiscal/emissaonfe/cancelarForm.html.twig', array(
             'form' => $form->createView(),
-            'venda' => $venda,
             'notaFiscal' => $notaFiscal,
             'permiteCancelamento' => $permiteCancelamento,
             'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento
@@ -131,18 +135,14 @@ class EmissaoNFeController extends Controller
 
     /**
      *
-     * @Route("/fis/emissaofiscalpv/cartaCorrecaoForm/{notaFiscal}/{venda}", name="fis_emissaofiscalpv_cartaCorrecaoForm")
+     * @Route("/fis/emissaonfe/cartaCorrecaoForm/{notaFiscal}", name="fis_emissaonfe_cartaCorrecaoForm")
      */
-    public function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal, Venda $venda)
+    public function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal)
     {
-        if (! $venda) {
-            $this->addFlash('error', 'Venda não encontrada!');
-            return $this->redirectToRoute('fis_emissaofiscalpv_ini');
-        }
         if (! $notaFiscal) {
-            $this->addFlash('error', 'Venda não encontrada!');
-            return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-                'id' => $venda->getId()
+            $this->addFlash('error', 'Nota Fiscal não encontrada!');
+            return $this->redirectToRoute('fis_emissaonfe_form', array(
+                'notaFiscal' => $notaFiscal->getId()
             ));
         }
         
@@ -159,8 +159,8 @@ class EmissaoNFeController extends Controller
             if ($form->isValid()) {
                 $notaFiscal->setCartaCorrecao($data['carta_correcao']);
                 $notaFiscal = $this->notaFiscalBusiness->cartaCorrecao($notaFiscal);
-                return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-                    'id' => $venda->getId()
+                return $this->redirectToRoute('fis_emissaonfe_form', array(
+                    'notaFiscal' => $notaFiscal->getId()
                 ));
             } else {
                 $form->getErrors(true, true);
@@ -171,9 +171,8 @@ class EmissaoNFeController extends Controller
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
         $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
         
-        $response = $this->render('Fiscal/emissaoFiscalPV/cartaCorrecaoForm.html.twig', array(
+        $response = $this->render('Fiscal/emissaonfe/cartaCorrecaoForm.html.twig', array(
             'form' => $form->createView(),
-            'venda' => $venda,
             'notaFiscal' => $notaFiscal,
             'permiteCancelamento' => $permiteCancelamento,
             'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento
@@ -183,13 +182,67 @@ class EmissaoNFeController extends Controller
 
     /**
      *
-     * @Route("/fis/emissaonfe/consultarStatus/{notaFiscal}", name="fis_emissaofiscalpv_consultarStatus")
+     * @Route("/fis/emissaonfe/consultarStatus/{notaFiscal}", name="fis_emissaonfe_consultarStatus")
      */
     public function consultarStatus(Request $request, NotaFiscal $notaFiscal)
     {
         $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
         return $this->redirectToRoute('fis_emissaonfe_form', array(
             'notaFiscal' => $notaFiscal->getId()
+        ));
+    }
+
+    /**
+     *
+     * @Route("/fis/emissaonfe/reimprimir/{notaFiscal}", name="fis_emissaonfe_reimprimir")
+     */
+    public function reimprimir(Request $request, NotaFiscal $notaFiscal)
+    {
+        $this->notaFiscalBusiness->imprimir($notaFiscal);
+        return $this->redirectToRoute('fis_emissaonfe_form', array(
+            'notaFiscal' => $notaFiscal->getId()
+        ));
+    }
+
+    /**
+     *
+     * @Route("/fis/emissaonfe/formItem/{notaFiscal}/{notaFiscalItem}", name="fis_emissaonfe_formItem", defaults={"notaFiscalItem"=null}, requirements={"notaFiscal"="\d+","notaFiscalItem"="\d+"})
+     */
+    public function formItem(Request $request, NotaFiscal $notaFiscal, NotaFiscalItem $item = null)
+    {
+        if (! $item) {
+            $item = new NotaFiscalItem();
+            $item->setNotaFiscal($notaFiscal);
+            $item->setOrdem(1);
+            $this->entityIdBusiness->handlePersist($item);
+        }
+        
+        $form = $this->createForm(NotaFiscalItemType::class, $item);
+        
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                // $form->getData() holds the submitted values
+                // but, the original `$task` variable has also been updated
+                $item = $form->getData();
+                
+                // ... perform some action, such as saving the task to the database
+                // for example, if Task is a Doctrine entity, save it!
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($item);
+                $entityManager->flush();
+                $this->addFlash('success', 'Registro salvo com sucesso!');
+                return $this->redirectToRoute('fis_emissaonfe_form', array(
+                    'notaFiscal' => $notaFiscal->getId()
+                ));
+            } else {
+                $form->getErrors(true, false);
+            }
+        }
+        return $this->render('Fiscal/emissaoNFe/formItem.html.twig', array(
+            'form' => $form->createView(),
+            'notaFiscal' => $notaFiscal 
         ));
     }
 }
