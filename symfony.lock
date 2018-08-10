@@ -141,7 +141,7 @@
         "version": "v6.0.2"
     },
     "symfony/asset": {
-        "version": "v4.0.8"
+        "version": "v4.1.3"
     },
     "symfony/browser-kit": {
         "version": "v4.0.8"
@@ -392,7 +392,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "master",
             "version": "1.0",
-            "ref": "0e8ef1deeaef761e1defbec0be694237660ab13a"
+            "ref": "b87dfd249390a7b534caa137450277930901236e"
         }
     },
     "symfony/yaml": {
