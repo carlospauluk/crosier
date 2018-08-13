@@ -1,66 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}" />
 
-<title>{% block title %}{% endblock %}</title>
-{% block stylesheets %}
+    <title>{% block title %}{% endblock %}</title>
 
-<link rel="stylesheet" href="{{ asset('build/app.css') }}">
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('build/bse_layout.css') }}">
+    {% endblock %}
 
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
-
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/font-awesome/css/fontawesome-all.min.css') }}">
-
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/flag-icon-css/css/flag-icon.min.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/simple-line-icons/css/simple-line-icons.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/coreui/css/style.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/pace-progress/css/pace-theme-loading-bar.css') }}">
-
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/crosier/css/crosier.css') }}">
-
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/jqueryui/themes/base/jquery-ui.css') }}" />
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/fh-3.1.3/datatables.min.css" />
+    {% block up_scripts %}
 
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-
-
-
-{% endblock %}
-
-{% block up_scripts %}
-
-<script src="{{ asset('build/app.js') }}"></script>
-
-<script src="{{ asset('assets/jquery-3.2.1/jquery-3.2.1.min.js') }}"></script>
-<script src="{{ asset('assets/bootstrap/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('assets/jqueryui/jquery-ui.js') }}"></script>
-
-
-<script src="{{ asset('assets/popper.js/dist/popper.min.js') }}"></script>
-<script src="{{ asset('assets/pace-progress/pace.min.js') }}"></script>
-<script src="{{ asset('assets/perfect-scrollbar/dist/perfect-scrollbar.min.js') }}"></script>
-<script src="{{ asset('assets/coreui/js/coreui.min.js') }}"></script>
-
-<script src="{{ asset('assets/chart.js/Chart.min.js') }}"></script>
-<script src="{{ asset('assets/coreui/js/main.js') }}"></script>
-
-<script src="{{ asset('assets/jquery-mask-plugin/js/jquery.mask.min.js') }}"></script>
-<script src="{{ asset('assets/jquery-mask-money/js/jquery.maskMoney.js') }}"></script>
-<script src="{{ asset('assets/crosier/js/form_handler.js') }}"></script>
-<script src="{{ asset('assets/crosier/js/list_handler.js') }}"></script>
-
-
-<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/fh-3.1.3/datatables.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-
-{% endblock %}
+    {% endblock %}
 
 </head>
 
@@ -68,17 +23,17 @@
 {% endblock %}
 
 
-<script>
-	$(document).ready(function() {
 
-		$(document).ajaxStart(function() {
-			Pace.restart();
-		});
 
-	});
-</script>
+
+
 
 {% block down_scripts %}
+    <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
+    <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.0.5/es6-promise.auto.min.js"></script>
+    <script src="{{ asset('build/manifest.js') }}"></script>
+    <script src="{{ asset('build/bse_layout.js') }}"></script>
 {% endblock %}
 
 </html>

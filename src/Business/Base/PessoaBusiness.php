@@ -25,6 +25,7 @@ class PessoaBusiness
      */
     public function fillTransients(Pessoa $pessoa)
     {
+        if (!$pessoa->getId()) return $pessoa;
         $pessoaRepo = $this->doctrine->getRepository(Pessoa::class);
         
         $relacionamento = $pessoaRepo->findRelacionamento($pessoa);
