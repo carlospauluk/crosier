@@ -55,8 +55,8 @@ class NotaFiscalBusiness
         
         $formData['nota_fiscal_id'] = $notaFiscal->getId();
         $formData['uuid'] = $notaFiscal->getUuid();
-        $formData['dtEmissao'] = $notaFiscal->getDtEmissao();
-        $formData['dtSaiEnt'] = $notaFiscal->getDtSaiEnt();
+        $formData['dtEmissao'] = ($notaFiscal->getDtEmissao() instanceof \DateTime) ? $notaFiscal->getDtEmissao()->format('d/m/Y H:i:s') : null;
+        $formData['dtSaiEnt'] = ($notaFiscal->getDtSaiEnt() instanceof \DateTime) ? $notaFiscal->getDtSaiEnt()->format('d/m/Y H:i:s') : null;
         $formData['numero_nf'] = $notaFiscal->getNumero();
         $formData['serie'] = $notaFiscal->getSerie();
         $formData['ambiente'] = $notaFiscal->getAmbiente();
@@ -114,7 +114,9 @@ class NotaFiscalBusiness
         $formData['natureza_operacao'] = $notaFiscal->getNaturezaOperacao();
         $formData['finalidade_nf'] = $notaFiscal->getFinalidadeNf();
         $formData['entrada_saida'] = $notaFiscal->getEntrada();
-        
+
+        $formData['info_compl'] = $notaFiscal->getInfoCompl();
+
         return $formData;
     }
 
@@ -122,7 +124,7 @@ class NotaFiscalBusiness
      * Transforma o array para uma NotaFiscal
      *
      * @param array $formData
-     * @return array
+     * @return NotaFiscal|null|object
      */
     public function formData2NotaFiscal($formData)
     {
@@ -138,9 +140,17 @@ class NotaFiscalBusiness
         }
         
         $notaFiscal->setUuid(isset($formData['uuid']) ? $formData['uuid'] : null);
-        
-        $notaFiscal->setDtEmissao(isset($formData['dtEmissao']) ? $formData['dtEmissao'] : null);
-        $notaFiscal->setDtSaiEnt(isset($formData['dtSaiEnt']) ? $formData['dtSaiEnt'] : null);
+
+
+        if ($formData['dtEmissao']) {
+            $dtEmissao = \DateTime::createFromFormat('d/m/Y H:i:s', $formData['dtEmissao']);
+            $notaFiscal->setDtEmissao($dtEmissao);
+        }
+        if ($formData['dtSaiEnt']) {
+            $dtSaiEnt = \DateTime::createFromFormat('d/m/Y H:i:s', $formData['dtSaiEnt']);
+            $notaFiscal->setDtSaiEnt($dtSaiEnt);
+        }
+
         $notaFiscal->setNumero(isset($formData['numero_nf']) ? $formData['numero_nf'] : null);
         $notaFiscal->setSerie(isset($formData['serie']) ? $formData['serie'] : null);
         $notaFiscal->setAmbiente(isset($formData['ambiente']) ? $formData['ambiente'] : null);
@@ -152,7 +162,8 @@ class NotaFiscalBusiness
         $notaFiscal->setFinalidadeNf(isset($formData['finalidade_nf']) ? $formData['finalidade_nf'] : null);
         $notaFiscal->setNaturezaOperacao(isset($formData['natureza_operacao']) ? $formData['natureza_operacao'] : null);
         $notaFiscal->setEntrada(isset($formData['entrada_saida']) ? $formData['entrada_saida'] : null);
-        
+
+        $notaFiscal->setInfoCompl(isset($formData['info_compl']) ? $formData['info_compl'] : null);
         
         return $notaFiscal;
     }
@@ -179,14 +190,7 @@ class NotaFiscalBusiness
                 $notaFiscal = new NotaFiscal();
             }
             
-            if (! $notaFiscal->getUuid()) {
-                $notaFiscal->setUuid(md5(uniqid(rand(), true)));
-            }
-            
-            if (! $notaFiscal->getCnf()) {
-                $cNF = rand(10000000, 99999999);
-                $notaFiscal->setCnf($cNF);
-            }
+            $this->handleIdeFields($notaFiscal);
             
             if (! $editando) {
                 // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
@@ -196,22 +200,10 @@ class NotaFiscalBusiness
                 
                 $notaFiscal->setIndicadorFormaPagto($venda->getPlanoPagto()
                     ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
-                $ambiente = getenv("BONSUCESSO_FISCAL_AMBIENTE");
-                if (! $ambiente) {
-                    throw new \Exception("'BONSUCESSO_FISCAL_AMBIENTE' não informado");
-                }
-                $notaFiscal->setAmbiente($ambiente);
-                
-                $chave = "BONSUCESSO_FISCAL_" . strtoupper($dataNotaFiscal['tipo']) . "_SERIE";
-                $serie = getenv($chave);
-                if (! $serie) {
-                    throw new \Exception("'" . $chave . "' não informado");
-                }
-                $notaFiscal->setSerie($serie);
-                $nnf = $this->doctrine->getRepository(NotaFiscal::class)->findProxNumFiscal($ambiente == 'PROD', $notaFiscal->getSerie(), $dataNotaFiscal['tipo']);
-                $notaFiscal->setNumero($nnf);
-                $notaFiscal->setEntrada(false);
+
                 $notaFiscal->setTipoNotaFiscal($dataNotaFiscal['tipo']);
+
+                $notaFiscal->setEntrada(false);
                 $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
                 $notaFiscal->setPessoaEmitente($emitente);
                 
@@ -307,9 +299,7 @@ class NotaFiscalBusiness
                     ->calculaTotais();
             }
             
-            if (! $notaFiscal->getChaveAcesso()) {
-                $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
-            }
+
             
             $this->entityIdBusiness->handlePersist($notaFiscal);
             $this->doctrine->getManager()->persist($notaFiscal);
@@ -448,10 +438,16 @@ class NotaFiscalBusiness
         return $nf;
     }
 
+    /**
+     * @param NotaFiscal $notaFiscal
+     * @return NotaFiscal
+     * @throws \Exception
+     */
     public function faturar(NotaFiscal $notaFiscal)
     {
         $this->addHistorico($notaFiscal, - 1, "INICIANDO FATURAMENTO");
         if ($this->permiteFaturamento($notaFiscal)) {
+            $this->handleIdeFields($notaFiscal);
             $notaFiscal = $this->unimakeBusiness->faturar($notaFiscal);
             if ($notaFiscal) {
                 $this->addHistorico($notaFiscal, $notaFiscal->getSpartacusStatus(), $notaFiscal->getSpartacusMensretornoReceita(), "FATURAMENTO PROCESSADO");
@@ -709,5 +705,46 @@ class NotaFiscalBusiness
         $this->entityIdBusiness->handlePersist($historico);
         $this->doctrine->getManager()->persist($historico);
         $this->doctrine->getManager()->flush();
+    }
+
+    /**
+     * Lida com os campos que são gerados programaticamente.
+     *
+     * @param $notaFiscal
+     * @throws \Exception
+     */
+    public function handleIdeFields(NotaFiscal $notaFiscal): void
+    {
+        if (! $notaFiscal->getUuid()) {
+            $notaFiscal->setUuid(md5(uniqid(rand(), true)));
+        }
+
+        if (! $notaFiscal->getCnf()) {
+            $cNF = rand(10000000, 99999999);
+            $notaFiscal->setCnf($cNF);
+        }
+
+        if (!$notaFiscal->getNumero()) {
+            $ambiente = getenv("BONSUCESSO_FISCAL_AMBIENTE");
+            if (!$ambiente) {
+                throw new \Exception("'BONSUCESSO_FISCAL_AMBIENTE' não informado");
+            }
+            $notaFiscal->setAmbiente($ambiente);
+
+            $chave = "BONSUCESSO_FISCAL_" . strtoupper($notaFiscal->getTipoNotaFiscal()) . "_SERIE";
+            $serie = getenv($chave);
+            if (!$serie) {
+                throw new \Exception("'" . $chave . "' não informado");
+            }
+            $notaFiscal->setSerie($serie);
+            $nnf = $this->doctrine->getRepository(NotaFiscal::class)->findProxNumFiscal($ambiente == 'PROD', $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
+            $notaFiscal->setNumero($nnf);
+        }
+
+        if (! $notaFiscal->getChaveAcesso()) {
+            $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
+        }
+
+
     }
 }

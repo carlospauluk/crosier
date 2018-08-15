@@ -37,21 +37,24 @@ class CrosierMasks {
             thousands: '.',
             decimal: ',',
             affixesStay: true,
-            precision: 2
+            precision: 2,
+            allowZero: true
         });
         $(".crsr-dec3").maskMoney({
             prefix: '',
             thousands: '.',
             decimal: ',',
             affixesStay: true,
-            precision: 3
+            precision: 3,
+            allowZero: true
         });
         $(".crsr-dec4").maskMoney({
             prefix: '',
             thousands: '.',
             decimal: ',',
             affixesStay: true,
-            precision: 4
+            precision: 4,
+            allowZero: true
         });
 
     }

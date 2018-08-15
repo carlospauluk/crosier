@@ -27,7 +27,7 @@ Encore
      * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
      */
     .createSharedEntry('bse_layout', './assets/js/bse/layout.js')
-
+    .addEntry('fis_emissaoNFe_form', './assets/js/fis/emissaoNFe/form.js')
 
 
     /*

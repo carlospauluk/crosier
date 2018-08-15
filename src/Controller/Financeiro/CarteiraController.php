@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller\Financeiro;
 
 use App\Entity\Financeiro\Carteira;
@@ -18,33 +19,33 @@ class CarteiraController extends Controller
      */
     public function form(Request $request, Carteira $carteira = null)
     {
-        if (! $carteira) {
+        if (!$carteira) {
             $carteira = new Carteira();
-            
+
             $carteira->setInserted(new \DateTime('now'));
             $carteira->setUpdated(new \DateTime('now'));
         }
-        
+
         $form = $this->createForm(CarteiraType::class, $carteira);
-        
+
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()) {
             // $form->getData() holds the submitted values
             // but, the original `$task` variable has also been updated
             $carteira = $form->getData();
-            
+
             // ... perform some action, such as saving the task to the database
             // for example, if Task is a Doctrine entity, save it!
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($carteira);
             $entityManager->flush();
             $this->addFlash('success', 'Registro salvo com sucesso!');
-            return $this->redirectToRoute('carteira_form', array('id' => $carteira->getId()) );
+            return $this->redirectToRoute('carteira_form', array('id' => $carteira->getId()));
         } else {
             $form->getErrors(true, false);
         }
-        
+
         return $this->render('Financeiro/carteiraForm.html.twig', array(
             'form' => $form->createView()
         ));
@@ -58,30 +59,30 @@ class CarteiraController extends Controller
     {
         $dados = null;
         $params = $request->query->all();
-        
-        if (! array_key_exists('filter', $params)) {
+
+        if (!array_key_exists('filter', $params)) {
             $params['filter'] = null;
         }
-        
+
         try {
-            
+
             $repo = $this->getDoctrine()->getRepository(Carteira::class);
-            
-            if (! $params['filter'] or count($params['filter']) == 0) {
+
+            if (!$params['filter'] or count($params['filter']) == 0) {
                 $dados = $repo->findAll();
             } else {
-                
+
                 $filters = array(
                     new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
                     new FilterData('dtConsolidado', 'BETWEEN', $params['filter']['dtConsolidado'])
                 );
-                
+
                 $dados = $repo->findByFilters($filters);
             }
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
         }
-        
+
         return $this->render('Financeiro/carteiraList.html.twig', array(
             'dados' => $dados,
             'filter' => $params['filter']
@@ -96,7 +97,7 @@ class CarteiraController extends Controller
      */
     public function delete(Request $request, Carteira $carteira)
     {
-        if (! $this->isCsrfTokenValid('delete', $request->request->get('token'))) {
+        if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
@@ -108,7 +109,7 @@ class CarteiraController extends Controller
                 $this->addFlash('error', 'Erro ao deletar carteira.');
             }
         }
-        
+
         return $this->redirectToRoute('carteira_list');
     }
 

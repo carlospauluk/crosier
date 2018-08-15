@@ -10,7 +10,7 @@ import 'bootstrap';
 import 'popper.js';
 
 import 'pace-progress/themes/black/pace-theme-barber-shop.css';
-import 'pace';
+import Pace from 'pace-progress';
 
 import 'perfect-scrollbar';
 

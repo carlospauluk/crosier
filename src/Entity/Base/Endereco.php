@@ -165,4 +165,16 @@ class Endereco extends EntityId
     {
         $this->tipoEndereco = $tipoEndereco;
     }
+
+    public function getEnderecoCompleto() {
+        $enderecoCompleto = "";
+        $enderecoCompleto .= $this->getLogradouro() . ", " . $this->getNumero();
+        if ($this->getComplemento()) {
+            $enderecoCompleto .= " (" . $this->getComplemento() . ")";
+        }
+        if ($this->getBairro()) {
+            $enderecoCompleto .= " (" . $this->getBairro() . ")";
+        }
+        return $enderecoCompleto;
+    }
 }

@@ -2,6 +2,8 @@
 namespace App\Form\Fiscal;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -90,20 +92,16 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => true
             ));
             
-            $builder->add('dtEmissao', DateType::class, array(
-                'widget' => 'single_text',
-                'format' => 'dd/MM/yyyy HH:ii:ss',
+            $builder->add('dtEmissao', TextType::class, array(
                 'label' => 'Dt Emissão',
-                'attr' => array('class' => 'crsr-date'),
+                'attr' => array('class' => 'crsr-datetime'),
                 'required' => true,
                 'disabled' => $disabled
             ));
             
-            $builder->add('dtSaiEnt', DateType::class, array(
-                'widget' => 'single_text',
-                'format' => 'dd/MM/yyyy HH:ii:ss',
+            $builder->add('dtSaiEnt', TextType::class, array(
                 'label' => 'Dt Saída/Entrada',
-                'attr' => array('class' => 'crsr-date'),
+                'attr' => array('class' => 'crsr-datetime'),
                 'required' => true,
                 'disabled' => $disabled
             ));
@@ -300,7 +298,7 @@ class EmissaoFiscalType extends AbstractType
             ));
             
             $builder->add('entrada_saida', ChoiceType::class, array(
-                'label' => '',
+                'label' => 'Entrada/Saída',
                 'required' => true,
                 'choices' => array(
                     'Entrada' => true,
@@ -316,7 +314,8 @@ class EmissaoFiscalType extends AbstractType
                 'choices' => array(
                     'Sem frete' => 'SEM_FRETE',
                     'Por conta do emitente' => 'EMITENTE',
-                    'Por conta do destinatário' => 'DESTINATARIO'
+                    'Por conta do destinatário/remetente' => 'DESTINATARIO',
+                    'Por conta de terceiros' => 'TERCEIROS'
                 ),
                 'disabled' => $disabled
             ));
@@ -351,6 +350,15 @@ class EmissaoFiscalType extends AbstractType
                     'Devolução' => 'DEVOLUCAO',
                     'Ajuste' => 'AJUSTE',
                     'Complementar' => 'COMPLEMENTAR'
+                ),
+                'disabled' => $disabled
+            ));
+
+            $builder->add('info_compl', TextareaType::class, array(
+                'label' => 'Inform Complement',
+                'required' => false,
+                'attr' => array(
+                    'rows' => '5'
                 ),
                 'disabled' => $disabled
             ));

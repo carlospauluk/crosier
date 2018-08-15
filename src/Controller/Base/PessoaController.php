@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller\Base;
 
 use App\Business\Base\PessoaBusiness;
@@ -12,9 +13,9 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 class PessoaController extends Controller
 {
-    
+
     private $pessoaBusiness;
-    
+
     public function __construct(PessoaBusiness $pessoaBusiness)
     {
         Route::class;
@@ -23,47 +24,49 @@ class PessoaController extends Controller
 
     /**
      *
-     * @Route("/bse/pessoa/findByNome/{str}", name="bse_pessoa_findByNome", methods={"GET"})
+     * @Route("/bse/pessoa/findByNome/{str}", name="bse_pessoa_findByNome", methods={"GET"}, options = { "expose" = true })
      *
      */
-    public function findByNome($str=null) {
-        
+    public function findByNome($str = null)
+    {
+
         $repo = $this->getDoctrine()->getRepository(Pessoa::class);
         $pessoas = $repo->findAllByNome($str);
-        
+
         $results = array('results' => $pessoas);
-        
+
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
-        
+
         $serializer = new Serializer(array($normalizer), array($encoder));
         $json = $serializer->serialize($results, 'json');
-        
+
         return new Response($json);
     }
-    
+
     /**
      *
      * @Route("/bse/pessoa/findByDocumento/{documento}", name="bse_pessoa_findByNome", methods={"GET"})
      *
      */
-    public function findByDocumento($documento=null) {
+    public function findByDocumento($documento = null)
+    {
         if ($documento == null) {
             return;
         }
         $repo = $this->getDoctrine()->getRepository(Pessoa::class);
         $pessoa = $repo->findByDocumento(preg_replace('/\D/', '', $documento));
-        
+
         $pessoa = $this->pessoaBusiness->fillTransients($pessoa);
-        
+
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
-        
+
         $serializer = new Serializer(array($normalizer), array($encoder));
         $json = $serializer->serialize($pessoa, 'json');
-        
+
         return new Response($json);
     }
-    
-    
+
+
 }
