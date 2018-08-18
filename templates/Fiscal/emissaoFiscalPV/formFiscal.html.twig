@@ -94,13 +94,6 @@
 				</button>
 		{% endif %}
 		
-		{% if permiteCartaCorrecao %}
-				<button type="button" id="Carta de Correção" class="btn btn-warning"
-					onclick="window.location.assign('{{ url('fis_emissaofiscalpv_cartaCorrecaoForm', {notaFiscal: notaFiscal.id, venda: venda.id}) }}')">
-					<i class="fas fa-envelope-square" aria-hidden="true"></i> Carta de Correção
-				</button>
-		{% endif %}
-		
 		{% if notaFiscal.id %}
 				<button type="button" value="Consultar Status" class="btn btn-secondary" data-url="{{ url('fis_emissaofiscalpv_consultarStatus', {notaFiscal: notaFiscal.id, venda: venda.id}) }}"
 					data-target="#confirmationModal" data-toggle="modal">

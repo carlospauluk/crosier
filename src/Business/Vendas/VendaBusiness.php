@@ -51,6 +51,8 @@ class VendaBusiness
      * Transforma o arquivo EKT em uma $venda.
      *
      * @return \App\Entity\Vendas\Venda
+     * @return \App\Entity\Vendas\Venda
+     * @throws \Exception
      */
     private function processarTXTsEKT()
     {
@@ -91,7 +93,11 @@ class VendaBusiness
                     $planoPagto = $this->doctrine->getRepository(PlanoPagto::class)->find(1);
                 }
                 $venda->setPlanoPagto($planoPagto);
-                
+
+                if (!$cabecalho[2]) {
+                    // Algum bug no EKT permite gerar venda com vendedor = 0. Neste caso, ignora.
+                    continue;
+                }
                 $venda->setVendedor($this->doctrine->getRepository(Funcionario::class)
                     ->findByCodigo($cabecalho[2]));
                 
