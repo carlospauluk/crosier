@@ -23,6 +23,6 @@ yarn-error.log
 
 .idea/*
 
- Vagrantfile*
- .vagrant*
- ansible*
+Vagrantfile*
+.vagrant/*
+ansible/*
