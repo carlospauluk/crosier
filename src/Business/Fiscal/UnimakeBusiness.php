@@ -224,16 +224,16 @@ class UnimakeBusiness
         $nfe->infNFe->total->ICMSTot->vFrete = '0.00';
         $nfe->infNFe->total->ICMSTot->vSeg = '0.00';
         // if (bccomp($notaFiscal->getTotalDescontos(), 0.00, 2)) {
-            $nfe->infNFe->total->ICMSTot->vDesc = number_format($notaFiscal->getTotalDescontos(), 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vDesc = number_format($notaFiscal->getTotalDescontos(), 2, '.', '');
         // }
-         $nfe->infNFe->total->ICMSTot->vII = '0.00';
-         $nfe->infNFe->total->ICMSTot->vIPI = '0.00';
-         $nfe->infNFe->total->ICMSTot->vIPIDevol = '0.00';
-         $nfe->infNFe->total->ICMSTot->vPIS = '0.00';
-         $nfe->infNFe->total->ICMSTot->vCOFINS = '0.00';
-         $nfe->infNFe->total->ICMSTot->vOutro = '0.00';
-         $nfe->infNFe->total->ICMSTot->vNF = number_format($notaFiscal->getValorTotal(), 2, '.', '');
-         $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
+        $nfe->infNFe->total->ICMSTot->vII = '0.00';
+        $nfe->infNFe->total->ICMSTot->vIPI = '0.00';
+        $nfe->infNFe->total->ICMSTot->vIPIDevol = '0.00';
+        $nfe->infNFe->total->ICMSTot->vPIS = '0.00';
+        $nfe->infNFe->total->ICMSTot->vCOFINS = '0.00';
+        $nfe->infNFe->total->ICMSTot->vOutro = '0.00';
+        $nfe->infNFe->total->ICMSTot->vNF = number_format($notaFiscal->getValorTotal(), 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vTotTrib = '0.00';
 
 
         if ($notaFiscal->getTipoNotaFiscal() == 'NFCE') {
@@ -277,6 +277,7 @@ class UnimakeBusiness
 
         // Número randômico para que não aconteça de pegar XML de retorno de tentativas de faturamento anteriores
         $rand = rand(10000000, 99999999);
+        $notaFiscal->setRandFaturam($rand);
 
         // file_put_contents("d:/NFE/" . $notaFiscal->getUuid() . "-nfe.xml", $nfe->asXML());
         file_put_contents($pastaUnimake . "/envio/" . $notaFiscal->getUuid() . "-" . $rand . "-nfe.xml", $nfe->asXML());
@@ -449,7 +450,6 @@ class UnimakeBusiness
 
     public function imprimir(NotaFiscal $notaFiscal)
     {
-
         // Z:\enviado\Autorizados\201808
         $id = $notaFiscal->getId();
         if (!$id)
@@ -460,9 +460,14 @@ class UnimakeBusiness
         $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
 
         $pastaAutorizados = $pastaUnimake . '/enviado/Autorizados/' . $notaFiscal->getDtEmissao()->format('Ym') . '/';
+        $pastaReimpressao = $pastaUnimake . '/reimpressao/';
 
-        if (file_exists($pastaAutorizados . $uuid . '-procNFe.xml')) {
-            copy($pastaAutorizados . $uuid . '-procNFe.xml', $pastaUnimake . '/reimpressao/' . $uuid . '-procNFe.xml');
+        $arquivoProcNFe = $pastaAutorizados . $uuid . '-' . $notaFiscal->getRandFaturam() . '-procNFe.xml';
+        $arquivoReimpressao = $pastaReimpressao . $uuid . '-' . $notaFiscal->getRandFaturam() . '-procNFe.xml';
+        if (file_exists($arquivoProcNFe)) {
+            copy($arquivoProcNFe, $arquivoReimpressao);
+        } else {
+            throw new \Exception("Arquivo não encontrado para reimpressão: " . $arquivoProcNFe);
         }
     }
 

@@ -20,3 +20,9 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-pack ###
+
+.idea/*
+
+ Vagrantfile*
+ .vagrant*
+ ansible*

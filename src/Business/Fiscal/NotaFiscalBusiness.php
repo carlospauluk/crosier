@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Business\Fiscal;
 
 use App\Business\Base\EntityIdBusiness;
@@ -25,7 +26,7 @@ class NotaFiscalBusiness
     private $unimakeBusiness;
 
     private $entityIdBusiness;
-    
+
     private $pessoaBusiness;
 
     public function __construct(RegistryInterface $doctrine, UnimakeBusiness $unimakeBusiness, EntityIdBusiness $entityIdBusiness, PessoaBusiness $pessoaBusiness)
@@ -45,14 +46,14 @@ class NotaFiscalBusiness
     public function notaFiscal2FormData(NotaFiscal $notaFiscal, $tipoPessoa = null)
     {
         $formData = array();
-        
+
         if ($notaFiscal->getPessoaDestinatario()) {
             $tipoPessoa = $notaFiscal->getPessoaDestinatario()->getTipoPessoa();
         }
-        
+
         // Passo para o EmissaoFiscalType para que possa decidir se os inputs serão desabilitados.
         $formData['permiteFaturamento'] = $this->permiteFaturamento($notaFiscal);
-        
+
         $formData['nota_fiscal_id'] = $notaFiscal->getId();
         $formData['uuid'] = $notaFiscal->getUuid();
         $formData['dtEmissao'] = ($notaFiscal->getDtEmissao() instanceof \DateTime) ? $notaFiscal->getDtEmissao()->format('d/m/Y H:i:s') : null;
@@ -63,14 +64,14 @@ class NotaFiscalBusiness
         $formData['spartacusStatus'] = $notaFiscal->getSpartacusStatus();
         $formData['spartacusStatusReceita'] = $notaFiscal->getSpartacusStatusReceita();
         $formData['spartacusMensretornoReceita'] = $notaFiscal->getSpartacusMensretornoReceita();
-        
+
         $formData['cancelamento_motivo'] = $notaFiscal->getMotivoCancelamento();
-        
+
         $formData['_info_status'] = $notaFiscal->getInfoStatus();
-        
+
         $formData['tipo'] = $notaFiscal->getTipoNotaFiscal();
         $formData['tipoPessoa'] = $tipoPessoa;
-        
+
         if ($notaFiscal->getPessoaDestinatario()) {
             $formData['pessoa_id'] = $notaFiscal->getPessoaDestinatario()->getId();
             if ($tipoPessoa == 'PESSOA_FISICA') {
@@ -108,7 +109,7 @@ class NotaFiscalBusiness
                     ->getCep();
             }
         }
-        
+
         $formData['transp_modalidade_frete'] = $notaFiscal->getTranspModalidadeFrete();
         $formData['indicador_forma_pagto'] = $notaFiscal->getIndicadorFormaPagto();
         $formData['natureza_operacao'] = $notaFiscal->getNaturezaOperacao();
@@ -133,12 +134,12 @@ class NotaFiscalBusiness
         } else {
             $notaFiscal = new NotaFiscal();
         }
-        
+
         if (isset($formData['pessoa_id'])) {
             $pessoaDestinatario = $this->doctrine->getRepository(Pessoa::class)->find($formData['pessoa_id']);
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
         }
-        
+
         $notaFiscal->setUuid(isset($formData['uuid']) ? $formData['uuid'] : null);
 
 
@@ -154,9 +155,9 @@ class NotaFiscalBusiness
         $notaFiscal->setNumero(isset($formData['numero_nf']) ? $formData['numero_nf'] : null);
         $notaFiscal->setSerie(isset($formData['serie']) ? $formData['serie'] : null);
         $notaFiscal->setAmbiente(isset($formData['ambiente']) ? $formData['ambiente'] : null);
-        
+
         $notaFiscal->setTipoNotaFiscal(isset($formData['tipo']) ? $formData['tipo'] : null);
-        
+
         $notaFiscal->setTranspModalidadeFrete(isset($formData['transp_modalidade_frete']) ? $formData['transp_modalidade_frete'] : null);
         $notaFiscal->setIndicadorFormaPagto(isset($formData['indicador_forma_pagto']) ? $formData['indicador_forma_pagto'] : null);
         $notaFiscal->setFinalidadeNf(isset($formData['finalidade_nf']) ? $formData['finalidade_nf'] : null);
@@ -164,7 +165,7 @@ class NotaFiscalBusiness
         $notaFiscal->setEntrada(isset($formData['entrada_saida']) ? $formData['entrada_saida'] : null);
 
         $notaFiscal->setInfoCompl(isset($formData['info_compl']) ? $formData['info_compl'] : null);
-        
+
         return $notaFiscal;
     }
 
@@ -181,138 +182,136 @@ class NotaFiscalBusiness
     {
         try {
             $this->doctrine->getManager()->beginTransaction();
-            
+
             $notaFiscal = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
-            if ($notaFiscal) {
-                $editando = true;
-            } else {
-                $editando = false;
+            $novaNota = false;
+            if (!$notaFiscal) {
                 $notaFiscal = new NotaFiscal();
+                $novaNota = true;
             }
-            
-            $this->handleIdeFields($notaFiscal);
-            
-            if (! $editando) {
-                // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
-                $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
-                
-                // para ser usado depois como 'chave' nas comunicações com a SEFAZ
-                
-                $notaFiscal->setIndicadorFormaPagto($venda->getPlanoPagto()
-                    ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
 
-                $notaFiscal->setTipoNotaFiscal($dataNotaFiscal['tipo']);
+            $notaFiscal->setTipoNotaFiscal($dataNotaFiscal['tipo']);
 
-                $notaFiscal->setEntrada(false);
-                $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
-                $notaFiscal->setPessoaEmitente($emitente);
-                
-                $notaFiscal->setNaturezaOperacao('VENDA');
-                $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['codigo']);
-            }
-            
+            $notaFiscal->setEntrada(false);
+
+            $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
+            $notaFiscal->setPessoaEmitente($emitente);
+
+            $notaFiscal->setNaturezaOperacao('VENDA');
+            $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['codigo']);
+
             $dtEmissao = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
             $dtEmissao->modify('-4 minutes');
             $notaFiscal->setDtEmissao($dtEmissao);
             $notaFiscal->setDtSaiEnt($dtEmissao);
-            
-            if ($dataNotaFiscal['pessoa_id']) {
+
+
+            $this->handleIdeFields($notaFiscal);
+
+            // Aqui somente coisas que fazem sentido serem alteradas depois de já ter sido (provavelmente) tentado o faturamento da Notafiscal.
+            $notaFiscal->setTranspModalidadeFrete('SEM_FRETE');
+
+            // para ser usado depois como 'chave' nas comunicações com a SEFAZ
+
+            $notaFiscal->setIndicadorFormaPagto($venda->getPlanoPagto()
+                ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
+
+            if (isset($dataNotaFiscal['pessoa_id']) and $dataNotaFiscal['pessoa_id']) {
                 $pessoa = $this->doctrine->getRepository(Pessoa::class)->find($dataNotaFiscal['pessoa_id']);
                 $notaFiscal->setPessoaDestinatario($pessoa);
             }
-            
+
             $notaFiscal->getItens()->clear();
             $this->doctrine->getManager()->flush();
-            
+
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->getSubTotal() > 0.0) {
                 $fatorDesconto = 1 - ($venda->getValorTotal() / $venda->getSubTotal());
             } else {
                 $fatorDesconto = 1;
             }
-            
+
             $somaDescontosItens = 0.0;
             $ordem = 1;
             foreach ($venda->getItens() as $vendaItem) {
-                
+
                 $nfItem = new NotaFiscalItem();
                 $nfItem->setNotaFiscal($notaFiscal);
-                
+
                 if ($vendaItem->getNcm()) {
                     $nfItem->setNcm($vendaItem->getNcm());
                 } else {
                     $nfItem->setNcm('62179000');
                 }
-                
+
                 $existe = $this->doctrine->getRepository(NCM::class)->findByNCM($nfItem->getNcm());
                 $nfItem->setNcmExistente($existe ? true : false);
-                
-                $nfItem->setOrdem($ordem ++);
-                
+
+                $nfItem->setOrdem($ordem++);
+
                 $nfItem->setQtde($vendaItem->getQtde());
                 $nfItem->setValorUnit($vendaItem->getPrecoVenda());
                 $nfItem->setValorTotal($vendaItem->getTotalItem());
-                
+
                 $vDesconto = $vendaItem->getPrecoVenda() * $vendaItem->getQtde() * $fatorDesconto;
                 $nfItem->setValorDesconto($vDesconto);
-                
+
                 $somaDescontosItens += $vDesconto;
-                
+
                 $nfItem->setSubTotal($vendaItem->getQtde() * $vendaItem->getPrecoVenda());
-                
+
                 $nfItem->setIcmsAliquota(0.0);
                 $nfItem->setCfop("5102");
                 $nfItem->setUnidade($vendaItem->getGradeTamanho()
                     ->getTamanho() != null ? $vendaItem->getGradeTamanho()
                     ->getTamanho() : $vendaItem->getNcGradeTamanho());
-                
+
                 if ($vendaItem->getProduto() != null) {
                     $nfItem->setCodigo($vendaItem->getProduto()
                         ->getReduzido());
                     $nfItem->setDescricao($vendaItem->getProduto()
-                        ->getDescricao() . " (" . $vendaItem->getGradeTamanho()
-                        ->getTamanho() . ")");
+                            ->getDescricao() . " (" . $vendaItem->getGradeTamanho()
+                            ->getTamanho() . ")");
                 } else {
                     $nfItem->setCodigo($vendaItem->getNcReduzido());
                     $nfItem->setDescricao($vendaItem->getNcDescricao() . " (" . $vendaItem->getNcGradeTamanho() . ")");
                 }
-                
+
                 $this->entityIdBusiness->handlePersist($nfItem);
-                
+
                 $notaFiscal->addItem($nfItem);
             }
-            
+
             $totalDescontos = bcsub($venda->getSubTotal(), $venda->getValorTotal(), 2);
             $notaFiscal->setSubtotal($venda->getSubTotal());
             $notaFiscal->setValorTotal($venda->getValorTotal());
             $notaFiscal->setTotalDescontos($totalDescontos);
-            
+
             if (bcsub(abs($totalDescontos), abs($somaDescontosItens), 2) != 0) {
                 $diferenca = $totalDescontos - $somaDescontosItens;
                 $notaFiscal->getItens()
                     ->get(0)
                     ->setValorDesconto($notaFiscal->getItens()
-                    ->get(0)
-                    ->getValorDesconto() + $diferenca);
+                            ->get(0)
+                            ->getValorDesconto() + $diferenca);
                 $notaFiscal->getItens()
                     ->get(0)
                     ->calculaTotais();
             }
-            
 
-            
+
             $this->entityIdBusiness->handlePersist($notaFiscal);
             $this->doctrine->getManager()->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
-            
-            if (! $editando) {
+
+            if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
                 $notaFiscalVenda->setNotaFiscal($notaFiscal);
                 $notaFiscalVenda->setVenda($venda);
                 $this->entityIdBusiness->handlePersist($notaFiscalVenda);
                 $this->doctrine->getManager()->persist($notaFiscalVenda);
             }
-            
+
             $this->doctrine->getManager()->commit();
             return $notaFiscal;
         } catch (\Exception $e) {
@@ -334,34 +333,34 @@ class NotaFiscalBusiness
     {
         try {
             $this->doctrine->getManager()->beginTransaction();
-            
-            if (! $notaFiscal->getPessoaEmitente()) {
+
+            if (!$notaFiscal->getPessoaEmitente()) {
                 $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
                 $notaFiscal->setPessoaEmitente($emitente);
             }
-            
-            if (! $notaFiscal->getUuid()) {
+
+            if (!$notaFiscal->getUuid()) {
                 $notaFiscal->setUuid(md5(uniqid(rand(), true)));
             }
-            
-            if (! $notaFiscal->getSerie()) {
+
+            if (!$notaFiscal->getSerie()) {
                 $chave = "BONSUCESSO_FISCAL_" . strtoupper($notaFiscal->getTipoNotaFiscal()) . "_SERIE";
                 $serie = getenv($chave);
-                if (! $serie) {
+                if (!$serie) {
                     throw new \Exception("'" . $chave . "' não informado");
                 }
                 $notaFiscal->setSerie($serie);
             }
-            
-            if (! $notaFiscal->getCnf()) {
+
+            if (!$notaFiscal->getCnf()) {
                 $cNF = rand(10000000, 99999999);
                 $notaFiscal->setCnf($cNF);
             }
-            
+
             $this->entityIdBusiness->handlePersist($notaFiscal);
             $this->doctrine->getManager()->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
-            
+
             $this->doctrine->getManager()->commit();
             return $notaFiscal;
         } catch (\Exception $e) {
@@ -387,7 +386,7 @@ class NotaFiscalBusiness
             $bdSubTotal += $item->getSubTotal();
             $bdDescontos += $item->getValorDesconto() ? $item->getValorDesconto() : 0.0;
         }
-        
+
         $nf->setSubTotal($bdSubTotal);
         $nf->setValorTotal($bdTotal);
         $nf->setTotalDescontos($bdDescontos);
@@ -396,11 +395,11 @@ class NotaFiscalBusiness
     public function corrigirPessoaDestinatario(NotaFiscal $nf)
     {
         $documento = $nf->getPessoaDestinatario()->getDocumento();
-        
+
         if ($nf->getPessoaCadastro() == null) {
-            
+
             $cliente = $this->doctrine->getRepository(Cliente::class)->findByDocumento($documento);
-            
+
             if ($cliente) {
                 $nf->setPessoaCadastro('CLIENTE');
             } else {
@@ -414,27 +413,27 @@ class NotaFiscalBusiness
         } else {
             if ('CLIENTE' == $nf->getPessoaCadastro()) {
                 $cliente = $this->doctrine->getRepository(Cliente::class)->findByDocumento($documento);
-                if (! $cliente) {
+                if (!$cliente) {
                     $fornecedor = $this->doctrine->getRepository(Fornecedor::class)->findByDocumento($documento);
-                    if (! $fornecedor) {
+                    if (!$fornecedor) {
                         throw new \Exception("Destinatário não encontrado em Clientes ou Fornecedores.");
                     }
                 }
             } else {
                 $fornecedor = $this->doctrine->getRepository(Fornecedor::class)->findByDocumento($documento);
-                if (! $fornecedor) {
+                if (!$fornecedor) {
                     $cliente = $this->doctrine->getRepository(Cliente::class)->findByDocumento($documento);
-                    if (! $cliente) {
+                    if (!$cliente) {
                         throw new \Exception("Destinatário não encontrado em Clientes ou Fornecedores.");
                     }
                 }
             }
         }
-        
+
         $entityManager = $this->doctrine->getManager();
         $entityManager->persist($nf);
         $entityManager->flush();
-        
+
         return $nf;
     }
 
@@ -445,34 +444,34 @@ class NotaFiscalBusiness
      */
     public function faturar(NotaFiscal $notaFiscal)
     {
-        $this->addHistorico($notaFiscal, - 1, "INICIANDO FATURAMENTO");
+        $this->addHistorico($notaFiscal, -1, "INICIANDO FATURAMENTO");
         if ($this->permiteFaturamento($notaFiscal)) {
             $this->handleIdeFields($notaFiscal);
             $notaFiscal = $this->unimakeBusiness->faturar($notaFiscal);
             if ($notaFiscal) {
                 $this->addHistorico($notaFiscal, $notaFiscal->getSpartacusStatus(), $notaFiscal->getSpartacusMensretornoReceita(), "FATURAMENTO PROCESSADO");
             } else {
-                $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO FATURAR");
+                $this->addHistorico($notaFiscal, -2, "PROBLEMA AO FATURAR");
             }
         } else {
             $this->addHistorico($notaFiscal, 0, "NOTA FISCAL NÃO FATURÁVEL. STATUS = [" . $notaFiscal->getSpartacusStatus() . "]");
         }
-        
+
         return $notaFiscal;
     }
 
     public function consultarStatus(NotaFiscal $notaFiscal)
     {
-        $this->addHistorico($notaFiscal, - 1, "INICIANDO CONSULTA DE STATUS");
+        $this->addHistorico($notaFiscal, -1, "INICIANDO CONSULTA DE STATUS");
         try {
             $notaFiscal = $this->unimakeBusiness->consultarStatus($notaFiscal);
             if ($notaFiscal) {
                 $this->addHistorico($notaFiscal, $notaFiscal->getSpartacusStatus(), $notaFiscal->getSpartacusMensretornoReceita(), "CONSULTA DE STATUS PROCESSADA");
             } else {
-                $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO CONSULTAR STATUS");
+                $this->addHistorico($notaFiscal, -2, "PROBLEMA AO CONSULTAR STATUS");
             }
         } catch (\Exception $e) {
-            $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO CONSULTAR STATUS: [" . $e->getMessage() . "]");
+            $this->addHistorico($notaFiscal, -2, "PROBLEMA AO CONSULTAR STATUS: [" . $e->getMessage() . "]");
         }
         return $notaFiscal;
     }
@@ -490,10 +489,10 @@ class NotaFiscalBusiness
         // if ($notaFiscal->getSpartacusMensretorno() == "AGUARDANDO FATURAMENTO") {
         // return false;
         // }
-        
+
         // // Se o status for 100, não precisa refaturar.
         // if ($notaFiscal->getSpartacusStatus()) {
-        
+
         // // aprovada
         // if ("100" == $notaFiscal->getSpartacusStatus()) {
         // return false;
@@ -505,22 +504,22 @@ class NotaFiscalBusiness
         // if ("204" == $notaFiscal->getSpartacusStatus()) {
         // return false;
         // }
-        
+
         // if ("0" == $notaFiscal->getSpartacusStatus()) {
-        
+
         // if (strpos($notaFiscal->getSpartacusMensRetornoReceita(), "DUPLICIDADE DE NF") !== FALSE) {
         // return false;
         // }
-        
+
         // if ("AGUARDANDO FATURAMENTO" == $notaFiscal->getSpartacusMensRetornoReceita()) {
         // if ($notaFiscal->getDtSpartacusStatus()) {
         // $dtStatus = $notaFiscal->getDtSpartacusStatus();
-        
+
         // $agora = new \DateTime();
         // $diff = $agora->diff($dtStatus);
-        
+
         // $minutos = $diff->i;
-        
+
         // // Se já passou 3 minutos, então permite refaturar.
         // if ($minutos > 2) {
         // return true;
@@ -530,7 +529,7 @@ class NotaFiscalBusiness
         // }
         // }
         // }
-        if ($notaFiscal->getSpartacusStatus() == - 100 or $notaFiscal->getSpartacusStatus() == 100 or $notaFiscal->getSpartacusStatus() == 101 or $notaFiscal->getSpartacusStatus() == 204) {
+        if ($notaFiscal->getSpartacusStatus() == -100 or $notaFiscal->getSpartacusStatus() == 100 or $notaFiscal->getSpartacusStatus() == 101 or $notaFiscal->getSpartacusStatus() == 204) {
             return false;
         } else {
             return true;
@@ -620,7 +619,7 @@ class NotaFiscalBusiness
 
     public function cancelar(NotaFiscal $notaFiscal)
     {
-        $this->addHistorico($notaFiscal, - 1, "INICIANDO CANCELAMENTO");
+        $this->addHistorico($notaFiscal, -1, "INICIANDO CANCELAMENTO");
         $notaFiscal = $this->checkChaveAcesso($notaFiscal);
         try {
             $notaFiscal = $this->unimakeBusiness->cancelar($notaFiscal);
@@ -629,17 +628,17 @@ class NotaFiscalBusiness
                 $notaFiscal = $this->consultarStatus($notaFiscal);
                 $this->unimakeBusiness->imprimirCancelamento($notaFiscal);
             } else {
-                $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO CANCELAR");
+                $this->addHistorico($notaFiscal, -2, "PROBLEMA AO CANCELAR");
             }
         } catch (\Exception $e) {
-            $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO CANCELAR: [" . $e->getMessage() . "]");
+            $this->addHistorico($notaFiscal, -2, "PROBLEMA AO CANCELAR: [" . $e->getMessage() . "]");
         }
         return $notaFiscal;
     }
 
     public function cartaCorrecao(NotaFiscal $notaFiscal)
     {
-        $this->addHistorico($notaFiscal, - 1, "INICIANDO ENVIO DA CARTA DE CORREÇÃO");
+        $this->addHistorico($notaFiscal, -1, "INICIANDO ENVIO DA CARTA DE CORREÇÃO");
         $notaFiscal = $this->checkChaveAcesso($notaFiscal);
         try {
             $notaFiscal = $this->unimakeBusiness->cartaCorrecao($notaFiscal);
@@ -648,19 +647,19 @@ class NotaFiscalBusiness
                 $notaFiscal = $this->consultarStatus($notaFiscal);
                 $this->unimakeBusiness->imprimirCancelamento($notaFiscal);
             } else {
-                $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO ENVIAR CARTA DE CORREÇÃO");
+                $this->addHistorico($notaFiscal, -2, "PROBLEMA AO ENVIAR CARTA DE CORREÇÃO");
             }
         } catch (\Exception $e) {
-            $this->addHistorico($notaFiscal, - 2, "PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [" . $e->getMessage() . "]");
+            $this->addHistorico($notaFiscal, -2, "PROBLEMA AO ENVIAR CARTA DE CORREÇÃO: [" . $e->getMessage() . "]");
         }
         return $notaFiscal;
     }
 
     public function checkChaveAcesso(NotaFiscal $notaFiscal)
     {
-        if (! $notaFiscal->getChaveAcesso()) {
+        if (!$notaFiscal->getChaveAcesso()) {
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
-            
+
             $this->entityIdBusiness->handlePersist($notaFiscal);
             $this->doctrine->getManager()->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
@@ -678,7 +677,7 @@ class NotaFiscalBusiness
         $serie = $notaFiscal->getSerie();
         $nNF = $notaFiscal->getNumero();
         $cNF = $notaFiscal->getCnf();
-        
+
         // Campo tpEmis
         // 1-Emissão Normal
         // 2-Contingência em Formulário de Segurança
@@ -688,7 +687,7 @@ class NotaFiscalBusiness
         // 6-Contingência SVC-AN
         // 7-Contingência SVC-RS
         $tpEmis = 1;
-        
+
         $chaveAcesso = NFeKeys::build($cUF, $ano, $mes, $cnpj, $mod, $serie, $nNF, $tpEmis, $cNF);
         return $chaveAcesso;
     }
@@ -715,11 +714,11 @@ class NotaFiscalBusiness
      */
     public function handleIdeFields(NotaFiscal $notaFiscal): void
     {
-        if (! $notaFiscal->getUuid()) {
+        if (!$notaFiscal->getUuid()) {
             $notaFiscal->setUuid(md5(uniqid(rand(), true)));
         }
 
-        if (! $notaFiscal->getCnf()) {
+        if (!$notaFiscal->getCnf()) {
             $cNF = rand(10000000, 99999999);
             $notaFiscal->setCnf($cNF);
         }
@@ -731,6 +730,9 @@ class NotaFiscalBusiness
             }
             $notaFiscal->setAmbiente($ambiente);
 
+            if (!$notaFiscal->getTipoNotaFiscal()) {
+                throw new \Exception("Impossível gerar número sem saber o tipo da nota fiscal.");
+            }
             $chave = "BONSUCESSO_FISCAL_" . strtoupper($notaFiscal->getTipoNotaFiscal()) . "_SERIE";
             $serie = getenv($chave);
             if (!$serie) {
@@ -741,7 +743,7 @@ class NotaFiscalBusiness
             $notaFiscal->setNumero($nnf);
         }
 
-        if (! $notaFiscal->getChaveAcesso()) {
+        if (!$notaFiscal->getChaveAcesso()) {
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
         }
 

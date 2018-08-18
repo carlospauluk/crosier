@@ -35,6 +35,14 @@ class NotaFiscal extends EntityId
     private $uuid;
 
     /**
+     *
+     * Número randômico utilizado na geração do nome do arquivo XML, para poder saber qual foi o nome do último arquivo gerado, evitando duplicidades.
+     *
+     * @ORM\Column(name="rand_faturam", type="string", nullable=true)
+     */
+    private $randFaturam;
+
+    /**
      * $cNF = rand(10000000, 99999999);
      *
      * @ORM\Column(name="cnf", type="string", nullable=true, length=8)
@@ -372,6 +380,22 @@ class NotaFiscal extends EntityId
     public function setUuid($uuid)
     {
         $this->uuid = $uuid;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRandFaturam()
+    {
+        return $this->randFaturam;
+    }
+
+    /**
+     * @param mixed $randFaturam
+     */
+    public function setRandFaturam($randFaturam): void
+    {
+        $this->randFaturam = $randFaturam;
     }
 
     public function getCnf()
