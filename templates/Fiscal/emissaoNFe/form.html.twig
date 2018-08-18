@@ -21,19 +21,19 @@
 
             <ul class="nav nav-tabs" id="principal" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="cabecalho-tab" data-toggle="tab" href="#cabecalho" role="tab"
+                    <a class="nav-link active NOTAFISCAL_TAB" id="cabecalho-tab" data-toggle="tab" href="#cabecalho" role="tab"
                        aria-controls="home" aria-selected="true">Cabeçalho</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="itens-tab" data-toggle="tab" href="#itens" role="tab"
+                    <a class="nav-link NOTAFISCAL_TAB" id="itens-tab" data-toggle="tab" href="#itens" role="tab"
                        aria-controls="profile" aria-selected="false">Itens</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="transporte-tab" data-toggle="tab" href="#transporte" role="tab"
+                    <a class="nav-link NOTAFISCAL_TAB" id="transporte-tab" data-toggle="tab" href="#transporte" role="tab"
                        aria-controls="contact" aria-selected="false">Transporte</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="historico-tab" data-toggle="tab" href="#historico" role="tab"
+                    <a class="nav-link NOTAFISCAL_TAB" id="historico-tab" data-toggle="tab" href="#historico" role="tab"
                        aria-controls="contact" aria-selected="false">Histórico</a>
                 </li>
             </ul>
@@ -46,241 +46,12 @@
             {% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 
             <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active" id="cabecalho" role="tabpanel" aria-labelledby="cabecalho-tab">
 
+                {{ include('Fiscal/emissaoNFe/form_cabecalho.html.twig') }}
+                {{ include('Fiscal/emissaoNFe/form_itens.html.twig') }}
+                {{ include('Fiscal/emissaoNFe/form_transporte.html.twig') }}
+                {{ include('Fiscal/emissaoNFe/form_historico.html.twig') }}
 
-                    {{ form_start(form) }}
-
-                    {{ form_row(form._token) }}
-
-                    {{ form_row(form._info_status) }}
-
-                    {{ form_widget(form.pessoa_id) }}
-
-                    {{ form_row(form.tipo) }}
-
-                    {{ form_row(form.tipoPessoa) }}
-
-                    <div class="form-group row">
-                        <label class="col-form-label col-sm-2 form-control-label">Número/Série (UUID)</label>
-                        <div class="col-sm-2">
-                            {{ form_widget(form.numero_nf) }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ form_widget(form.serie) }}
-                        </div>
-                        <div class="col-sm-6">
-                            {{ form_widget(form.uuid) }}
-                        </div>
-                    </div>
-
-                    {{ form_row(form.dtEmissao) }}
-                    {{ form_row(form.dtSaiEnt) }}
-
-                    {{ form_row(form.natureza_operacao) }}
-
-                    {{ form_row(form.finalidade_nf) }}
-                    {{ form_row(form.entrada_saida) }}
-
-                    {{ form_row(form.cpf) }}
-                    {{ form_row(form.nome) }}
-
-                    {{ form_row(form.cnpj) }}
-                    {{ form_row(form.razao_social) }}
-                    {{ form_row(form.nome_fantasia) }}
-
-                    {{ form_row(form.fone1) }}
-                    {{ form_row(form.email) }}
-
-
-                    <div class="form-group row">
-                        {{ form_label(form.cep) }}
-                        <div class="col-sm-5">
-                            {{ form_errors(form.cep) }}
-                            {{ form_widget(form.cep) }}
-                            {{ form_help(form.cep) }}
-                        </div>
-                        <div class="col-sm-5">
-                            <button type="button" value="Consultar" class="btn btn-warning DADOSPESSOA"
-                                    id="pesquisar_cep">
-                                <i class="fas fa-undo" aria-hidden="true"></i> Consultar
-                            </button>
-                        </div>
-                    </div>
-
-
-                    {{ form_row(form.logradouro) }}
-                    {{ form_row(form.numero) }}
-                    {{ form_row(form.complemento) }}
-                    {{ form_row(form.bairro) }}
-                    {{ form_row(form.cidade) }}
-                    {{ form_row(form.estado) }}
-
-                    {{ form_row(form.transp_modalidade_frete) }}
-                    {{ form_row(form.indicador_forma_pagto) }}
-
-                    {{ form_row(form.info_compl) }}
-
-                    <div class="row">
-                        <div class="col text-right">
-
-
-                            {% if permiteFaturamento %}
-
-                                <button type="submit" class="btn btn-primary btn-lg" value="Salvar">
-                                    <i class="fas fa-save" aria-hidden="true"></i> Salvar
-                                </button>
-
-                                <button type="button" class="btn btn-success btn-lg" value="Faturar"
-                                        data-url="{{ url('fis_emissaonfe_faturar', {notaFiscal: notaFiscal.id}) }}"
-                                        data-target="#confirmationModal" data-toggle="modal">
-                                    <i class="fas fa-file-invoice" aria-hidden="true"></i> Faturar
-                                </button>
-
-                            {% endif %}
-
-                            {% if permiteReimpressao %}
-                                <button type="button" value="Reimprimir" class="btn btn-secondary"
-                                        data-url="{{ url('fis_emissaonfe_reimprimir', {notaFiscal: notaFiscal.id}) }}"
-                                        data-target="#confirmationModal" data-toggle="modal">
-                                    <i class="fas fa-print" aria-hidden="true"></i> Reimprimir
-                                </button>
-                            {% endif %}
-
-
-                            {% if permiteCancelamento or permiteReimpressaoCancelamento %}
-                                <button type="button" id="Cancelar" class="btn btn-warning"
-                                        onclick="window.location.assign('{{ url('fis_emissaonfe_cancelarForm', {notaFiscal: notaFiscal.id}) }}')">
-                                    <i class="fas fa-ban" aria-hidden="true"></i> Cancelar
-                                </button>
-                            {% endif %}
-
-                            {% if permiteCartaCorrecao %}
-                                <button type="button" id="Carta de Correção" class="btn btn-warning"
-                                        onclick="window.location.assign('{{ url('fis_emissaonfe_cartaCorrecaoForm', {notaFiscal: notaFiscal.id}) }}')">
-                                    <i class="fas fa-envelope-square" aria-hidden="true"></i> Carta de Correção
-                                </button>
-                            {% endif %}
-
-                            {% if notaFiscal.id %}
-                                <button type="button" value="Consultar Status" class="btn btn-secondary"
-                                        data-url="{{ url('fis_emissaonfe_consultarStatus', {notaFiscal: notaFiscal.id}) }}"
-                                        data-target="#confirmationModal"
-                                        data-toggle="modal">
-                                    <i class="fab fa-searchengin" aria-hidden="true"></i> Consultar Status
-                                </button>
-                            {% endif %}
-
-                            <button type="button" value="Resetar" class="btn btn-secondary"
-                                    data-url="{{ url('fis_emissaonfe_form', {notaFiscal: notaFiscal.id}) }}"
-                                    data-target="#confirmationModal" data-toggle="modal">
-                                <i class="fas fa-undo" aria-hidden="true"></i> Recarregar
-                            </button>
-
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">&nbsp;</div>
-                    </div>
-
-
-                </div>
-
-                <div class="tab-pane fade" id="itens" role="tabpanel" aria-labelledby="itens-tab">
-
-                    {% if notaFiscal.id %}
-                        <div class="card">
-                            <div class="card-header">
-
-                                <div class="row">
-                                    <div class="col-8">
-                                        <h5>Itens</h5>
-                                    </div>
-                                    <div class="col-4 text-right">
-                                        {% if permiteFaturamento %}
-                                            <button type="button" class="btn btn-secondary"
-                                                    onclick="window.location.href='{{ url('fis_emissaonfe_formItem', {notaFiscal: notaFiscal.id} ) }}'">
-                                                <i class="fas fa-list-ul" aria-hidden="true"></i> Novo Item
-                                            </button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="card-body">
-
-                                <div class="table-responsive-sm">
-                                    <table class="table table-striped table-hover">
-
-                                        <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Código</th>
-                                            <th scope="col">Descrição</th>
-                                            <th scope="col">Unidade</th>
-                                            <th scope="col">NCM</th>
-                                            <th scope="col">CFOP</th>
-                                            <th scope="col">Qtde</th>
-                                            <th scope="col">Vlr Unit</th>
-                                            <th scope="col">Vlr Total</th>
-                                            <th scope="col"></th>
-                                        </tr>
-                                        </thead>
-
-                                        <tbody>
-                                        {% for item in notaFiscal.itens %}
-                                            <tr>
-                                                <td>{{ item.ordem }}</td>
-                                                <td>{{ item.codigo }}</td>
-                                                <td>{{ item.descricao }}</td>
-                                                <td>{{ item.unidade }}</td>
-                                                <td>{{ item.ncm }}</td>
-                                                <td>{{ item.cfop }}</td>
-                                                <td>{{ item.qtde|number_format(2,',','.') }}</td>
-                                                <td>{{ item.valorUnit|number_format(2,',','.') }}</td>
-                                                <td>{{ item.valorTotal|number_format(2,',','.') }}</td>
-                                                <td class="text-right">
-                                                    {% if permiteFaturamento %}
-                                                        <button type="button" class="btn btn-primary"
-                                                                onclick="window.location.href='{{ url('fis_emissaonfe_formItem', {notaFiscal: notaFiscal.id, 'item':item.id} ) }}'">
-                                                            <i class="fas fa-wrench" aria-hidden="true"></i>
-                                                        </button>
-
-                                                        <button type="button" class="btn btn-danger"
-                                                                data-url="{{ url('fis_emissaonfe_deleteItem', {'item': item.id}) }}"
-                                                                data-token="{{ csrf_token('delete') }}"
-                                                                data-target="#confirmationModal" data-toggle="modal">
-                                                            <i class="fa fa-trash" aria-hidden="true"></i>
-                                                        </button>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-
-                                    </table>
-                                </div>
-
-                            </div>
-                        </div>
-                    {% endif %}
-
-                </div>
-
-
-                <div class="tab-pane fade" id="historico" role="tabpanel" aria-labelledby="historico-tab">
-                    {{ include('Fiscal/emissaoNFe/historicos.html.twig') }}
-                </div>
-
-                <div class="tab-pane fade" id="transporte" role="tabpanel" aria-labelledby="transporte-tab">
-                    <div class="form-group row">
-                        <label class="col-form-label col-sm-2 form-control-label">Modalidade Frete</label>
-                        <div class="col-sm-10">
-                            <input type="text" id="inputModalidadeFrete" disabled="disabled" class="form-control" value="">
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {{ form_end(form, {'render_rest': false}) }}

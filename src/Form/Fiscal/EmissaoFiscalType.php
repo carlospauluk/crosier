@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Form\Fiscal;
 
 use Symfony\Component\Form\AbstractType;
@@ -17,7 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 
 /**
  * Form que serve tanto para emissão fiscal por PV quanto para NFe.
- * 
+ *
  * @author Carlos Eduardo Pauluk
  *
  */
@@ -29,18 +30,26 @@ class EmissaoFiscalType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
             $data = $event->getData();
             $builder = $event->getForm();
-            
+
             $disabled = false;
             if ($data and array_key_exists('permiteFaturamento', $data)) {
                 $disabled = $data['permiteFaturamento'] == false;
             }
-            
+
+            $builder->add('nota_fiscal_id', HiddenType::class, array(
+                'required' => false,
+                // atributo utilizado para que o javascript possa localizar facilmente este input
+                'attr' => array(
+                    'class' => 'ID_ENTITY'
+                )
+            ));
+
             $builder->add('_info_status', TextType::class, array(
                 'label' => 'Status',
                 'required' => false,
                 'disabled' => true
             ));
-            
+
             $builder->add('tipo', ChoiceType::class, array(
                 'expanded' => true,
                 'label_attr' => [
@@ -55,7 +64,7 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('tipoPessoa', ChoiceType::class, array(
                 'expanded' => true,
                 'label_attr' => [
@@ -70,12 +79,12 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('pessoa_id', HiddenType::class, array(
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('numero_nf', IntegerType::class, array(
                 'label' => 'Número NF',
                 'required' => false,
@@ -91,21 +100,21 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => true
             ));
-            
+
             $builder->add('dtEmissao', TextType::class, array(
                 'label' => 'Dt Emissão',
                 'attr' => array('class' => 'crsr-datetime'),
                 'required' => true,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('dtSaiEnt', TextType::class, array(
                 'label' => 'Dt Saída/Entrada',
                 'attr' => array('class' => 'crsr-datetime'),
                 'required' => true,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('valorTotal', MoneyType::class, array(
                 'label' => 'Limite',
                 'currency' => 'BRL',
@@ -115,9 +124,8 @@ class EmissaoFiscalType extends AbstractType
                     'class' => 'crsr-money'
                 )
             ));
-            
-            
-            
+
+
             $builder->add('cpf', TextType::class, array(
                 'label' => 'CPF',
                 'attr' => array(
@@ -126,7 +134,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('nome', TextType::class, array(
                 'label' => 'Nome',
                 'attr' => array(
@@ -135,7 +143,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('cnpj', TextType::class, array(
                 'label' => 'CNPJ',
                 'attr' => array(
@@ -143,7 +151,7 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'required' => false,
                 'disabled' => $disabled
-            
+
             ));
             // Adiciona campo RAZAO SOCIAL (bon_pessoa.nome)
             $builder->add('razao_social', TextType::class, array(
@@ -163,7 +171,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('fone1', TextType::class, array(
                 'label' => 'Telefone',
                 'attr' => array(
@@ -180,7 +188,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('cep', TextType::class, array(
                 'label' => 'CEP',
                 'attr' => array(
@@ -189,7 +197,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('logradouro', TextType::class, array(
                 'label' => 'Logradouro',
                 'attr' => array(
@@ -230,7 +238,7 @@ class EmissaoFiscalType extends AbstractType
                 'required' => false,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('estado', ChoiceType::class, array(
                 'label' => 'Estado',
                 'choices' => array(
@@ -268,7 +276,7 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('cancelamento_motivo', TextType::class, array(
                 'label' => 'Motivo do Cancelamento',
                 'required' => true,
@@ -279,7 +287,7 @@ class EmissaoFiscalType extends AbstractType
                     ))
                 )
             ));
-            
+
             $builder->add('carta_correcao', TextType::class, array(
                 'label' => 'Carta de Correção',
                 'required' => true,
@@ -290,13 +298,13 @@ class EmissaoFiscalType extends AbstractType
                     ))
                 )
             ));
-            
+
             $builder->add('natureza_operacao', TextType::class, array(
                 'label' => 'Natureza da Operação',
                 'required' => true,
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('entrada_saida', ChoiceType::class, array(
                 'label' => 'Entrada/Saída',
                 'required' => true,
@@ -306,11 +314,11 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
-            
+
+
             $builder->add('transp_modalidade_frete', ChoiceType::class, array(
                 'label' => 'Modalidade Frete',
-                'required' => true,                
+                'required' => true,
                 'choices' => array(
                     'Sem frete' => 'SEM_FRETE',
                     'Por conta do emitente' => 'EMITENTE',
@@ -319,7 +327,7 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('indicador_forma_pagto', ChoiceType::class, array(
                 'label' => 'Forma Pagto',
                 'required' => true,
@@ -330,7 +338,7 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('indicador_forma_pagto', ChoiceType::class, array(
                 'label' => 'Forma Pagto',
                 'required' => true,
@@ -341,7 +349,7 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
-            
+
             $builder->add('finalidade_nf', ChoiceType::class, array(
                 'label' => 'Finalidade',
                 'required' => true,
@@ -364,7 +372,7 @@ class EmissaoFiscalType extends AbstractType
             ));
         });
     }
-    
+
     // public function configureOptions(OptionsResolver $resolver)
     // {
     // $resolver->setDefaults(array(

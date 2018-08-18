@@ -37,6 +37,13 @@ function prepareForm() {
 
     $('#inputModalidadeFrete').val( modalidadeFreteLabel );
 
+    let notaFiscalId = $('.ID_ENTITY').val();
+    // quando for uma nova nota fiscal, desabilita todas as abas menos o cabeçalho.
+    if (!notaFiscalId) {
+        $('.NOTAFISCAL_TAB').addClass('disabled');
+        $('#cabecalho-tab').removeClass('disabled');
+    }
+
     if (modalidadeFrete === 'SEM_FRETE') {
         $('#transporte-tab').addClass('disabled');
     } else {
