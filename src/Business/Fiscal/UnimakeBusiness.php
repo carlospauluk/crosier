@@ -201,7 +201,7 @@ class UnimakeBusiness
             $itemXML->prod->qTrib = $nfItem->getQtde();
             $itemXML->prod->vUnTrib = number_format($nfItem->getValorUnit(), 2, '.', '');
             if (bccomp($nfItem->getValorDesconto(), 0.00, 2)) {
-                $itemXML->prod->vDesc = number_format($nfItem->getValorDesconto(), 2, '.', '');
+                $itemXML->prod->vDesc = number_format(abs($nfItem->getValorDesconto()), 2, '.', '');
             }
             $itemXML->prod->indTot = '1';
 
@@ -224,7 +224,7 @@ class UnimakeBusiness
         $nfe->infNFe->total->ICMSTot->vFrete = '0.00';
         $nfe->infNFe->total->ICMSTot->vSeg = '0.00';
         // if (bccomp($notaFiscal->getTotalDescontos(), 0.00, 2)) {
-        $nfe->infNFe->total->ICMSTot->vDesc = number_format($notaFiscal->getTotalDescontos(), 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vDesc = number_format(abs($notaFiscal->getTotalDescontos()), 2, '.', '');
         // }
         $nfe->infNFe->total->ICMSTot->vII = '0.00';
         $nfe->infNFe->total->ICMSTot->vIPI = '0.00';
@@ -303,6 +303,7 @@ class UnimakeBusiness
      * @param NotaFiscal $notaFiscal
      * @param $rand
      * @return \App\Entity\Fiscal\NotaFiscal
+     * @throws \Exception
      */
     public function consultarRetorno(NotaFiscal $notaFiscal, $rand)
     {
@@ -319,7 +320,7 @@ class UnimakeBusiness
         // pega o número do lote do arquivo $notaFiscal->getUuid() . "-num-lot.xml"
         $arquivoNumLot = $pastaRetorno . $uuid . '-' . $rand . '-num-lot.xml';
 
-        $arquivoErr = $pastaRetorno . $uuid . '-nfe.err';
+        $arquivoErr = $pastaRetorno . $uuid . '-' . $rand . '-nfe.err';
 
         $count = 20;
 
@@ -333,54 +334,53 @@ class UnimakeBusiness
                 }
             } else {
 
+                if (file_exists($arquivoNumLot)) {
+                    // pega o arquivo com lote: 000000000[lote]-rec.xml
+                    $xmlNumLot = simplexml_load_string(file_get_contents($arquivoNumLot));
+                    $numLot = str_pad($xmlNumLot->NumeroLoteGerado, 15, '0', STR_PAD_LEFT);
 
-                // pega o arquivo com lote: 000000000[lote]-rec.xml
-                $xmlNumLot = simplexml_load_string(file_get_contents($arquivoNumLot));
-                $numLot = str_pad($xmlNumLot->NumeroLoteGerado, 15, '0', STR_PAD_LEFT);
-
-                // retEnviNFe->infRec->nRec
-                $arquivoRec = $pastaRetorno . $numLot . '-rec.xml';
-                if (!file_exists($arquivoRec)) {
-                    sleep(1);
-                    $count--;
-                    if ($count <= 0) {
-                        break;
-                    }
-                } else {
-                    $xmlRec = simplexml_load_string(file_get_contents($arquivoRec));
-
-                    if ($xmlRec->cStat == 103) {
-                        $nRec = $xmlRec->infRec->nRec;
-                        // pega o arquivo com [nRec]-pro-rec.xml
-                        $arquivoProRec = $pastaRetorno . $nRec . "-pro-rec.xml";
-
-                        if (!file_exists($arquivoProRec)) {
-                            sleep(1);
-                            $count--;
-                            if ($count <= 0) {
-                                break;
-                            }
-                        } else {
-                            $xmlProRec = simplexml_load_string(file_get_contents($arquivoProRec));
-
-                            $cStat = $xmlProRec->protNFe->infProt->cStat->__toString();
-                            $xMotivo = $xmlProRec->protNFe->infProt->xMotivo->__toString();
-                            $nProt = $xmlProRec->protNFe->infProt->nProt->__toString();
-
-                            $notaFiscal->setSpartacusStatus($cStat);
-                            $notaFiscal->setSpartacusMensretornoReceita($xMotivo);
-                            $notaFiscal->setProtocoloAutorizacao($nProt);
-                            $notaFiscal->setDtSpartacusStatus(new \DateTime());
-                            $this->entityIdBusiness->handlePersist($notaFiscal);
-                            $this->doctrine->getManager()->persist($notaFiscal);
-                            $this->doctrine->getManager()->flush();
+                    // retEnviNFe->infRec->nRec
+                    $arquivoRec = $pastaRetorno . $numLot . '-rec.xml';
+                    if (!file_exists($arquivoRec)) {
+                        sleep(1);
+                        $count--;
+                        if ($count <= 0) {
                             break;
                         }
-                    }
-                }
+                    } else {
+                        $xmlRec = simplexml_load_string(file_get_contents($arquivoRec));
 
-                if (file_exists($arquivoErr)) {
-                    $err = file($pastaRetorno . $uuid . '-nfe.err');
+                        if ($xmlRec->cStat == 103) {
+                            $nRec = $xmlRec->infRec->nRec;
+                            // pega o arquivo com [nRec]-pro-rec.xml
+                            $arquivoProRec = $pastaRetorno . $nRec . "-pro-rec.xml";
+
+                            if (!file_exists($arquivoProRec)) {
+                                sleep(1);
+                                $count--;
+                                if ($count <= 0) {
+                                    break;
+                                }
+                            } else {
+                                $xmlProRec = simplexml_load_string(file_get_contents($arquivoProRec));
+
+                                $cStat = $xmlProRec->protNFe->infProt->cStat->__toString();
+                                $xMotivo = $xmlProRec->protNFe->infProt->xMotivo->__toString();
+                                $nProt = $xmlProRec->protNFe->infProt->nProt->__toString();
+
+                                $notaFiscal->setSpartacusStatus($cStat);
+                                $notaFiscal->setSpartacusMensretornoReceita($xMotivo);
+                                $notaFiscal->setProtocoloAutorizacao($nProt);
+                                $notaFiscal->setDtSpartacusStatus(new \DateTime());
+                                $this->entityIdBusiness->handlePersist($notaFiscal);
+                                $this->doctrine->getManager()->persist($notaFiscal);
+                                $this->doctrine->getManager()->flush();
+                                break;
+                            }
+                        }
+                    }
+                } else if (file_exists($arquivoErr)) {
+                    $err = file($arquivoErr);
                     $message = explode('|', $err[2])[1];
 
                     $notaFiscal->setSpartacusStatus(0);
@@ -389,7 +389,10 @@ class UnimakeBusiness
                     $this->doctrine->getManager()->persist($notaFiscal);
                     $this->doctrine->getManager()->flush();
                     return $notaFiscal;
+                } else {
+                    throw new \Exception("Nem o arquivo de sucesso, nem o de erro, foram encontrados.");
                 }
+
             }
         }
         return $notaFiscal;
@@ -431,7 +434,6 @@ class UnimakeBusiness
                 $retorno = simplexml_load_string(file_get_contents($arqRetorno));
 
                 $notaFiscal->setSpartacusStatus($retorno->cStat->__toString());
-                $notaFiscal->setSpartacusMensretornoReceita($retorno->xMotivo->__toString());
                 $notaFiscal->setSpartacusMensretornoReceita($retorno->xMotivo->__toString());
 
                 if ($retorno->protNFe and $retorno->protNFe->infProt and $retorno->protNFe->infProt->nProt) {
@@ -501,12 +503,14 @@ class UnimakeBusiness
         if (!$id)
             return;
 
-        // 41180877498442000134650040000000701344865736_110111_01-procEventoNFe
-        $chaveNota = $notaFiscal->getChaveAcesso();
-        $tpEvento = '110110';
-        $nSeqEvento = '01';
+        // Estranho que aqui o Unimake não coloca o tpEvento no nome do arquivo. No cancelamento ele coloca.
 
-        $nomeArquivo = $chaveNota . "_" . $tpEvento . "_" . $nSeqEvento . "-procEventoNFe.xml";
+        $chaveNota = $notaFiscal->getChaveAcesso();
+        // $tpEvento = '110110';
+        $nSeqEvento = $notaFiscal->getCartaCorrecaoSeq();
+
+//        $nomeArquivo = $chaveNota . "_" . $tpEvento . "_" . str_pad($nSeqEvento,2,'0',STR_PAD_LEFT) . "-procEventoNFe.xml";
+        $nomeArquivo = $chaveNota . "_" . str_pad($nSeqEvento,2,'0',STR_PAD_LEFT) . "-procEventoNFe.xml";
 
         $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
 
@@ -609,17 +613,17 @@ class UnimakeBusiness
 
         $tpEvento = '110110';
         $chaveNota = $notaFiscal->getChaveAcesso();
-        $nSeqEvento = '01';
-
-        $id = "ID" . $tpEvento . $chaveNota . $nSeqEvento;
-
-        // número randômico para casos onde várias consultas possam ser feitas
-        $rand = rand(100000000000000, 999999999999999);
-
         // FIXME: não é a melhor forma, mas por enquanto vai assim mesmo.
         $nSeqEvento = $notaFiscal->getCartaCorrecaoSeq() ? $notaFiscal->getCartaCorrecaoSeq() : 0;
         $nSeqEvento++;
         $notaFiscal->setCartaCorrecaoSeq($nSeqEvento);
+
+
+        $id = "ID" . $tpEvento . $chaveNota . str_pad($nSeqEvento, 2, "0", STR_PAD_LEFT);
+
+        // número randômico para casos onde várias consultas possam ser feitas
+        $rand = rand(100000000000000, 999999999999999);
+
 
         $cartaCorr->idLote = $rand;
         $cartaCorr->evento->infEvento['Id'] = $id;

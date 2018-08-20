@@ -115,14 +115,40 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => $disabled
             ));
 
-            $builder->add('valorTotal', MoneyType::class, array(
-                'label' => 'Limite',
+            $builder->add('subtotal', MoneyType::class, array(
+                'label' => 'Subtotal',
                 'currency' => 'BRL',
                 'grouping' => 'true',
                 'required' => false,
                 'attr' => array(
                     'class' => 'crsr-money'
-                )
+                ),
+                'required' => false,
+                'disabled' => true
+            ));
+
+            $builder->add('totalDescontos', MoneyType::class, array(
+                'label' => 'Descontos',
+                'currency' => 'BRL',
+                'grouping' => 'true',
+                'required' => false,
+                'attr' => array(
+                    'class' => 'crsr-money'
+                ),
+                'required' => false,
+                'disabled' => true
+            ));
+
+            $builder->add('valorTotal', MoneyType::class, array(
+                'label' => 'Valor Total',
+                'currency' => 'BRL',
+                'grouping' => 'true',
+                'required' => false,
+                'attr' => array(
+                    'class' => 'crsr-money'
+                ),
+                'required' => false,
+                'disabled' => true
             ));
 
 

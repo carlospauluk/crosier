@@ -58,13 +58,11 @@ class EmissaoNFeController extends Controller
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
         $dataPosted = $request->request->get('emissao_fiscal');
 
-        if (!$dataPosted) {
-            $dataPosted['tipoPessoa'] = 'PESSOA_JURIDICA';
-        }
 
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }
+
 
         $form = $this->createForm(EmissaoFiscalType::class, $data);
         $form->handleRequest($request);
@@ -138,7 +136,7 @@ class EmissaoNFeController extends Controller
 
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-        $dataPosted = $request->request->get('emissao_fiscal_pv');
+        $dataPosted = $request->request->get('emissao_fiscal');
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }
@@ -187,7 +185,7 @@ class EmissaoNFeController extends Controller
 
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-        $dataPosted = $request->request->get('emissao_fiscal_pv');
+        $dataPosted = $request->request->get('emissao_fiscal');
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }
@@ -196,7 +194,6 @@ class EmissaoNFeController extends Controller
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $notaFiscal->setCartaCorrecao($data['carta_correcao']);
                 $notaFiscal = $this->notaFiscalBusiness->cartaCorrecao($notaFiscal);
                 return $this->redirectToRoute('fis_emissaonfe_form', array(
                     'notaFiscal' => $notaFiscal->getId()
@@ -208,13 +205,13 @@ class EmissaoNFeController extends Controller
 
         // Mantenho pois as regras pra cancelamento e pra carta de correção são as mesmas
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
-        $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
+        $permiteReimpressaoCartaCorrecao = $this->notaFiscalBusiness->permiteReimpressaoCartaCorrecao($notaFiscal);
 
-        $response = $this->render('Fiscal/emissaonfe/cartaCorrecaoForm.html.twig', array(
+        $response = $this->render('Fiscal/emissaoNFe/cartaCorrecaoForm.html.twig', array(
             'form' => $form->createView(),
             'notaFiscal' => $notaFiscal,
             'permiteCancelamento' => $permiteCancelamento,
-            'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento
+            'permiteReimpressaoCartaCorrecao' => $permiteReimpressaoCartaCorrecao
         ));
         return $response;
     }
@@ -244,6 +241,23 @@ class EmissaoNFeController extends Controller
     public function reimprimir(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimir($notaFiscal);
+        $this->addFlash('success', 'Nota Fiscal enviada para reimpressão!');
+        return $this->redirectToRoute('fis_emissaonfe_form', array(
+            'notaFiscal' => $notaFiscal->getId()
+        ));
+    }
+
+    /**
+     *
+     * @Route("/fis/emissaonfe/reimprimirCartaCorrecao/{notaFiscal}", name="fis_emissaonfe_reimprimirCartaCorrecao")
+     * @param Request $request
+     * @param NotaFiscal $notaFiscal
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function reimprimirCartaCorrecao(Request $request, NotaFiscal $notaFiscal)
+    {
+        $this->notaFiscalBusiness->imprimirCartaCorrecao($notaFiscal);
+        $this->addFlash('success', 'Carta de Correção enviada para reimpressão!');
         return $this->redirectToRoute('fis_emissaonfe_form', array(
             'notaFiscal' => $notaFiscal->getId()
         ));

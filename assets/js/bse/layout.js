@@ -34,6 +34,9 @@ import 'select2';
 import 'jquery-mask-plugin';
 import 'jquery-maskmoney/dist/jquery.maskMoney.js';
 
+import toastr from 'toastr';
+import 'toastr/build/toastr.css';
+
 // como adicionar o crosier.js e crosier.css ???
 
 import '../../css/crosier/crosier.css';
@@ -90,6 +93,18 @@ $(document).ready(function () {
             }
 
         });
+
+    $('.FLASHMESSAGE').each(function () {
+        if ($(this).hasClass('FLASHMESSAGE_SUCCESS')) {
+            toastr.success($(this).html());
+        } else if ($(this).hasClass('FLASHMESSAGE_WARNING')) {
+            toastr.warning($(this).html());
+        } else if ($(this).hasClass('FLASHMESSAGE_INFO')) {
+            toastr.info($(this).html());
+        } else if ($(this).hasClass('FLASHMESSAGE_ERROR')) {
+            toastr.error($(this).html());
+        }
+    });
 
 });
 

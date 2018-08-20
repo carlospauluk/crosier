@@ -19,7 +19,8 @@
         "sass-loader": "^7.1.0",
         "select2": "3",
         "simple-line-icons": "^2.4.1",
-        "webpack-notifier": "^1.6.0"
+        "webpack-notifier": "^1.6.0",
+        "toastr": "^2.1.4"
     },
     "license": "UNLICENSED",
     "private": true,

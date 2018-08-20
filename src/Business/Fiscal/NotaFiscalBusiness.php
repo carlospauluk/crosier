@@ -116,7 +116,18 @@ class NotaFiscalBusiness
         $formData['finalidade_nf'] = $notaFiscal->getFinalidadeNf();
         $formData['entrada_saida'] = $notaFiscal->getEntrada();
 
+//        $formData['subtotal'] = number_format($notaFiscal->getSubtotal(),2,',','.');
+//        $formData['total_descontos'] = number_format($notaFiscal->getTotalDescontos(),2,',','.');
+//        $formData['valor_total'] = number_format($notaFiscal->getValorTotal(),2,',','.');
+
+        $formData['subtotal'] = $notaFiscal->getSubtotal();
+        $formData['totalDescontos'] = $notaFiscal->getTotalDescontos();
+        $formData['valorTotal'] = $notaFiscal->getValorTotal();
+
         $formData['info_compl'] = $notaFiscal->getInfoCompl();
+
+
+        $formData['carta_correcao'] = $notaFiscal->getCartaCorrecao();
 
         return $formData;
     }
@@ -131,11 +142,14 @@ class NotaFiscalBusiness
     {
         if (isset($formData['nota_fiscal_id'])) {
             $notaFiscal = $this->doctrine->getRepository(NotaFiscal::class)->find($formData['nota_fiscal_id']);
+            if (!$notaFiscal) {
+                $notaFiscal = new NotaFiscal();
+            }
         } else {
             $notaFiscal = new NotaFiscal();
         }
 
-        if (isset($formData['pessoa_id'])) {
+        if (isset($formData['pessoa_id']) and $formData['pessoa_id']) {
             $pessoaDestinatario = $this->doctrine->getRepository(Pessoa::class)->find($formData['pessoa_id']);
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
         }
@@ -165,6 +179,14 @@ class NotaFiscalBusiness
         $notaFiscal->setEntrada(isset($formData['entrada_saida']) ? $formData['entrada_saida'] : null);
 
         $notaFiscal->setInfoCompl(isset($formData['info_compl']) ? $formData['info_compl'] : null);
+
+        $fmt = new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL);
+
+        $notaFiscal->setSubtotal(isset($formData['subtotal']) ? $fmt->parse($formData['subtotal']) : null);
+        $notaFiscal->setTotalDescontos(isset($formData['total_descontos']) ? $fmt->parse($formData['total_descontos']) : null);
+        $notaFiscal->setValorTotal(isset($formData['valor_total']) ? $fmt->parse($formData['valor_total']) : null);
+
+        $notaFiscal->setCartaCorrecao(isset($formData['carta_correcao']) ? $formData['carta_correcao'] : null);
 
         return $notaFiscal;
     }
@@ -226,7 +248,7 @@ class NotaFiscalBusiness
 
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->getSubTotal() > 0.0) {
-                $fatorDesconto = 1 - ($venda->getValorTotal() / $venda->getSubTotal());
+                $fatorDesconto = 1 - (round(bcdiv($venda->getValorTotal(), $venda->getSubTotal(),4),2));
             } else {
                 $fatorDesconto = 1;
             }
@@ -253,12 +275,13 @@ class NotaFiscalBusiness
                 $nfItem->setValorUnit($vendaItem->getPrecoVenda());
                 $nfItem->setValorTotal($vendaItem->getTotalItem());
 
-                $vDesconto = $vendaItem->getPrecoVenda() * $vendaItem->getQtde() * $fatorDesconto;
+                $vDesconto = round(bcmul($vendaItem->getTotalItem(), $fatorDesconto,4),2);
                 $nfItem->setValorDesconto($vDesconto);
 
+                // Somando aqui pra verificar depois se o total dos descontos dos itens bate com o desconto global da nota.
                 $somaDescontosItens += $vDesconto;
 
-                $nfItem->setSubTotal($vendaItem->getQtde() * $vendaItem->getPrecoVenda());
+                $nfItem->setSubTotal($vendaItem->getTotalItem());
 
                 $nfItem->setIcmsAliquota(0.0);
                 $nfItem->setCfop("5102");
@@ -282,10 +305,8 @@ class NotaFiscalBusiness
                 $notaFiscal->addItem($nfItem);
             }
 
-            $totalDescontos = bcsub($venda->getSubTotal(), $venda->getValorTotal(), 2);
-            $notaFiscal->setSubtotal($venda->getSubTotal());
-            $notaFiscal->setValorTotal($venda->getValorTotal());
-            $notaFiscal->setTotalDescontos($totalDescontos);
+            $this->calcularTotais($notaFiscal);
+            $totalDescontos = bcsub($notaFiscal->getSubTotal(), $notaFiscal->getValorTotal(), 2);
 
             if (bcsub(abs($totalDescontos), abs($somaDescontosItens), 2) != 0) {
                 $diferenca = $totalDescontos - $somaDescontosItens;
@@ -357,6 +378,8 @@ class NotaFiscalBusiness
                 $notaFiscal->setCnf($cNF);
             }
 
+            $this->calcularTotais($notaFiscal);
+
             $this->entityIdBusiness->handlePersist($notaFiscal);
             $this->doctrine->getManager()->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
@@ -376,20 +399,20 @@ class NotaFiscalBusiness
      * @param
      *            nf
      */
-    public function calcularTotais(NotaFiscal $nf)
+    public function calcularTotais(NotaFiscal $notaFiscal)
     {
-        $bdTotal = 0.0;
-        $bdSubTotal = 0.0;
-        $bdDescontos = 0.0;
-        foreach ($nf->getItens() as $item) {
-            $bdTotal += $item->getValorTotal();
-            $bdSubTotal += $item->getSubTotal();
-            $bdDescontos += $item->getValorDesconto() ? $item->getValorDesconto() : 0.0;
+//        $total = 0.0;
+        $subTotal = 0.0;
+        $descontos = 0.0;
+        foreach ($notaFiscal->getItens() as $item) {
+//            $total += $item->getValorTotal();
+            $subTotal += $item->getSubTotal();
+            $descontos += $item->getValorDesconto() ? $item->getValorDesconto() : 0.0;
         }
 
-        $nf->setSubTotal($bdSubTotal);
-        $nf->setValorTotal($bdTotal);
-        $nf->setTotalDescontos($bdDescontos);
+        $notaFiscal->setSubTotal($subTotal);
+        $notaFiscal->setTotalDescontos($descontos);
+        $notaFiscal->setValorTotal($subTotal - $descontos);
     }
 
     public function corrigirPessoaDestinatario(NotaFiscal $nf)
@@ -597,6 +620,26 @@ class NotaFiscalBusiness
         if ($notaFiscal->getId()) {
             if ($notaFiscal->getSpartacusStatus() == 100) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifica se é possível reimprimir uma carta de correção.
+     *
+     * @param NotaFiscal $notaFiscal
+     * @return boolean
+     */
+    public function permiteReimpressaoCartaCorrecao(NotaFiscal $notaFiscal)
+    {
+        if ($notaFiscal->getId()) {
+            if ($notaFiscal->getSpartacusStatus() == 100) {
+                if ($notaFiscal->getCartaCorrecao()) {
+                    if ($notaFiscal->getCartaCorrecaoSeq() > 0) {
+                        return true;
+                    }
+                }
             }
         }
         return false;

@@ -11,7 +11,7 @@ Routing.setRoutingData(routes)
 function prepareForm() {
     // quando muda de NFE pra NFCE e vice-versa, esconde os campos
     let tipoFiscal = $(".TIPO_FISCAL").find(':checked').val();
-    if (tipoFiscal === 'NFCE') {
+    if (tipoFiscal == 'NFCE') {
         $(".NFE").parent().parent().css('display', 'none');
     } else {
         $(".NFE").parent().parent().css('display', '');
@@ -19,7 +19,7 @@ function prepareForm() {
 
     let tipoPessoa = $(".TIPO_PESSOA").find(':checked').val();
 
-    if (tipoPessoa === 'PESSOA_FISICA') {
+    if (tipoPessoa == 'PESSOA_FISICA') {
         $(".PESSOA_FISICA").parent().parent().css('display', '');
         $(".PESSOA_JURIDICA").parent().parent().css('display', 'none');
     } else {
@@ -44,7 +44,7 @@ function prepareForm() {
         $('#cabecalho-tab').removeClass('disabled');
     }
 
-    if (modalidadeFrete === 'SEM_FRETE') {
+    if (modalidadeFrete == 'SEM_FRETE') {
         $('#transporte-tab').addClass('disabled');
     } else {
         $('#transporte-tab').removeClass('disabled');
