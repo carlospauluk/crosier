@@ -1,30 +1,29 @@
 <?php
-
 namespace App\Form\Financeiro;
 
-use App\Entity\Financeiro\OperadoraCartao;
-use App\Entity\Financeiro\Modo;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Entity\Financeiro\RegistroConferencia;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class OperadoraCartaoType extends AbstractType
+class RegistroConferenciaType extends AbstractType
 {
-
-    private $doctrine;
-
-    public function __construct(RegistryInterface $doctrine)
-    {
-        $this->doctrine = $doctrine;
-    }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
+        ));
+
+        $builder->add('dtRegistro', DateType::class, array(
+            'label' => 'Dt Registro',
+            'widget' => 'single_text',
+            'format' => 'dd/MM/yyyy',
+            'attr' => array('class' => 'crsr-date')
         ));
 
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
@@ -37,13 +36,21 @@ class OperadoraCartaoType extends AbstractType
             }
         ));
 
-
+        $builder->add('valor', MoneyType::class, array(
+            'label' => 'Valor',
+            'currency' => 'BRL',
+            'grouping' => 'true',
+            'required' => false,
+            'attr' => array(
+                'class' => 'crsr-money'
+            )
+        ));
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => OperadoraCartao::class
+            'data_class' => RegistroConferencia::class
         ));
     }
 }

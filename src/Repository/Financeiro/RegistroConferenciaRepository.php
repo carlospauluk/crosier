@@ -2,6 +2,7 @@
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\RegistroConferencia;
+use App\Repository\FilterRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -11,12 +12,12 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *        
  */
-class RegistroConferenciaRepository extends ServiceEntityRepository
+class RegistroConferenciaRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, RegistroConferencia::class);
+        return RegistroConferencia::class;
     }
 }
             
