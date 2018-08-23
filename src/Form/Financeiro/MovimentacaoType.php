@@ -42,7 +42,6 @@ class MovimentacaoType extends AbstractType
     {
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $carteiras = $repoCarteira->findAll();
-        
         $builder->add('carteira', EntityType::class, array(
             'class' => Carteira::class,
             'choices' => $carteiras,
@@ -53,7 +52,6 @@ class MovimentacaoType extends AbstractType
         
         $repoModo = $this->doctrine->getRepository(Modo::class);
         $modos = $repoModo->findAll();
-        
         $builder->add('modo', EntityType::class, array(
             'class' => Modo::class,
             'choices' => $modos,
@@ -68,7 +66,6 @@ class MovimentacaoType extends AbstractType
         
         $repoCategoria = $this->doctrine->getRepository(Categoria::class);
         $categorias = $repoCategoria->findAll();
-        
         $builder->add('categoria', EntityType::class, array(
             'class' => Categoria::class,
             'choices' => $categorias,

@@ -50,9 +50,16 @@ class RegraImportacaoLinha extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
-     * @ORM\JoinColumn(name="carteira_destino_id", nullable=true)
+     * @ORM\JoinColumn(name="carteira_id", nullable=true)
      */
     private $carteira;
+
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
+     * @ORM\JoinColumn(name="carteira_destino_id", nullable=true)
+     */
+    private $carteiraDestino;
 
     /**
      *
@@ -172,6 +179,16 @@ class RegraImportacaoLinha extends EntityId
     public function setCarteira(?Carteira $carteira)
     {
         $this->carteira = $carteira;
+    }
+
+    public function getCarteiraDestino(): ?Carteira
+    {
+        return $this->carteiraDestino;
+    }
+
+    public function setCarteiraDestino(?Carteira $carteiraDestino)
+    {
+        $this->carteiraDestino = $carteiraDestino;
     }
 
     public function getCentroCusto(): ?CentroCusto

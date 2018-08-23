@@ -1,22 +1,23 @@
 <?php
+
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\RegraImportacaoLinha;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Repository\FilterRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade RegraImportacaoLinha.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
-class RegraImportacaoLinhaRepository extends ServiceEntityRepository
+class RegraImportacaoLinhaRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, RegraImportacaoLinha::class);
+        return RegraImportacaoLinha::class;
     }
 }
                         
