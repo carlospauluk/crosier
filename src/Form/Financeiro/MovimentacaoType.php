@@ -43,6 +43,7 @@ class MovimentacaoType extends AbstractType
         $repoCarteira = $this->doctrine->getRepository(Carteira::class);
         $carteiras = $repoCarteira->findAll();
         $builder->add('carteira', EntityType::class, array(
+            'label' => 'Carteira',
             'class' => Carteira::class,
             'choices' => $carteiras,
             'choice_label' => function (Carteira $carteira) {
@@ -53,6 +54,7 @@ class MovimentacaoType extends AbstractType
         $repoModo = $this->doctrine->getRepository(Modo::class);
         $modos = $repoModo->findAll();
         $builder->add('modo', EntityType::class, array(
+            'label' => 'Modo de Movto',
             'class' => Modo::class,
             'choices' => $modos,
             'choice_label' => function (Modo $modo) {
@@ -67,15 +69,16 @@ class MovimentacaoType extends AbstractType
         $repoCategoria = $this->doctrine->getRepository(Categoria::class);
         $categorias = $repoCategoria->findAll();
         $builder->add('categoria', EntityType::class, array(
+            'label' => 'Categoria',
             'class' => Categoria::class,
             'choices' => $categorias,
             'choice_label' => 'descricaoMontada'
         ));
         
         $builder->add('dtMoviment', DateType::class, array(
+            'label' => 'Dt Moviment',
             'widget' => 'single_text',
             'format' => 'dd/MM/yyyy',
-            'label' => 'Dt Moviment',
             'attr' => array(
                 'class' => 'crsr-date'
             )

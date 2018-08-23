@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Grupo;
+use App\Repository\FilterRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -9,13 +11,13 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Grupo.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
-class GrupoRepository extends ServiceEntityRepository
+class GrupoRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, Grupo::class);
+        return Grupo::class;
     }
 }
