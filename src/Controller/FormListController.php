@@ -35,18 +35,18 @@ abstract class FormListController extends Controller
     public function doForm(Request $request, EntityId $entityId = null)
     {
         if (!$entityId) {
-            $entityName = $this->entityHandler->getEntityClass();
-            $carteira = new $entityName();
+            $entityName = $this->getEntityHandler()->getEntityClass();
+            $entityId = new $entityName();
         }
 
-        $form = $this->createForm($this->entityHandler->getEntityClass(), $entityId);
+        $form = $this->createForm($this->getTypeClass(), $entityId);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $entity = $form->getData();
-                $this->entityHandler->persist($entity);
+                $this->getEntityHandler()->persist($entity);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute($this->getFormRoute(), array('id' => $entityId->getId()));
             } else {

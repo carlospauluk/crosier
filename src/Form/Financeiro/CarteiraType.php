@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Form\Financeiro;
 
 use App\Entity\Financeiro\Banco;
@@ -21,18 +22,18 @@ class CarteiraType extends AbstractType
         $builder->add('codigo', IntegerType::class, array(
             'label' => 'Código'
         ));
-        
+
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
         ));
-        
+
         $builder->add('dtConsolidado', DateType::class, array(
             'widget' => 'single_text',
             'format' => 'dd/MM/yyyy',
             'label' => 'Dt Consolidado',
             'attr' => array('class' => 'crsr-date')
         ));
-        
+
         $builder->add('concreta', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,
@@ -57,31 +58,31 @@ class CarteiraType extends AbstractType
                 'Não' => false
             )
         ));
-        
+
         $builder->add('banco', EntityType::class, array(
             // looks for choices from this entity
             'class' => Banco::class,
-            
+
             // uses the User.username property as the visible option string
             'choice_label' => function (Banco $banco) {
                 return $banco->getCodigoBanco() . " - " . $banco->getNome();
             }
-            
+
             // used to render a select box, check boxes or radios
             // 'multiple' => true,
             // 'expanded' => true,
         ));
-        
+
         $builder->add('agencia', TextType::class, array(
             'label' => 'Agência',
             'required' => false
         ));
-        
+
         $builder->add('conta', TextType::class, array(
             'label' => 'Conta',
             'required' => false
         ));
-        
+
         $builder->add('limite', MoneyType::class, array(
             'label' => 'Limite',
             'currency' => 'BRL',

@@ -33,8 +33,6 @@ class MovimentacaoType extends AbstractType
 
     private $doctrine;
 
-    private $entityIdTransformer;
-
     public function __construct(RegistryInterface $doctrine)
     {
         $this->doctrine = $doctrine;

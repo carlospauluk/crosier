@@ -2,20 +2,20 @@
 
 namespace App\Repository\Financeiro;
 
-use App\Entity\Financeiro\CentroCusto;
+use App\Entity\Financeiro\BandeiraCartao;
 use App\Repository\FilterRepository;
 
 /**
- * Repository para a entidade CentroCusto.
+ * Repository para a entidade BandeiraCartao.
  *
  * @author Carlos Eduardo Pauluk
  *
  */
-class CentroCustoRepository extends FilterRepository
+class BandeiraCartaoRepository extends FilterRepository
 {
 
     public function getEntityClass()
     {
-        return CentroCusto::class;
+        return BandeiraCartao::class;
     }
 }

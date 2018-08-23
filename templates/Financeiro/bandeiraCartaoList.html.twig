@@ -1,0 +1,121 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-8">
+                    <h3>Bandeiras de Cartões</h3>
+                </div>
+                <div class="col-4 text-right">
+                    <button type="button" class="btn btn-primary"
+                            onclick="window.location.href='{{ url('fin_bandeiraCartao_form') }}'">
+                        <i class="fas fa-file" aria-hidden="true"></i> Novo
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            data-target="#pesquisarModal" data-toggle="modal">
+                        <i class="fas fa-search" aria-hidden="true"></i> Pesquisar
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            onclick="window.location.href='{{ url('fin_bandeiraCartao_list') }}'">
+                        <i class="fas fa-sync" aria-hidden="true"></i> Recarregar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+
+            {{ include('Util/flashes.html.twig') }}
+
+            <div class="table-responsive-sm">
+                <table class="table table-striped table-hover crsr-datatable">
+
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Descrição</th>
+                        <th scope="col">Labels</th>
+                        <th scope="col">Modo</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for item in dados %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}</th>
+                            <td>{{ item.descricao }}</td>
+                            <td>{{ item.labels }}</td>
+                            <td>{{ item.modo.descricao }}</td>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-primary"
+                                        onclick="window.location.href='{{ url('fin_bandeiraCartao_form', {id: item.id}) }}'">
+                                    <i class="fas fa-wrench" aria-hidden="true"></i>
+                                </button>
+
+                                <button type="button" class="btn btn-danger"
+                                        data-url="{{ url('fin_bandeiraCartao_delete', {id: item.id}) }}"
+                                        data-token="{{ csrf_token('delete') }}"
+                                        data-target="#confirmationModal" data-toggle="modal">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="pesquisarModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ url('fin_bandeiraCartao_list') }}" method="get">
+                    <div class="modal-body">
+                        <h4>Pesquisar</h4>
+
+                        <div class="form-group">
+                            <label for="p_descricao">Nome</label>
+                            <input type="text" class="form-control" id="filter[descricao]"
+                                   name="filter[descricao]"
+                                   value="{{ filter.descricao|default('') }}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default"
+                                id="btnCancelarPesquisa" data-dismiss="modal">
+                            <i class="fa fa-ban" aria-hidden="true"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-danger" id="btnPesquisar">
+                            <i class="fa fa-trash" aria-hidden="true"></i> Pesquisar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+
+
+{% block down_scripts %}
+
+
+    {{ include('Util/confirmationModal.html.twig') }}
+
+{% endblock %}
