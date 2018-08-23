@@ -1,22 +1,22 @@
 <?php
+
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\OperadoraCartao;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade OperadoraCartao.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
-class OperadoraCartaoRepository extends ServiceEntityRepository
+class OperadoraCartaoRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, OperadoraCartao::class);
+        return OperadoraCartao::class;
     }
 }
     
