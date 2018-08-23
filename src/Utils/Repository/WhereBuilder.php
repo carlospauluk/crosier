@@ -104,6 +104,7 @@ class WhereBuilder
         foreach ($filters as $filter) {
             
             WhereBuilder::parseVal($filter);
+            if (!$filter->val) continue;
             
             $field_array = is_array($filter->field) ? $filter->field : array(
                 $filter->field

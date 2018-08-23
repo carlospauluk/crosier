@@ -1,41 +1,22 @@
 <?php
+
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Carteira;
-use App\Utils\Repository\WhereBuilder;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade Carteira.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
-class CarteiraRepository extends ServiceEntityRepository
+class CarteiraRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, Carteira::class);
+        return Carteira::class;
     }
 
-    public function findByFilters($filters, $orders = null)
-    {
-        $em = $this->getEntityManager();
-        $qb = $em->createQueryBuilder();
-        
-        $qb->select('e')->from('App\Entity\Financeiro\Carteira', 'e');
-        
-        WhereBuilder::build($qb, $filters);
-        
-        $dql = $qb->getDql();
-        
-        $sql = $qb->getQuery()->getSQL();
-        
-        // example5: retrieve the associated Query object with the processed DQL
-        $query = $qb->getQuery();
-        
-        return $query->execute();
-    }
 }

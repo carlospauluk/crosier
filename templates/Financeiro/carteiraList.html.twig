@@ -15,7 +15,7 @@
 			</div>
 			<div class="col-4 text-right">
 				<button type="button" class="btn btn-primary"
-					onclick="window.location.href='{{ url('carteira_form') }}'">
+					onclick="window.location.href='{{ url('fin_carteira_form') }}'">
 					<i class="fas fa-file" aria-hidden="true"></i> Novo
 				</button>
 				<button type="button" class="btn btn-secondary"
@@ -23,7 +23,7 @@
 					<i class="fas fa-search" aria-hidden="true"></i> Pesquisar
 				</button>
 				<button type="button" class="btn btn-secondary"
-					onclick="window.location.href='{{ url('carteira_list') }}'">
+					onclick="window.location.href='{{ url('fin_carteira_list') }}'">
 					<i class="fas fa-sync" aria-hidden="true"></i> Recarregar
 				</button>
 			</div>
@@ -58,12 +58,12 @@
 						<td>{{ item.dtConsolidado|date('d/m/Y') }}</td>
 						<td class="text-right">
 							<button type="button" class="btn btn-primary"
-								onclick="window.location.href='{{ url('carteira_form', {id: item.id}) }}'">
+								onclick="window.location.href='{{ url('fin_carteira_form', {id: item.id}) }}'">
 								<i class="fas fa-wrench" aria-hidden="true"></i>
 							</button>
 
 							<button type="button" class="btn btn-danger"
-								data-url="{{ url('carteira_delete', {id: item.id}) }}"
+								data-url="{{ url('fin_carteira_delete', {id: item.id}) }}"
 								data-token="{{ csrf_token('delete') }}"
 								data-target="#confirmationModal" data-toggle="modal">
 								<i class="fa fa-trash" aria-hidden="true"></i>
@@ -82,7 +82,7 @@
 <div class="modal fade" id="pesquisarModal" tabindex="-1">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
-			<form action="{{ url('carteira_list') }}" method="get">
+			<form action="{{ url('fin_carteira_list') }}" method="get">
 				<div class="modal-body">
 					<h4>Pesquisar</h4>
 
