@@ -40,18 +40,21 @@ class CarteiraType extends AbstractType
                 'Não' => false
             )
         ));
+
         $builder->add('abertas', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,
                 'Não' => false
             )
         ));
+
         $builder->add('caixa', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,
                 'Não' => false
             )
         ));
+
         $builder->add('cheque', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,

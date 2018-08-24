@@ -108,6 +108,12 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => $disabled
             ));
 
+            $builder->add('dtNascimento', TextType::class, array(
+                'label' => 'Dt Nascimento',
+                'attr' => array('class' => 'crsr-datetime'),
+                'required' => false
+            ));
+
             $builder->add('dtSaiEnt', TextType::class, array(
                 'label' => 'Dt Saída/Entrada',
                 'attr' => array('class' => 'crsr-datetime'),
@@ -399,10 +405,4 @@ class EmissaoFiscalType extends AbstractType
         });
     }
 
-    // public function configureOptions(OptionsResolver $resolver)
-    // {
-    // $resolver->setDefaults(array(
-    // 'data_class' => NotaFiscal::class
-    // ));
-    // }
 }

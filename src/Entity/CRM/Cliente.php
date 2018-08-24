@@ -150,7 +150,7 @@ class Cliente extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa", fetch="EAGER")
      * @ORM\JoinColumn(name="pessoa_id", nullable=false)
      *
      */

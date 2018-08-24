@@ -80,7 +80,7 @@ abstract class FormListController extends Controller
             $repo = $this->getDoctrine()->getRepository($this->getEntityHandler()->getEntityClass());
 
             if (!$params['filter'] or count($params['filter']) == 0) {
-                $dados = $repo->findAll();
+                $dados = $repo->findBy([], null, 10000);
             } else {
                 $dados = $repo->findByFilters($this->getFilterDatas($params));
             }

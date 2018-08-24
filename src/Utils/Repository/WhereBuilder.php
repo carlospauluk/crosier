@@ -41,55 +41,61 @@ class WhereBuilder
             $orX = $qb->expr()->orX();
             
             foreach ($field_array as $field) {
-                
+
+                // Verifica se foi passado somente o nome do campo, sem o prefixo do alias da tabela
+                if (strpos($field,'.') === FALSE) {
+                    $field = 'e.' . $field;
+                }
+                // nome do parâmetro que ficará na query (tenho que trocar o '.' por '_')
+                $fieldP = ':' .     str_replace('.','_',$field);
                 
                 switch ($filter->compar) {
                     case 'EQ':
                         $orX->add($qb->expr()
-                            ->eq('e.' . $field, ':' . $field));
+                            ->eq($field, $fieldP));
                         break;
                     case 'NEQ':
                         $orX->add($qb->expr()
-                            ->neq('e.' . $field, ':' . $field));
+                            ->neq($field, $fieldP));
                         break;
                     case 'LT':
                         $orX->add($qb->expr()
-                            ->lt('e.' . $field, ':' . $field));
+                            ->lt($field, $fieldP));
                         break;
                     case 'LTE':
                         $orX->add($qb->expr()
-                            ->lte('e.' . $field, ':' . $field));
+                            ->lte($field, $fieldP));
                         break;
                     case 'GT':
                         $orX->add($qb->expr()
-                            ->gt('e.' . $field, ':' . $field));
+                            ->gt($field, $fieldP));
                         break;
                     case 'GTE':
                         $orX->add($qb->expr()
-                            ->gte('e.' . $field, ':' . $field));
+                            ->gte($field, $fieldP));
                         break;
                     case 'IS_NULL':
                         $orX->add($qb->expr()
-                            ->isNull('e.' . $field, ':' . $field));
+                            ->isNull($field, $fieldP));
                         break;
                     case 'IS_NOT_NULL':
                         $orX->add($qb->expr()
-                            ->isNotNull('e.' . $field, ':' . $field));
+                            ->isNotNull($field, $fieldP));
                         break;
                     case 'IN':
                         $orX->add($qb->expr()
-                            ->in('e.' . $field, ':' . $field));
+                            ->in($field, $fieldP));
                         break;
                     case 'NOT_IN':
-                        // $exprs[] = $qb->expr()->isNotNull('e.' . $field, $val);
+                        // $exprs[] = $qb->expr()->isNotNull($field, $val);
                         break;
                     case 'LIKE':
                         $orX->add($qb->expr()
-                            ->like('e.' . $field, ':' . $field));
+                            ->like($field, $fieldP));
                         break;
                     case 'NOT_LIKE':
                         $orX->add($qb->expr()
-                            ->notLike('e.' . $field, ':' . $field));
+                            ->notLike($field, $fieldP));
                         break;
                     case 'BETWEEN':
                         $orX->add(WhereBuilder::handleBetween($filter, $qb));
@@ -111,20 +117,21 @@ class WhereBuilder
             );
             
             foreach ($field_array as $field) {
-                
+
+                $fieldP = str_replace('.','_',$field);
                 
                 switch ($filter->compar) {
                     case 'BETWEEN':
                         if ($filter->val['i'])
-                            $qb->setParameter($field . '_i', $filter->val['i']);
+                            $qb->setParameter($fieldP . '_i', $filter->val['i']);
                         if ($filter->val['f'])
-                            $qb->setParameter($field . '_f', $filter->val['f']);
+                            $qb->setParameter($fieldP . '_f', $filter->val['f']);
                         break;
                     case 'LIKE':
-                        $qb->setParameter($field, '%' . $filter->val . '%');
+                        $qb->setParameter($fieldP, '%' . $filter->val . '%');
                         break;
                     default:
-                        $qb->setParameter($field, $filter->val);
+                        $qb->setParameter($fieldP, $filter->val);
                         break;
                 }
             }
