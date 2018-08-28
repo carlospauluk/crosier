@@ -54,7 +54,7 @@ class TesteController extends Controller
             'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
         ]);
     }
-    
+
     /**
      * Export to PDF
      *
@@ -62,13 +62,22 @@ class TesteController extends Controller
      */
     public function toastr() {
         $this->addFlash('error', 'Testando mensagem de erro');
-        
+
         return $this->render('toastr.html.twig');
-        
+
     }
-    
-    
-    
-    
-    
+
+    /**
+     * Export to PDF
+     *
+     * @Route("/index", name="index")
+     */
+    public function index() {
+        return $this->render('index.html.twig');
+    }
+
+
+
+
+
 }
