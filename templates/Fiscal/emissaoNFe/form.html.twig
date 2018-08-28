@@ -21,7 +21,8 @@
 
             <ul class="nav nav-tabs" id="principal" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active NOTAFISCAL_TAB" id="cabecalho-tab" data-toggle="tab" href="#cabecalho" role="tab"
+                    <a class="nav-link active NOTAFISCAL_TAB" id="cabecalho-tab" data-toggle="tab" href="#cabecalho"
+                       role="tab"
                        aria-controls="home" aria-selected="true">Cabeçalho</a>
                 </li>
                 <li class="nav-item">
@@ -29,7 +30,8 @@
                        aria-controls="profile" aria-selected="false">Itens</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link NOTAFISCAL_TAB" id="transporte-tab" data-toggle="tab" href="#transporte" role="tab"
+                    <a class="nav-link NOTAFISCAL_TAB" id="transporte-tab" data-toggle="tab" href="#transporte"
+                       role="tab"
                        aria-controls="contact" aria-selected="false">Transporte</a>
                 </li>
                 <li class="nav-item">
@@ -52,6 +54,72 @@
                 {{ include('Fiscal/emissaoNFe/form_transporte.html.twig') }}
                 {{ include('Fiscal/emissaoNFe/form_historico.html.twig') }}
 
+            </div>
+
+            <div class="row">
+                <div class="col-12">&nbsp;</div>
+            </div>
+
+            <div class="row">
+                <div class="col text-right">
+
+
+                    {% if permiteFaturamento %}
+
+                        <button type="submit" class="btn btn-primary btn-lg" value="Salvar">
+                            <i class="fas fa-save" aria-hidden="true"></i> Salvar
+                        </button>
+
+                        <button type="button" class="btn btn-success btn-lg" value="Faturar"
+                                data-url="{{ url('fis_emissaonfe_faturar', {notaFiscal: notaFiscal.id}) }}"
+                                data-target="#confirmationModal" data-toggle="modal">
+                            <i class="fas fa-file-invoice" aria-hidden="true"></i> Faturar
+                        </button>
+
+                    {% endif %}
+
+                    {% if permiteReimpressao %}
+                        <button type="button" value="Reimprimir" class="btn btn-secondary"
+                                data-url="{{ url('fis_emissaonfe_reimprimir', {notaFiscal: notaFiscal.id}) }}"
+                                data-target="#confirmationModal" data-toggle="modal">
+                            <i class="fas fa-print" aria-hidden="true"></i> Reimprimir
+                        </button>
+                    {% endif %}
+
+
+                    {% if permiteCancelamento or permiteReimpressaoCancelamento %}
+                        <button type="button" id="Cancelar" class="btn btn-warning"
+                                onclick="window.location.assign('{{ url('fis_emissaonfe_cancelarForm', {notaFiscal: notaFiscal.id}) }}')">
+                            <i class="fas fa-ban" aria-hidden="true"></i> Cancelar
+                        </button>
+                    {% endif %}
+
+                    {% if permiteCartaCorrecao %}
+                        <button type="button" id="Carta de Correção" class="btn btn-warning"
+                                onclick="window.location.assign('{{ url('fis_emissaonfe_cartaCorrecaoForm', {notaFiscal: notaFiscal.id}) }}')">
+                            <i class="fas fa-envelope-square" aria-hidden="true"></i> Carta de Correção
+                        </button>
+                    {% endif %}
+
+                    {% if notaFiscal.id %}
+                        <button type="button" value="Consultar Status" class="btn btn-secondary"
+                                data-url="{{ url('fis_emissaonfe_consultarStatus', {notaFiscal: notaFiscal.id}) }}"
+                                data-target="#confirmationModal"
+                                data-toggle="modal">
+                            <i class="fab fa-searchengin" aria-hidden="true"></i> Consultar Status
+                        </button>
+                    {% endif %}
+
+                    <button type="button" value="Resetar" class="btn btn-secondary"
+                            data-url="{{ url('fis_emissaonfe_form', {notaFiscal: notaFiscal.id}) }}"
+                            data-target="#confirmationModal" data-toggle="modal">
+                        <i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+                    </button>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">&nbsp;</div>
             </div>
 
             {{ form_end(form, {'render_rest': false}) }}

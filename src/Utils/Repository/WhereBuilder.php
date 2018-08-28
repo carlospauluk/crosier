@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Utils\Repository;
 
 use Doctrine\ORM\QueryBuilder;
@@ -31,24 +32,28 @@ class WhereBuilder
     public static function build(QueryBuilder &$qb, $filters)
     {
         $andX = $qb->expr()->andX();
-        
+
         foreach ($filters as $filter) {
-            
+
+            if (!WhereBuilder::checkHasVal($filter)) continue;
+
             $field_array = is_array($filter->field) ? $filter->field : array(
                 $filter->field
             );
-            
+
             $orX = $qb->expr()->orX();
-            
+
+            $fieldP = null;
             foreach ($field_array as $field) {
 
                 // Verifica se foi passado somente o nome do campo, sem o prefixo do alias da tabela
-                if (strpos($field,'.') === FALSE) {
+                if (strpos($field, '.') === FALSE) {
                     $field = 'e.' . $field;
                 }
                 // nome do parâmetro que ficará na query (tenho que trocar o '.' por '_')
-                $fieldP = ':' .     str_replace('.','_',$field);
-                
+                // depois de setado, usa sempre o mesmo (para os casos onde é feito um OR entre vários campos)
+                $fieldP = $fieldP === null ? ':' . str_replace('.', '_', $field) : $fieldP;
+
                 switch ($filter->compar) {
                     case 'EQ':
                         $orX->add($qb->expr()
@@ -98,30 +103,40 @@ class WhereBuilder
                             ->notLike($field, $fieldP));
                         break;
                     case 'BETWEEN':
+                    case 'BETWEEN_DATE':
                         $orX->add(WhereBuilder::handleBetween($filter, $qb));
                         break;
+                    default:
+                        throw new \Exception('Tipo de filtro desconhecido.');
                 }
             }
             $andX->add($orX);
         }
-        
+
         $qb->where($andX);
-        
+
         foreach ($filters as $filter) {
-            
+
             WhereBuilder::parseVal($filter);
-            if (!$filter->val) continue;
-            
+            if (!WhereBuilder::checkHasVal($filter)) continue;
+
             $field_array = is_array($filter->field) ? $filter->field : array(
                 $filter->field
             );
-            
+
+            $fieldP = null;
             foreach ($field_array as $field) {
 
-                $fieldP = str_replace('.','_',$field);
-                
+                // Verifica se foi passado somente o nome do campo, sem o prefixo do alias da tabela
+                if (strpos($field, '.') === FALSE) {
+                    $field = 'e.' . $field;
+                }
+
+                $fieldP = $fieldP === null ? str_replace('.', '_', $field) : $fieldP;
+
                 switch ($filter->compar) {
                     case 'BETWEEN':
+                    case 'BETWEEN_DATE':
                         if ($filter->val['i'])
                             $qb->setParameter($fieldP . '_i', $filter->val['i']);
                         if ($filter->val['f'])
@@ -140,23 +155,31 @@ class WhereBuilder
 
     private static function handleBetween($filter, $qb)
     {
-        if (! $filter->val['i'] && ! $filter->val['f']) {
+        if (!$filter->val['i'] && !$filter->val['f']) {
             return;
         }
-        
-        if (! $filter->val['i']) {
-            return $qb->expr()->lte('e.' . $filter->field, ':' . $filter->field . '_f');
-        } else if (! $filter->val['f']) {
-            return $qb->expr()->gte('e.' . $filter->field, ':' . $filter->field . '_i');
+
+        $field = $filter->field;
+        if (strpos($field, '.') === FALSE) {
+            $field = 'e.' . $field;
+        }
+
+        $fieldP = str_replace('.', '_', $field);
+
+
+        if (!$filter->val['i']) {
+            return $qb->expr()->lte($field, ':' . $fieldP . '_f');
+        } else if (!$filter->val['f']) {
+            return $qb->expr()->gte($field, ':' . $fieldP . '_i');
         } else {
-            return $qb->expr()->between('e.' . $filter->field, ':' . $filter->field . '_i', ':' . $filter->field . '_f');
+            return $qb->expr()->between($field, ':' . $fieldP . '_i', ':' . $fieldP . '_f');
         }
     }
 
     private static function parseVal(FilterData $filter)
     {
         if ($filter->fieldType == 'decimal') {
-            if (! is_array($filter->val)) {
+            if (!is_array($filter->val)) {
                 $filter->val = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL))->parse($filter->val);
             } else {
                 if ($filter->val['i']) {
@@ -167,5 +190,33 @@ class WhereBuilder
                 }
             }
         }
+        if ($filter->compar == 'BETWEEN_DATE') {
+            if ($filter->val['i']) {
+                $ini = \DateTime::createFromFormat('Y-m-d', $filter->val['i']);
+                $ini->setTime(0, 0, 0, 0);
+                $filter->val['i'] = $ini;
+            }
+            if ($filter->val['f']) {
+                $fim = \DateTime::createFromFormat('Y-m-d', $filter->val['f']);
+                $fim->setTime(23, 59, 59, 999999);
+                $filter->val['f'] = $fim;
+            }
+        }
+    }
+
+    private static function checkHasVal(FilterData $filter)
+    {
+        if (is_array($filter->val)) {
+            foreach ($filter->val as $val) {
+                if ($val) {
+                    return true;
+                }
+            }
+        } else {
+            if ($filter->val) {
+                return true;
+            }
+        }
+        return false;
     }
 }

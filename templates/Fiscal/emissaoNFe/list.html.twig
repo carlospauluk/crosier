@@ -1,0 +1,127 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-8">
+                    <h3>NFe's</h3>
+                </div>
+                <div class="col-4 text-right">
+                    <button type="button" class="btn btn-primary"
+                            onclick="window.location.href='{{ url('fis_emissaonfe_form') }}'">
+                        <i class="fas fa-file" aria-hidden="true"></i> Novo
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            data-target="#pesquisarModal" data-toggle="modal">
+                        <i class="fas fa-search" aria-hidden="true"></i> Pesquisar
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            onclick="window.location.href='{{ url('fis_emissaonfe_list') }}'">
+                        <i class="fas fa-sync" aria-hidden="true"></i> Recarregar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive-sm">
+                <table class="table table-striped table-hover crsr-datatable">
+
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Id</th>
+                        <th scope="col">Número/Série</th>
+                        <th scope="col">Dt Emissão</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Destinatário</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for item in dados %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}</th>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.numero }}/{{ item.serie }}</td>
+                            <td>{{ item.dtEmissao|date('d/m/Y H:i:s') }}</td>
+                            <td>{{ item.infoStatus }}</td>
+                            <td><div class="{{ item.pessoaDestinatario.tipoPessoa|default('') == 'PESSOA_JURIDICA' ? 'cnpj' : 'cpf' }}">{{ item.pessoaDestinatario.documento|default('') }}</div>{{ item.pessoaDestinatario.nome|default('') }}</td>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-primary"
+                                        onclick="window.location.href='{{ url('fis_emissaonfe_form', {notaFiscal: item.id}) }}'">
+                                    <i class="fas fa-wrench" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="pesquisarModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ url('fis_emissaonfe_list') }}" method="get">
+                    <div class="modal-body">
+                        <h4>Pesquisar</h4>
+
+                        <div class="form-group">
+                            <label for="p_descricao">Destinatário</label>
+                            <input type="text"
+                                   class="form-control" id="filter[pessoaDestinatario_nome]"
+                                   name="filter[pessoaDestinatario_nome]"
+                                   value="{{ filter.pessoaDestinatario_nome|default('') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="p_descricao">Dt Emissão</label>
+                            <input type="date"
+                                   size="15" class="form-control" name="filter[dtEmissao][i]"
+                                   value="{{ filter.dtEmissao.i|default('') }}">
+                            <input type="date" size="15" class="form-control"
+                                    name="filter[dtEmissao][f]"
+                                    value="{{ filter.dtEmissao.f|default('') }}">
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default"
+                                id="btnCancelarPesquisa" data-dismiss="modal">
+                            <i class="fa fa-ban" aria-hidden="true"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-danger" id="btnPesquisar">
+                            <i class="fa fa-trash" aria-hidden="true"></i> Pesquisar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{ include('Util/flashes.html.twig') }}
+
+{% endblock %}
+
+
+
+{% block down_scripts %}
+
+
+    {{ include('Util/confirmationModal.html.twig') }}
+
+{% endblock %}

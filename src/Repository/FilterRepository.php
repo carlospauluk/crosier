@@ -22,7 +22,7 @@ abstract class FilterRepository extends ServiceEntityRepository
 
     abstract public function getEntityClass();
 
-    public function findByFilters($filters, $orders = null)
+    public function findByFilters($filters, $orders = null, $limit = 100)
     {
         $em = $this->getEntityManager();
         $qb = $em->createQueryBuilder();
@@ -33,6 +33,7 @@ abstract class FilterRepository extends ServiceEntityRepository
         $dql = $qb->getDql();
         $sql = $qb->getQuery()->getSQL();
         $query = $qb->getQuery();
+        $query->setMaxResults($limit);
         return $query->execute();
     }
 }

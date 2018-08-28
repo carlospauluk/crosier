@@ -5,6 +5,7 @@ namespace App\Controller\CRM;
 
 use App\Business\CRM\ClienteBusiness;
 use App\Controller\FormListController;
+use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\EntityHandler\CRM\ClienteEntityHandler;
 use App\EntityHandler\EntityHandler;
@@ -83,6 +84,7 @@ class ClienteController extends FormListController
     {
         if (!$cliente) {
             $cliente = new Cliente();
+            $cliente->setPessoa(new Pessoa());
         }
 
         // Se foi passado via post

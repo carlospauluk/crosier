@@ -92,6 +92,8 @@ class UnimakeBusiness
 
             if ($notaFiscal->getPessoaDestinatario()->getTipoPessoa() == 'PESSOA_JURIDICA') {
                 $nfe->infNFe->dest->CNPJ = $notaFiscal->getPessoaDestinatario()->getDocumento();
+            } else {
+                $nfe->infNFe->dest->CPF = $notaFiscal->getPessoaDestinatario()->getDocumento();
             }
 
             if ($notaFiscal->getAmbiente() == 'HOM') {
@@ -140,6 +142,7 @@ class UnimakeBusiness
                 unset($nfe->infNFe->dest->IE);
             } else {
                 if ($notaFiscal->getPessoaDestinatario() and $notaFiscal->getPessoaDestinatario()->getInscricaoEstadual() == 'ISENTO' or !$notaFiscal->getPessoaDestinatario()->getInscricaoEstadual()) {
+                    unset($nfe->infNFe->dest->IE);
                     $nfe->infNFe->dest->indIEDest = 2;
                 } else {
                     $nfe->infNFe->dest->indIEDest = 1;
@@ -245,21 +248,28 @@ class UnimakeBusiness
             if ($notaFiscal->getTranspFornecedor()) {
                 $nfe->infNFe->transp->transporta->CNPJ = $notaFiscal->getTranspFornecedor()->getPessoa()->getDocumento();
                 $nfe->infNFe->transp->transporta->xNome = $notaFiscal->getTranspFornecedor()->getPessoa()->getNome();
-                $nfe->infNFe->transp->transporta->IE = $notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual();
+                if ($notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual()) {
+                    $nfe->infNFe->transp->transporta->IE = $notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual();
+                }
 
                 // FIXME: depois que arrumar a bagunça com 'bon_pessoa', trocar aqui
                 $this->pessoaBusiness->fillTransients($notaFiscal->getTranspFornecedor()->getPessoa());
 
-                $nfe->infNFe->transp->transporta->xEnder = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEnderecoCompleto();
+                $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEnderecoCompleto(),0,60);
                 $nfe->infNFe->transp->transporta->xMun = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getCidade();
                 $nfe->infNFe->transp->transporta->UF = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEstado();
 
-                $nfe->infNFe->transp->vol->qVol = $notaFiscal->getTranspQtdeVolumes();
+                $nfe->infNFe->transp->vol->qVol = number_format( $notaFiscal->getTranspQtdeVolumes(), 0);
                 $nfe->infNFe->transp->vol->esp = $notaFiscal->getTranspEspecieVolumes();
-                $nfe->infNFe->transp->vol->marca = $notaFiscal->getTranspMarcaVolumes();
-                $nfe->infNFe->transp->vol->nVol = $notaFiscal->getTranspNumeracaoVolumes();
-                $nfe->infNFe->transp->vol->pesoL = $notaFiscal->getTranspPesoLiquido();
-                $nfe->infNFe->transp->vol->pesoB = $notaFiscal->getTranspPesoBruto();
+                if ($notaFiscal->getTranspMarcaVolumes()) {
+                    $nfe->infNFe->transp->vol->marca = $notaFiscal->getTranspMarcaVolumes();
+                }
+                if ($notaFiscal->getTranspNumeracaoVolumes()) {
+                    $nfe->infNFe->transp->vol->nVol = $notaFiscal->getTranspNumeracaoVolumes();
+                }
+
+                $nfe->infNFe->transp->vol->pesoL = number_format( $notaFiscal->getTranspPesoLiquido(), 3, '.', '');
+                $nfe->infNFe->transp->vol->pesoB = number_format( $notaFiscal->getTranspPesoBruto(), 3, '.', '');
 
             }
         }

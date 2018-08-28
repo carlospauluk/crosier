@@ -27,13 +27,13 @@ function prepareForm() {
         $(".PESSOA_JURIDICA").parent().parent().css('display', '');
     }
 
-    if ($('input[id$=_pessoa_id]').val() !== '') {
+    if ($('input[id=emissao_fiscal_pessoa_id]').val() !== '') {
         let dadosPessoa = $('.DADOSPESSOA');
         dadosPessoa.prop('disabled', true);
     }
 
-    let modalidadeFrete = $('select[id$=_modalidade_frete]').val();
-    let modalidadeFreteLabel = $('select[id$=_modalidade_frete] option:selected').text();
+    let modalidadeFrete = $('select[id=emissao_fiscal_transp_modalidade_frete]').val();
+    let modalidadeFreteLabel = $('select[id=emissao_fiscal_transp_modalidade_frete] option:selected').text();
 
     $('#inputModalidadeFrete').val( modalidadeFreteLabel );
 
@@ -70,7 +70,7 @@ $(document).ready(function () {
             prepareForm();
         });
 
-    $('select[id$=_modalidade_frete]').change(
+    $('select[id=emissao_fiscal_modalidade_frete]').change(
         function () {
             prepareForm();
         });
@@ -86,14 +86,14 @@ $(document).ready(function () {
             dataType: 'json',
             crossDomain: true,
             data: {
-                cep: $('input[id$=_cep]').val(), //pega valor do campo
+                cep: $('input[id=emissao_fiscal_cep]').val(), //pega valor do campo
                 formato: 'json'
             },
             success: function (res) {
-                $('input[id$=_logradouro]').val(res.tipo_logradouro + ' ' + res.logradouro);
-                $('input[id$=_cidade]').val(res.cidade);
-                $('input[id$=_bairro]').val(res.bairro);
-                $('select[id$=_estado]').val(res.uf).change();
+                $('input[id=emissao_fiscal_logradouro]').val(res.tipo_logradouro + ' ' + res.logradouro);
+                $('input[id=emissao_fiscal_cidade]').val(res.cidade);
+                $('input[id=emissao_fiscal_bairro]').val(res.bairro);
+                $('select[id=emissao_fiscal_estado]').val(res.uf).change();
 
             }
         });
@@ -111,23 +111,23 @@ $(document).ready(function () {
             type: 'get',
             dataType: 'json',
             success: function (data) {
-                $('input[id$=_nome]').val(data.nome);
-                $('input[id$=_pessoa_id]').val(data.id);
-                $('input[id$=_razao_social]').val(data.nome);
-                $('input[id$=_nome_fantasia]').val(data.nomeFantasia);
-                $('input[id$=_razao_social]').val(data.razaoSocial);
+                $('input[id=emissao_fiscal_nome]').val(data.nome);
+                $('input[id=emissao_fiscal_pessoa_id]').val(data.id);
+                $('input[id=emissao_fiscal_razao_social]').val(data.nome);
+                $('input[id=emissao_fiscal_nome_fantasia]').val(data.nomeFantasia);
+                $('input[id=emissao_fiscal_razao_social]').val(data.razaoSocial);
 
-                $('input[id$=_fone1]').val(data.fone1);
-                $('input[id$=_email]').val(data.email);
+                $('input[id=emissao_fiscal_fone1]').val(data.fone1);
+                $('input[id=emissao_fiscal_email]').val(data.email);
 
                 if (data.endereco) {
-                    $('input[id$=_cep]').val(data.endereco.cep);
-                    $('input[id$=_logradouro]').val(data.endereco.logradouro);
-                    $('input[id$=_numero]').val(data.endereco.numero);
-                    $('input[id$=_complemento]').val(data.endereco.complemento);
-                    $('input[id$=_bairro]').val(data.endereco.bairro);
-                    $('input[id$=_cidade]').val(data.endereco.cidade);
-                    $('select[id$=_estado]').val(data.endereco.estado).change();
+                    $('input[id=emissao_fiscal_cep]').val(data.endereco.cep);
+                    $('input[id=emissao_fiscal_logradouro]').val(data.endereco.logradouro);
+                    $('input[id=emissao_fiscal_numero]').val(data.endereco.numero);
+                    $('input[id=emissao_fiscal_complemento]').val(data.endereco.complemento);
+                    $('input[id=emissao_fiscal_bairro]').val(data.endereco.bairro);
+                    $('input[id=emissao_fiscal_cidade]').val(data.endereco.cidade);
+                    $('select[id=emissao_fiscal_estado]').val(data.endereco.estado).change();
                 }
 
                 if (data.id) {
@@ -137,11 +137,35 @@ $(document).ready(function () {
         });
     }
 
-    $('input[id$=_cpf]').blur(function () {
+    $('input[id=emissao_fiscal_cpf]').blur(function () {
         findPessoaByDocumento(this.value);
     });
-    $('input[id$=_cnpj]').blur(function () {
+    $('input[id=emissao_fiscal_cnpj]').blur(function () {
         findPessoaByDocumento(this.value);
+    });
+
+
+    // Para pesquisar a transportadora pelo seu cnpj
+
+    let cnpjTransportadorAtual;
+
+    $('input[id=emissao_fiscal_transpFornecedor_cnpj]').blur(function () {
+        let cnpj = this.value;
+        cnpj = cnpj.replace(/[^0-9]/g,'');
+        if (!cnpj) return;
+        if (cnpj === cnpjTransportadorAtual) return;
+        cnpjTransportadorAtual = cnpj;
+
+        $.ajax({
+            url: Routing.generate('est_fornecedor_findByDocumento') + '/' + cnpj,
+            type: 'get',
+            dataType: 'json',
+            success: function (data) {
+                $('input[id=emissao_fiscal_transpFornecedor_id]').val(data.id);
+                $('input[id=emissao_fiscal_transpFornecedor_razaoSocial]').val(data.pessoa.nome);
+                $('input[id=emissao_fiscal_transpFornecedor_nomeFantasia]').val(data.pessoa.nomeFantasia);
+            }
+        });
     });
 
 });

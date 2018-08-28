@@ -4,6 +4,7 @@ namespace App\Form\Fiscal;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -104,8 +105,8 @@ class EmissaoFiscalType extends AbstractType
             $builder->add('dtEmissao', TextType::class, array(
                 'label' => 'Dt Emissão',
                 'attr' => array('class' => 'crsr-datetime'),
-                'required' => true,
-                'disabled' => $disabled
+                'required' => false,
+                'disabled' => true
             ));
 
             $builder->add('dtNascimento', TextType::class, array(
@@ -337,7 +338,7 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => $disabled
             ));
 
-            $builder->add('entrada_saida', ChoiceType::class, array(
+            $builder->add('entrada', ChoiceType::class, array(
                 'label' => 'Entrada/Saída',
                 'required' => true,
                 'choices' => array(
@@ -347,6 +348,7 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => $disabled
             ));
 
+            // Campos para FRETE
 
             $builder->add('transp_modalidade_frete', ChoiceType::class, array(
                 'label' => 'Modalidade Frete',
@@ -359,6 +361,88 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
+
+            $builder->add('transpEspecieVolumes', TextType::class, array(
+                'label' => 'Espécie Volumes',
+                'required' => false,
+                'disabled' => $disabled
+            ));
+
+            $builder->add('transpMarcaVolumes', TextType::class, array(
+                'label' => 'Marca Volumes',
+                'required' => false,
+                'disabled' => $disabled
+            ));
+
+            $builder->add('transpNumeracaoVolumes', TextType::class, array(
+                'label' => 'Marca Volumes',
+                'required' => false,
+                'disabled' => $disabled
+            ));
+
+            $builder->add('transpPesoBruto', NumberType::class, array(
+                'label' => 'Peso Bruto',
+                'grouping' => 'true',
+                'scale' => 3,
+                'attr' => array(
+                    'class' => 'crsr-dec3'
+                ),
+                'required' => false,
+                'disabled' => $disabled,
+                'help' => 'Em kg',
+                'empty_data' => ''
+            ));
+
+            $builder->add('transpPesoLiquido', NumberType::class, array(
+                'label' => 'Peso Líquido',
+                'grouping' => 'true',
+                'scale' => 3,
+                'attr' => array(
+                    'class' => 'crsr-dec3'
+                ),
+                'required' => false,
+                'disabled' => $disabled,
+                'help' => 'Em kg'
+            ));
+
+            $builder->add('transpQtdeVolumes', IntegerType::class, array(
+                'label' => 'Qtde Volumes',
+                'required' => false,
+                'disabled' => $disabled
+            ));
+
+            $builder->add('transpFornecedor_id', HiddenType::class, array(
+                'required' => false,
+                'disabled' => $disabled
+            ));
+
+            $builder->add('transpFornecedor_cnpj', TextType::class, array(
+                'label' => 'CNPJ da Transportadora',
+                'attr' => array(
+                    'class' => 'cnpj'
+                ),
+                'required' => false,
+                'disabled' => $disabled
+
+            ));
+            // Adiciona campo RAZAO SOCIAL (bon_pessoa.nome)
+            $builder->add('transpFornecedor_razaoSocial', TextType::class, array(
+                'label' => 'Razão Social',
+                'required' => false,
+                'disabled' => true
+            ));
+            // Adiciona campo NOME FANTASIA
+            $builder->add('transpFornecedor_nomeFantasia', TextType::class, array(
+                'label' => 'Nome Fantasia',
+                'required' => false,
+                'disabled' => true
+            ));
+
+
+
+
+
+
 
             $builder->add('indicador_forma_pagto', ChoiceType::class, array(
                 'label' => 'Forma Pagto',

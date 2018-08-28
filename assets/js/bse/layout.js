@@ -27,6 +27,7 @@ import '@coreui/coreui/dist/css/coreui.css';
 
 
 import 'datatables/media/css/jquery.dataTables.css';
+import 'datatables';
 
 import 'select2/select2.css';
 import 'select2';

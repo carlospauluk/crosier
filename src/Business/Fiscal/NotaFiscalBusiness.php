@@ -37,6 +37,12 @@ class NotaFiscalBusiness
         $this->pessoaBusiness = $pessoaBusiness;
     }
 
+    public function parseFormData(&$formData) {
+        $nf = new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL);
+        $formData['transpPesoBruto'] = (isset($formData['transpPesoBruto']) and $formData['transpPesoBruto']) ? $nf->parse($formData['transpPesoBruto']) : null;
+        $formData['transpPesoLiquido'] = (isset($formData['transpPesoLiquido']) and $formData['transpPesoLiquido']) ? $nf->parse($formData['transpPesoLiquido']) : null;
+    }
+
     /**
      * Transforma um objeto NotaFiscal em um array com os dados para o EmissaoFiscalType.
      *
@@ -110,11 +116,32 @@ class NotaFiscalBusiness
             }
         }
 
+        // Campos para 'frete'
         $formData['transp_modalidade_frete'] = $notaFiscal->getTranspModalidadeFrete();
+        // if ($notaFiscal->getTranspModalidadeFrete() != 'SEM_FRETE') {
+        $formData['transpEspecieVolumes'] = $notaFiscal->getTranspEspecieVolumes();
+        $formData['transpMarcaVolumes'] = $notaFiscal->getTranspMarcaVolumes();
+        $formData['transpNumeracaoVolumes'] = $notaFiscal->getTranspNumeracaoVolumes();
+        $formData['transpPesoBruto'] = $notaFiscal->getTranspPesoBruto();
+        $formData['transpPesoLiquido'] = $notaFiscal->getTranspPesoLiquido();
+        $formData['transpQtdeVolumes'] = $notaFiscal->getTranspQtdeVolumes();
+        if ($notaFiscal->getTranspFornecedor() and $notaFiscal->getTranspFornecedor()->getId()) {
+            $formData['transpFornecedor_id'] = $notaFiscal->getTranspFornecedor()->getId();
+            $formData['transpFornecedor_cnpj'] = $notaFiscal->getTranspFornecedor()->getPessoa()->getDocumento();
+            $formData['transpFornecedor_razaoSocial'] = $notaFiscal->getTranspFornecedor()->getPessoa()->getNome();
+            $formData['transpFornecedor_nomeFantasia'] = $notaFiscal->getTranspFornecedor()->getPessoa()->getNomeFantasia();
+        } else {
+            $formData['transpFornecedor_id'] = null;
+            $formData['transpFornecedor_cnpj'] = null;
+            $formData['transpFornecedor_razaoSocial'] = null;
+            $formData['transpFornecedor_nomeFantasia'] = null;
+        }
+        // }
+
         $formData['indicador_forma_pagto'] = $notaFiscal->getIndicadorFormaPagto();
         $formData['natureza_operacao'] = $notaFiscal->getNaturezaOperacao();
         $formData['finalidade_nf'] = $notaFiscal->getFinalidadeNf();
-        $formData['entrada_saida'] = $notaFiscal->getEntrada();
+        $formData['entrada'] = $notaFiscal->getEntrada();
 
 //        $formData['subtotal'] = number_format($notaFiscal->getSubtotal(),2,',','.');
 //        $formData['total_descontos'] = number_format($notaFiscal->getTotalDescontos(),2,',','.');
@@ -176,7 +203,7 @@ class NotaFiscalBusiness
         $notaFiscal->setIndicadorFormaPagto(isset($formData['indicador_forma_pagto']) ? $formData['indicador_forma_pagto'] : null);
         $notaFiscal->setFinalidadeNf(isset($formData['finalidade_nf']) ? $formData['finalidade_nf'] : null);
         $notaFiscal->setNaturezaOperacao(isset($formData['natureza_operacao']) ? $formData['natureza_operacao'] : null);
-        $notaFiscal->setEntrada(isset($formData['entrada_saida']) ? $formData['entrada_saida'] : null);
+        $notaFiscal->setEntrada(isset($formData['entrada']) ? $formData['entrada'] : null);
 
         $notaFiscal->setInfoCompl(isset($formData['info_compl']) ? $formData['info_compl'] : null);
 
@@ -187,6 +214,21 @@ class NotaFiscalBusiness
         $notaFiscal->setValorTotal(isset($formData['valor_total']) ? $fmt->parse($formData['valor_total']) : null);
 
         $notaFiscal->setCartaCorrecao(isset($formData['carta_correcao']) ? $formData['carta_correcao'] : null);
+
+
+        // Campos para 'frete'
+        $notaFiscal->setTranspModalidadeFrete($formData['transp_modalidade_frete']);
+        $notaFiscal->setTranspEspecieVolumes(isset($formData['transpEspecieVolumes']) ? $formData['transpEspecieVolumes'] : null);
+        $notaFiscal->setTranspMarcaVolumes(isset($formData['transpMarcaVolumes']) ? $formData['transpMarcaVolumes'] : null);
+        $notaFiscal->setTranspNumeracaoVolumes(isset($formData['transpNumeracaoVolumes']) ? $formData['transpNumeracaoVolumes'] : null);
+        $notaFiscal->setTranspPesoBruto(isset($formData['transpPesoBruto']) ? $formData['transpPesoBruto'] : null);
+        $notaFiscal->setTranspPesoLiquido(isset($formData['transpPesoLiquido']) ? $formData['transpPesoLiquido'] : null);
+        $notaFiscal->setTranspQtdeVolumes(isset($formData['transpQtdeVolumes']) ? $formData['transpQtdeVolumes'] : null);
+
+        if ($formData['transpFornecedor_id']) {
+            $transpFornecedor = $this->doctrine->getRepository(Fornecedor::class)->find($formData['transpFornecedor_id']);
+            $notaFiscal->setTranspFornecedor($transpFornecedor);
+        }
 
         return $notaFiscal;
     }
@@ -248,7 +290,7 @@ class NotaFiscalBusiness
 
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->getSubTotal() > 0.0) {
-                $fatorDesconto = 1 - (round(bcdiv($venda->getValorTotal(), $venda->getSubTotal(),4),2));
+                $fatorDesconto = 1 - (round(bcdiv($venda->getValorTotal(), $venda->getSubTotal(), 4), 2));
             } else {
                 $fatorDesconto = 1;
             }
@@ -275,7 +317,7 @@ class NotaFiscalBusiness
                 $nfItem->setValorUnit($vendaItem->getPrecoVenda());
                 $nfItem->setValorTotal($vendaItem->getTotalItem());
 
-                $vDesconto = round(bcmul($vendaItem->getTotalItem(), $fatorDesconto,4),2);
+                $vDesconto = round(bcmul($vendaItem->getTotalItem(), $fatorDesconto, 4), 2);
                 $nfItem->setValorDesconto($vDesconto);
 
                 // Somando aqui pra verificar depois se o total dos descontos dos itens bate com o desconto global da nota.
@@ -784,6 +826,10 @@ class NotaFiscalBusiness
             $notaFiscal->setSerie($serie);
             $nnf = $this->doctrine->getRepository(NotaFiscal::class)->findProxNumFiscal($ambiente == 'PROD', $notaFiscal->getSerie(), $notaFiscal->getTipoNotaFiscal());
             $notaFiscal->setNumero($nnf);
+        }
+
+        if (!$notaFiscal->getDtEmissao()) {
+            $notaFiscal->setDtEmissao(new \DateTime('now'));
         }
 
         if (!$notaFiscal->getChaveAcesso()) {

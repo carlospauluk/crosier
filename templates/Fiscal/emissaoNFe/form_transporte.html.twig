@@ -2,7 +2,19 @@
     <div class="form-group row">
         <label class="col-form-label col-sm-2 form-control-label">Modalidade Frete</label>
         <div class="col-sm-10">
-            <input type="text" id="inputModalidadeFrete" disabled="disabled" class="form-control" value="">
+            <input type="text" id="inputModalidadeFrete" disabled="disabled" class="form-control" value="{{ form.transp_modalidade_frete.vars.value }}">
         </div>
     </div>
+
+    {{ form_row(form.transpQtdeVolumes) }}
+    {{ form_row(form.transpEspecieVolumes) }}
+    {{ form_row(form.transpMarcaVolumes) }}
+    {{ form_row(form.transpNumeracaoVolumes) }}
+    {{ form_row(form.transpPesoBruto) }}
+    {{ form_row(form.transpPesoLiquido) }}
+    {{ form_row(form.transpFornecedor_id) }}
+    {{ form_row(form.transpFornecedor_cnpj) }}
+    {{ form_row(form.transpFornecedor_razaoSocial) }}
+    {{ form_row(form.transpFornecedor_nomeFantasia) }}
+
 </div>

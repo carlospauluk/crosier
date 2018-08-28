@@ -1,16 +1,17 @@
 <?php
+
 namespace App\Entity\CRM;
 
+use App\Entity\Base\Endereco;
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Base\Pessoa;
 use Doctrine\Common\Collections\ArrayCollection;
-use App\Entity\Base\Endereco;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
@@ -167,7 +168,7 @@ class Cliente extends EntityId
      * @ORM\Column(name="tem_whatsapp", type="boolean", nullable=true)
      */
     private $temWhatsapp;
-    
+
     /**
      *
      * @ManyToMany(targetEntity="App\Entity\Base\Endereco")
@@ -177,15 +178,10 @@ class Cliente extends EntityId
      *      )
      */
     private $enderecos;
-    
+
     public function __construct()
     {
         $this->enderecos = new ArrayCollection();
-        ORM\Annotation::class;
-        Assert\All::class;
-        ManyToMany::class;
-        JoinTable::class;
-        JoinColumn::class;
     }
 
     public function getId()
@@ -388,11 +384,11 @@ class Cliente extends EntityId
         $this->website = $website;
     }
 
-    public function getPessoa():? Pessoa
+    public function getPessoa(): ?Pessoa
     {
         return $this->pessoa;
     }
-    
+
     public function setPessoa(?Pessoa $pessoa)
     {
         $this->pessoa = $pessoa;
@@ -417,7 +413,7 @@ class Cliente extends EntityId
     {
         $this->temWhatsapp = $temWhatsapp;
     }
-    
+
     /**
      *
      * @return Collection|Endereco[]
@@ -426,10 +422,10 @@ class Cliente extends EntityId
     {
         return $this->enderecos;
     }
-    
+
     public function addEndereco(?Endereco $e): void
     {
-        if (! $this->enderecos->contains($e)) {
+        if (!$this->enderecos->contains($e)) {
             $this->enderecos->add($e);
         }
     }

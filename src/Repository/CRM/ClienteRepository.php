@@ -56,7 +56,7 @@ class ClienteRepository extends FilterRepository
         return count($results) == 1 ? $results[0] : null;
     }
 
-    public function findByFilters($filters, $orders = null)
+    public function findByFilters($filters, $orders = null, $limit=100)
     {
         $em = $this->getEntityManager();
         $qb = $em->createQueryBuilder();
@@ -70,6 +70,7 @@ class ClienteRepository extends FilterRepository
         $dql = $qb->getDql();
         $sql = $qb->getQuery()->getSQL();
         $query = $qb->getQuery();
+        $query->setMaxResults($limit);
         return $query->execute();
     }
 

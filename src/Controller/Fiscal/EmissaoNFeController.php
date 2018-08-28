@@ -10,6 +10,7 @@ use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\NotaFiscalItem;
 use App\Form\Fiscal\EmissaoFiscalType;
 use App\Form\Fiscal\NotaFiscalItemType;
+use App\Utils\Repository\FilterData;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,9 +46,11 @@ class EmissaoNFeController extends Controller
             $notaFiscal = new NotaFiscal();
             $notaFiscal->setTipoNotaFiscal('NFE');
             $notaFiscal->setEntrada(false);
+            $notaFiscal->setDtSaiEnt(new \DateTime('now'));
             $pessoaDestinatario = new Pessoa();
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
             $pessoaDestinatario->setTipoPessoa('PESSOA_JURIDICA');
+            $notaFiscal->setNaturezaOperacao('VENDA');
         } else {
             if ($notaFiscal->getPessoaDestinatario()) {
                 $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
@@ -60,6 +63,13 @@ class EmissaoNFeController extends Controller
 
 
         if (is_array($dataPosted)) {
+            $this->notaFiscalBusiness->parseFormData($dataPosted);
+            // Converto as strings vazias para null por causa do erro com Transformation dos NumberTypes
+            foreach ($dataPosted as $key => $value) {
+                if ($value === '') {
+                    $dataPosted[$key] = null;
+                }
+            }
             $data = array_merge($data, $dataPosted);
         }
 
@@ -158,13 +168,25 @@ class EmissaoNFeController extends Controller
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
         $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
 
-        $response = $this->render('Fiscal/emissaonfe/cancelarForm.html.twig', array(
+        $response = $this->render('Fiscal/emissaoNFe/cancelarForm.html.twig', array(
             'form' => $form->createView(),
             'notaFiscal' => $notaFiscal,
             'permiteCancelamento' => $permiteCancelamento,
             'permiteReimpressaoCancelamento' => $permiteReimpressaoCancelamento
         ));
         return $response;
+    }
+
+    /**
+     *
+     * @Route("/fis/emissaonfe/reimprimirCancelamento/{notaFiscal}", name="fis_emissaonfe_reimprimirCancelamento")
+     */
+    public function reimprimirCancelamento(Request $request, NotaFiscal $notaFiscal)
+    {
+        $this->notaFiscalBusiness->imprimirCancelamento($notaFiscal);
+        return $this->redirectToRoute('fis_emissaonfe_form', array(
+            'notaFiscal' => $notaFiscal->getId()
+        ));
     }
 
     /**
@@ -334,6 +356,43 @@ class EmissaoNFeController extends Controller
 
         return $this->redirectToRoute('fis_emissaonfe_form', array(
             'notaFiscal' => $notaFiscalId
+        ));
+    }
+
+    /**
+     *
+     * @Route("/fis/emissaonfe/list", name="fis_emissaonfe_list")
+     * @param Request $request
+     * @return void
+     */
+    public function list(Request $request)
+    {
+        $dados = null;
+        $params = $request->query->all();
+
+        if (!array_key_exists('filter', $params)) {
+            $params['filter'] = array();
+        }
+
+        try {
+            $repo = $this->getDoctrine()->getRepository(NotaFiscal::class);
+
+            $params['filter']['tipoNotaFiscal'] = 'NFE';
+
+            $filterDatas = array(
+                new FilterData('tipoNotaFiscal', 'EQ', $params['filter']['tipoNotaFiscal']),
+                new FilterData(array('p.nome','p.nomeFantasia'), 'LIKE', $params['filter']['pessoaDestinatario_nome'] ?? null),
+                new FilterData('dtEmissao', 'BETWEEN_DATE', isset($params['filter']['dtEmissao']) ? $params['filter']['dtEmissao'] : null)
+            );
+            $dados = $repo->findByFilters($filterDatas);
+
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
+        }
+
+        return $this->render('Fiscal/emissaoNFe/list.html.twig', array(
+            'dados' => $dados,
+            'filter' => $params['filter']
         ));
     }
 

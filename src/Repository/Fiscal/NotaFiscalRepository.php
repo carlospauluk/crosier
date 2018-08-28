@@ -3,6 +3,8 @@ namespace App\Repository\Fiscal;
 
 use App\Entity\Base\Config;
 use App\Entity\Fiscal\NotaFiscal;
+use App\Repository\FilterRepository;
+use App\Utils\Repository\WhereBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Psr\Log\LoggerInterface;
@@ -14,16 +16,16 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *        
  */
-class NotaFiscalRepository extends ServiceEntityRepository
+class NotaFiscalRepository extends FilterRepository
 {
 
     private $logger;
 
-    public function __construct(RegistryInterface $registry, LoggerInterface $logger)
+    public function getEntityClass()
     {
-        parent::__construct($registry, NotaFiscal::class);
-        $this->logger = $logger;
+        return NotaFiscal::class;
     }
+
 
     public function findProxNumFiscal($producao, $serie, $tipoNotaFiscal)
     {
@@ -92,4 +94,29 @@ class NotaFiscalRepository extends ServiceEntityRepository
             throw new \Exception("Erro ao pesquisar próximo número de nota fiscal para [" . $producao . "] [" . $serie . "] [" . $tipoNotaFiscal . "]");
         }
     }
+
+    public function findByFilters($filters, $orders = null, $limit=100)
+    {
+        $em = $this->getEntityManager();
+        $qb = $em->createQueryBuilder();
+
+        $qb
+            ->select('e')
+            ->from($this->getEntityClass(), 'e')
+            ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoaDestinatario = p');
+
+        if (!$orders) {
+            $qb->addOrderBy('e.id', 'DESC');
+            $qb->addOrderBy('e.dtEmissao', 'DESC');
+        }
+
+        WhereBuilder::build($qb, $filters);
+        $dql = $qb->getDql();
+        $sql = $qb->getQuery()->getSQL();
+        $query = $qb->getQuery();
+        $query->setMaxResults($limit);
+
+        return $query->execute();
+    }
+
 }
