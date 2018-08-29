@@ -29,15 +29,27 @@ class EmissaoFiscalPVController extends Controller
     /**
      *
      * @Route("/fis/emissaofiscalpv/ini/", name="fis_emissaofiscalpv_ini")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function ini(Request $request)
     {
-        return $this->render('Fiscal/emissaoFiscalPV/ini.html.twig');
+        $tudook = $this->vendaBusiness->checkAcessoPVs();
+        if (!$tudook) {
+            $this->addFlash('error', 'Pasta dos PVs no EKT indisponível.');
+        } else {
+            $this->addFlash('info', 'Arquivos EKT disponíveis!');
+        }
+        return $this->render('Fiscal/emissaoFiscalPV/ini.html.twig', array('tudook' => $tudook));
     }
 
     /**
      *
      * @Route("/fis/emissaofiscalpv/form/{id}", name="fis_emissaofiscalpv_form", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @param Request $request
+     * @param Venda|null $venda
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function form(Request $request, Venda $venda = null)
     {
@@ -53,7 +65,7 @@ class EmissaoFiscalPVController extends Controller
         if (! $notaFiscal) {
             $notaFiscal = new NotaFiscal();
             $notaFiscal->setTipoNotaFiscal('NFCE');
-            $pessoaDestinatario = new Pessoa();
+            $pessoaDestinatario = new    Pessoa();
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
             $pessoaDestinatario->setTipoPessoa('PESSOA_FISICA');
         } else {
@@ -62,7 +74,7 @@ class EmissaoFiscalPVController extends Controller
         
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-        $dataPosted = $request->request->get('emissao_fiscal_pv');
+        $dataPosted = $request->request->get('emissao_fiscal');
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }
@@ -193,7 +205,7 @@ class EmissaoFiscalPVController extends Controller
             ->getRepository(Venda::class)
             ->findByPV($pv);
         if (! $venda) {
-            $this->addFlash('error', 'PV não encontrado!');
+            $this->addFlash('error', 'Venda não encontrada!');
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         }
         
@@ -245,7 +257,7 @@ class EmissaoFiscalPVController extends Controller
         
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
-        $dataPosted = $request->request->get('emissao_fiscal_pv');
+        $dataPosted = $request->request->get('emissao_fiscal');
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }

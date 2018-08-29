@@ -10,6 +10,8 @@
 
 	</div>
 
+	Id: {{ form.nota_fiscal_id.vars.value }}
+
 	<div class="card-body">
 
 		{{ include('Util/flashes.html.twig') }}
@@ -75,7 +77,6 @@
 					data-toggle="modal">
 					<i class="fas fa-file-invoice" aria-hidden="true"></i> Faturar
 				</button>
-				
 		{% endif %}
 		
 		{% if permiteReimpressao %}

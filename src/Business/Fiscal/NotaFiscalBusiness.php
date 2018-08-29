@@ -832,9 +832,9 @@ class NotaFiscalBusiness
             $notaFiscal->setDtEmissao(new \DateTime('now'));
         }
 
-        if (!$notaFiscal->getChaveAcesso()) {
+//        if (!$notaFiscal->getChaveAcesso()) {
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
-        }
+//        }
 
 
     }
