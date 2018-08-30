@@ -31,6 +31,7 @@ Encore
     .addEntry('crm/clienteList', './assets/js/crm/clienteList.js')
     .addEntry('fin/carteiraList', './assets/js/fin/carteiraList.js')
     .addEntry('fin/bancoList', './assets/js/fin/bancoList.js')
+    .addEntry('fin/grupoList', './assets/js/fin/grupoList.js')
 
 
     /*

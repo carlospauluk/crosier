@@ -90,6 +90,33 @@ class GrupoController extends FormListController
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'descricao',
+                'ativo',
+                'carteiraPagantePadrao' => ['descricao']
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/grupo/datatablesJsList/", name="fin_grupo_datatablesJsList")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
+    }
+
+    /**
      *
      * @Route("/fin/grupo/delete/{id}/", name="fin_grupo_delete", requirements={"id"="\d+"})
      * @param Request $request
