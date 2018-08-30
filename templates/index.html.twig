@@ -3,44 +3,40 @@
 
 {% block body %}
 
-<body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
+    <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
 
-	{{ include('header.html.twig') }}
+    {{ include('header.html.twig') }}
 
-	<div class="app-body">
+    <div class="app-body">
 
-		{{ include('mainmenu.html.twig') }}
-
-
-
-		<main class="main">
-
-		<div class="container-fluid" style="padding-top: 10px">
-			<div id="ui-view" style="opacity: 1;">
-				<div class="animated fadeIn">
-					{% block page_content %}
-					{{ include('main.html.twig') }}
-					{% endblock %}
-				</div>
-			</div>
-		</div>
-
-		</main>
+        {{ include('mainmenu.html.twig') }}
 
 
+        <main class="main">
+
+            <div class="container-fluid" style="padding-top: 10px">
+                <div id="ui-view" style="opacity: 1;">
+                    <div class="animated fadeIn">
+                        {% block page_content %}
+                            {{ include('main.html.twig') }}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+
+        </main>
 
 
-	</div>
-	
-	{{ include('Util/confirmationModal.html.twig') }}
+    </div>
 
-	{{ include('footer.html.twig') }}
+    {{ include('Util/flashes.html.twig') }}
+
+    {{ include('Util/confirmationModal.html.twig') }}
+
+    {{ include('footer.html.twig') }}
 
 
-
-	
-
-</body>
+    </body>
 
 
 {% endblock %}

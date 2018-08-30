@@ -28,6 +28,9 @@ Encore
      */
     .createSharedEntry('bse_layout', './assets/js/bse/layout.js')
     .addEntry('fis/emissaoNFe/form', './assets/js/fis/emissaoNFe/form.js')
+    .addEntry('crm/clienteList', './assets/js/crm/clienteList.js')
+    .addEntry('fin/carteiraList', './assets/js/fin/carteiraList.js')
+    .addEntry('fin/bancoList', './assets/js/fin/bancoList.js')
 
 
     /*

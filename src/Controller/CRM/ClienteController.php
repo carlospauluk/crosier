@@ -11,9 +11,12 @@ use App\EntityHandler\CRM\ClienteEntityHandler;
 use App\EntityHandler\EntityHandler;
 use App\Form\CRM\ClienteType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Class ClienteController
@@ -122,35 +125,41 @@ class ClienteController extends FormListController
      */
     public function list(Request $request)
     {
-        $dados = null;
-        $params = $request->query->all();
+        return $this->doList($request);
+    }
 
-        if (!array_key_exists('filter', $params)) {
-            $params['filter'] = null;
-        }
-
-        try {
-            $repo = $this->getDoctrine()->getRepository($this->getEntityHandler()->getEntityClass());
-
-            if (!$params['filter'] or count($params['filter']) == 0) {
-                $dados = $repo->findAll(100);
-            } else {
-                $dados = $repo->findByFilters($this->getFilterDatas($params));
-            }
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
-        }
-
-        return $this->render($this->getListView(), array(
-            'dados' => $dados,
-            'filter' => $params['filter']
-        ));
+    /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigo',
+                'pessoa' => [
+                    'id',
+                    'nome',
+                    'nome_fantasia'
+                ]
+            )
+        );
+    }
+    /**
+     *
+     * @Route("/crm/cliente/datatablesJsList/", name="crm_cliente_datatablesJsList")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $json = $this->doDatatablesJsList($request);
+        return new Response($json);
     }
 
     /**
      *
      * @Route("/crm/cliente/delete/{id}/", name="crm_cliente_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param Cliente $cliente
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

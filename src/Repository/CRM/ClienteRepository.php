@@ -6,6 +6,7 @@ use App\Entity\CRM\Cliente;
 use App\Repository\FilterRepository;
 use App\Utils\Repository\WhereBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -56,32 +57,10 @@ class ClienteRepository extends FilterRepository
         return count($results) == 1 ? $results[0] : null;
     }
 
-    public function findByFilters($filters, $orders = null, $limit=100)
+    public function handleFrombyFilters(QueryBuilder &$qb)
     {
-        $em = $this->getEntityManager();
-        $qb = $em->createQueryBuilder();
-
-        $qb
-            ->select('e')
-            ->from($this->getEntityClass(), 'e')
-        ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoa = p');
-
-        WhereBuilder::build($qb, $filters);
-        $dql = $qb->getDql();
-        $sql = $qb->getQuery()->getSQL();
-        $query = $qb->getQuery();
-        $query->setMaxResults($limit);
-        return $query->execute();
+        return $qb->from($this->getEntityClass(), 'e')
+            ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoa = p');
     }
-
-    public function findAll($limit=100) {
-        $ql = "SELECT c FROM App\Entity\CRM\Cliente c JOIN App\Entity\Base\Pessoa p WHERE c.pessoa = p";
-        $query = $this->getEntityManager()->createQuery($ql);
-        $query->setMaxResults($limit);
-        $results = $query->getResult();
-        return $results;
-
-    }
-
 
 }

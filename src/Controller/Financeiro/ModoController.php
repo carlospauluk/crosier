@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\ModoEntityHandler;
 use App\Form\Financeiro\ModoType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class ModoController extends FormListController
     /**
      *
      * @Route("/fin/modo/delete/{id}/", name="fin_modo_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param Modo $modo
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\RegistroConferenciaEntityHandler;
 use App\Form\Financeiro\RegistroConferenciaType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class RegistroConferenciaController extends FormListController
     /**
      *
      * @Route("/fin/registroConferencia/delete/{id}/", name="fin_registroConferencia_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param RegistroConferencia $registroConferencia
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

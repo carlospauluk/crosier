@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Fiscal;
 
 use App\Entity\Base\Config;
@@ -7,6 +8,7 @@ use App\Repository\FilterRepository;
 use App\Utils\Repository\WhereBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\QueryBuilder;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -14,7 +16,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade NotaFiscal.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class NotaFiscalRepository extends FilterRepository
 {
@@ -30,19 +32,19 @@ class NotaFiscalRepository extends FilterRepository
     public function findProxNumFiscal($producao, $serie, $tipoNotaFiscal)
     {
         try {
-            
+
             $ambiente = $producao ? 'PROD' : 'HOM';
-            
+
             $this->getEntityManager()->beginTransaction();
-            
+
             $chave = $producao ? "bonsucesso.fiscal.prod" : "bonsucesso.fiscal.hom";
             $chave .= ".sequencia-" . strtolower($tipoNotaFiscal);
             $chave .= "." . $serie;
-            
+
             $config = $this->getEntityManager()
                 ->getRepository(Config::class)
                 ->findByChave($chave);
-            
+
             // FOR UPDATE para garantir que ninguém vai alterar este valor antes de terminar esta transação
             $sql = "SELECT * FROM cfg_config WHERE chave LIKE ? FOR UPDATE";
             $rsm = new ResultSetMapping();
@@ -52,12 +54,12 @@ class NotaFiscalRepository extends FilterRepository
             $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
             $query->setParameter(1, $chave);
             $rs = $query->getResult();
-            
-            if (! $rs or ! $rs[0]) {
+
+            if (!$rs or !$rs[0]) {
                 throw new \Exception("Erro ao buscar a chave [" . $chave . "]");
             }
             $prox = $rs[0]->getValor();
-            
+
             // Verificação se por algum motivo a numeração na fis_nf já não está pra frente...
             $ultimoNaBase = null;
             $sqlUltimo = "SELECT nf FROM App\Entity\Fiscal\NotaFiscal nf WHERE nf.ambiente = :ambiente AND nf.serie = :serie AND nf.tipoNotaFiscal = :tipoNotaFiscal ORDER BY nf.numero DESC";
@@ -78,14 +80,14 @@ class NotaFiscalRepository extends FilterRepository
             } else {
                 $prox = 0;
             }
-            $prox ++;
-            
+            $prox++;
+
             $config->setValor($prox);
             $this->getEntityManager()->persist($config);
             $this->getEntityManager()->flush();
-            
+
             $this->getEntityManager()->commit();
-            
+
             return $prox;
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
@@ -95,28 +97,21 @@ class NotaFiscalRepository extends FilterRepository
         }
     }
 
-    public function findByFilters($filters, $orders = null, $limit=100)
+    public function handleFrombyFilters(QueryBuilder &$qb)
     {
-        $em = $this->getEntityManager();
-        $qb = $em->createQueryBuilder();
-
-        $qb
-            ->select('e')
-            ->from($this->getEntityClass(), 'e')
-            ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoaDestinatario = p');
-
-        if (!$orders) {
-            $qb->addOrderBy('e.id', 'DESC');
-            $qb->addOrderBy('e.dtEmissao', 'DESC');
-        }
-
-        WhereBuilder::build($qb, $filters);
-        $dql = $qb->getDql();
-        $sql = $qb->getQuery()->getSQL();
-        $query = $qb->getQuery();
-        $query->setMaxResults($limit);
-
-        return $query->execute();
+        return $qb->from($this->getEntityClass(), 'e')
+            ->join('App\Entity\Base\Pessoa', 'p', 'WITH', 'e.pessoaDestinatario = p');
     }
+
+    public function getDefaultOrders()
+    {
+        return array(
+            ['column' => 'e.id', 'dir' => 'desc'],
+            ['column' => 'e.dtEmissao', 'dir' => 'desc']
+        );
+    }
+
+
+
 
 }

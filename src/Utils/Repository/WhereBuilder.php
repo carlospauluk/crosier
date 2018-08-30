@@ -28,14 +28,18 @@ class WhereBuilder
      * @param QueryBuilder $qb
      * @param array $filters
      * @return \Doctrine\ORM\Query\Expr\Comparison[]|string[]|NULL[]
+     * @throws \Exception
      */
     public static function build(QueryBuilder &$qb, $filters)
     {
         $andX = $qb->expr()->andX();
 
+        $filtrando = false;
+
         foreach ($filters as $filter) {
 
             if (!WhereBuilder::checkHasVal($filter)) continue;
+            $filtrando = true;
 
             $field_array = is_array($filter->field) ? $filter->field : array(
                 $filter->field
@@ -112,7 +116,9 @@ class WhereBuilder
             }
             $andX->add($orX);
         }
-
+        if (!$filtrando) {
+            return;
+        }
         $qb->where($andX);
 
         foreach ($filters as $filter) {

@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\BandeiraCartaoEntityHandler;
 use App\Form\Financeiro\BandeiraCartaoType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class BandeiraCartaoController extends FormListController
     /**
      *
      * @Route("/fin/bandeiraCartao/delete/{id}/", name="fin_bandeiraCartao_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param BandeiraCartao $bandeiraCartao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

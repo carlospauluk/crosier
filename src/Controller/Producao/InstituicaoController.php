@@ -2,7 +2,6 @@
 namespace App\Controller\Producao;
 
 use App\Entity\Producao\Instituicao;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

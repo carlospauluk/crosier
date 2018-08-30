@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\OperadoraCartaoEntityHandler;
 use App\Form\Financeiro\OperadoraCartaoType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class OperadoraCartaoController extends FormListController
     /**
      *
      * @Route("/fin/operadoraCartao/delete/{id}/", name="fin_operadoraCartao_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param OperadoraCartao $operadoraCartao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

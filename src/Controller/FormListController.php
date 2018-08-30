@@ -7,6 +7,10 @@ use App\Entity\Base\EntityId;
 use App\EntityHandler\EntityHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 abstract class FormListController extends Controller
 {
@@ -63,38 +67,81 @@ abstract class FormListController extends Controller
 
     abstract public function getListView();
 
+    abstract public function getListRoute();
+
     /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function doList(Request $request)
     {
-        $dados = null;
         $params = $request->query->all();
-
         if (!array_key_exists('filter', $params)) {
+            // inicializa para evitar o erro
             $params['filter'] = null;
         }
-
-        try {
-            $repo = $this->getDoctrine()->getRepository($this->getEntityHandler()->getEntityClass());
-
-            if (!$params['filter'] or count($params['filter']) == 0) {
-                $dados = $repo->findBy([], null, 10000);
-            } else {
-                $dados = $repo->findByFilters($this->getFilterDatas($params));
-            }
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
-        }
-
         return $this->render($this->getListView(), array(
-            'dados' => $dados,
             'filter' => $params['filter']
         ));
     }
 
-    abstract public function getListRoute();
+    /**
+     * Necessário informar quais atributos da entidades deverão ser retornados no Json.
+     *
+     * @return mixed
+     */
+    public function getNormalizeAttributes() {
+        return null;
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function doDatatablesJsList(Request $request)
+    {
+        $repo = $this->getDoctrine()->getRepository($this->getEntityHandler()->getEntityClass());
+
+        $rParams = $request->request->all();
+
+        $start = $rParams['start'];
+        $limit = $rParams['length'];
+
+        parse_str(urldecode($rParams['formPesquisar']), $formPesquisar);
+
+        $orders = array();
+        foreach ($rParams['order'] as $pOrder) {
+            $order['column'] =  $rParams['columns'][$pOrder['column']]['name'];
+            $order['dir'] = $pOrder['dir'];
+            $orders[] = $order;
+        }
+
+        $params = $this->getFilterDatas($formPesquisar);
+
+        $countByFilter = $repo->countByFilters($params);
+        $dados = $repo->findByFilters($params, $orders, $start, $limit);
+
+        $normalizer = new ObjectNormalizer();
+        $encoder = new JsonEncoder();
+
+        $serializer = new Serializer(array($normalizer), array($encoder));
+
+        $data = $serializer->normalize($dados, 'json', $this->getNormalizeAttributes());
+
+        $draw = (int)$rParams['draw'];
+        $recordsTotal = $repo->count(array());
+
+        $results = array(
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $countByFilter,
+            'data' => $data
+        );
+
+        $json = $serializer->serialize($results, 'json');
+
+        return new Response($json);
+    }
 
     public function doDelete(Request $request, EntityId $entityId)
     {

@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\RegraImportacaoLinhaEntityHandler;
 use App\Form\Financeiro\RegraImportacaoLinhaType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class RegraImportacaoLinhaController extends FormListController
     /**
      *
      * @Route("/fin/regraImportacaoLinha/delete/{id}/", name="fin_regraImportacaoLinha_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param RegraImportacaoLinha $regraImportacaoLinha
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

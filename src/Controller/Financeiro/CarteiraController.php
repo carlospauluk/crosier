@@ -8,7 +8,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\CarteiraEntityHandler;
 use App\Form\Financeiro\CarteiraType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -91,9 +90,36 @@ class CarteiraController extends FormListController
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigo',
+                'descricao',
+                'dtConsolidado' => ['timestamp'],
+                'limite'
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/carteira/datatablesJsList/", name="fin_carteira_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
+    }
+
+    /**
      *
      * @Route("/fin/carteira/delete/{id}/", name="fin_carteira_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param Carteira $carteira
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

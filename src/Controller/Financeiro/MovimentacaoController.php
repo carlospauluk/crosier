@@ -4,7 +4,6 @@ namespace App\Controller\Financeiro;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use App\Utils\Repository\FilterData;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Carteira;
@@ -162,7 +161,6 @@ class MovimentacaoController extends Controller
     /**
      *
      * @Route("/fin/movimentacao/delete/{id}/", name="movimentacao_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      *
      */
     public function delete(Request $request, Movimentacao $movimentacao)

@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\BancoEntityHandler;
 use App\Form\Financeiro\BancoType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -47,8 +46,7 @@ class BancoController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData('nome', 'LIKE', $params['filter']['nome']),
-            new FilterData('codigoBanco', 'EQUALS', $params['filter']['codigo'])
+            new FilterData(array('codigoBanco', 'nome'), 'LIKE', $params['filter']['str'])
         );
     }
 
@@ -92,9 +90,34 @@ class BancoController extends FormListController
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigoBanco',
+                'nome'
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/banco/datatablesJsList/", name="fin_banco_datatablesJsList")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
+    }
+
+    /**
      *
      * @Route("/fin/banco/delete/{id}/", name="fin_banco_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param Banco $banco
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

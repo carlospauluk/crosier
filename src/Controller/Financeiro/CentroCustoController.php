@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\CentroCustoEntityHandler;
 use App\Form\Financeiro\CentroCustoType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class CentroCustoController extends FormListController
     /**
      *
      * @Route("/fin/centroCusto/delete/{id}/", name="fin_centroCusto_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param CentroCusto $centroCusto
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

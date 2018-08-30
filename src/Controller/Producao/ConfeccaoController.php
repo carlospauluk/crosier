@@ -9,7 +9,6 @@ use App\Form\Producao\ConfeccaoItemType;
 use App\Form\Producao\ConfeccaoType;
 use App\Service\EntityIdSerializerService;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -129,8 +128,7 @@ class ConfeccaoController extends Controller
 
     /**
      *
-     * @Route("/prod/confeccao/item/delete/{id}/", name="prod_confeccao_item_delete", requirements={"id"="\d+"})
-     * @Method("POST")
+     * @Route("/prod/confeccao/item/delete/{id}/", name="prod_confeccao_item_delete", requirements={"id"="\d+"}, methods={"POST"})
      *
      */
     public function delete(Request $request, ConfeccaoItem $item)

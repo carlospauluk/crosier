@@ -73,6 +73,19 @@
       "methods": [],
       "schemes": []
     },
+    "crm_cliente_datatablesJsList": {
+      "tokens": [
+        [
+          "text",
+          "\/crm\/cliente\/datatablesJsList\/"
+        ]
+      ],
+      "defaults": [],
+      "requirements": [],
+      "hosttokens": [],
+      "methods": [],
+      "schemes": []
+    },
     "crm_cliente_delete": {
       "tokens": [
         [
@@ -164,6 +177,19 @@
         [
           "text",
           "\/fin\/banco\/list\/"
+        ]
+      ],
+      "defaults": [],
+      "requirements": [],
+      "hosttokens": [],
+      "methods": [],
+      "schemes": []
+    },
+    "fin_banco_datatablesJsList": {
+      "tokens": [
+        [
+          "text",
+          "\/fin\/banco\/datatablesJsList\/"
         ]
       ],
       "defaults": [],
@@ -290,6 +316,19 @@
         [
           "text",
           "\/fin\/carteira\/list\/"
+        ]
+      ],
+      "defaults": [],
+      "requirements": [],
+      "hosttokens": [],
+      "methods": [],
+      "schemes": []
+    },
+    "fin_carteira_datatablesJsList": {
+      "tokens": [
+        [
+          "text",
+          "\/fin\/carteira\/datatablesJsList\/"
         ]
       ],
       "defaults": [],
@@ -1068,6 +1107,25 @@
       "methods": [],
       "schemes": []
     },
+    "fis_emissaonfe_reimprimirCancelamento": {
+      "tokens": [
+        [
+          "variable",
+          "\/",
+          "[^\/]++",
+          "notaFiscal"
+        ],
+        [
+          "text",
+          "\/fis\/emissaonfe\/reimprimirCancelamento"
+        ]
+      ],
+      "defaults": [],
+      "requirements": [],
+      "hosttokens": [],
+      "methods": [],
+      "schemes": []
+    },
     "fis_emissaonfe_cartaCorrecaoForm": {
       "tokens": [
         [
@@ -1191,6 +1249,19 @@
       "requirements": {
         "item": "\\d+"
       },
+      "hosttokens": [],
+      "methods": [],
+      "schemes": []
+    },
+    "fis_emissaonfe_list": {
+      "tokens": [
+        [
+          "text",
+          "\/fis\/emissaonfe\/list"
+        ]
+      ],
+      "defaults": [],
+      "requirements": [],
       "hosttokens": [],
       "methods": [],
       "schemes": []
@@ -1474,6 +1545,19 @@
         [
           "text",
           "\/toastr"
+        ]
+      ],
+      "defaults": [],
+      "requirements": [],
+      "hosttokens": [],
+      "methods": [],
+      "schemes": []
+    },
+    "index": {
+      "tokens": [
+        [
+          "text",
+          "\/index"
         ]
       ],
       "defaults": [],

@@ -29,7 +29,7 @@ import '@coreui/coreui/dist/css/coreui.css';
 import 'datatables/media/css/jquery.dataTables.css';
 import 'datatables';
 
-import 'select2/select2.css';
+import 'select2/dist/css/select2.css';
 import 'select2';
 
 import 'jquery-mask-plugin';
@@ -38,7 +38,14 @@ import 'jquery-maskmoney/dist/jquery.maskMoney.js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
 
-// como adicionar o crosier.js e crosier.css ???
+import Moment from 'moment';
+import 'moment/locale/pt-br';
+Moment().locale('pt-BR');
+
+import Numeral from 'numeral';
+import 'numeral/locales/pt-br.js'
+Numeral.locale('pt-br');
+
 
 import '../../css/crosier/crosier.css';
 
@@ -53,17 +60,6 @@ $(document).ready(function () {
     CrosierMasks.maskCPF_CNPJ();
     CrosierMasks.maskTelefone9digitos();
     CrosierMasks.maskCEP();
-
-    $('.crsr-datatable').each(function () {
-        if ($.fn.dataTable.isDataTable(this)) {
-            table = this.DataTable();
-        } else {
-            $(this).DataTable({
-                paging: false,
-                searching: false
-            });
-        }
-    });
 
 
     $(document).ajaxStart(function () {
@@ -105,6 +101,10 @@ $(document).ready(function () {
         } else if ($(this).hasClass('FLASHMESSAGE_ERROR')) {
             toastr.error($(this).html());
         }
+    });
+
+    $('#qtdeRegistrosList').select2({
+        tags: true
     });
 
 });

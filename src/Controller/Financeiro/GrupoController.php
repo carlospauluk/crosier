@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\GrupoEntityHandler;
 use App\Form\Financeiro\GrupoType;
 use App\Utils\Repository\FilterData;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -93,7 +92,6 @@ class GrupoController extends FormListController
     /**
      *
      * @Route("/fin/grupo/delete/{id}/", name="fin_grupo_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      * @param Request $request
      * @param Grupo $grupo
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

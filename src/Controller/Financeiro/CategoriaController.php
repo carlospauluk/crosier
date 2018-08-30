@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -94,7 +93,6 @@ class CategoriaController extends Controller
     /**
      *
      * @Route("/fin/categoria/delete/{id}/", name="categoria_delete", requirements={"id"="\d+"})
-     * @Method("POST")
      *
      */
     public function delete(Request $request, Categoria $categoria)
@@ -118,7 +116,6 @@ class CategoriaController extends Controller
     /**
      *
      * @Route("/fin/categoria/treelist/", name="categoria_treelist")
-     * @Method("GET")
      *
      */
     public function getTreeList() {

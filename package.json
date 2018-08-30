@@ -17,7 +17,7 @@
         "perfect-scrollbar": "1",
         "popper.js": "^1.14.4",
         "sass-loader": "^7.1.0",
-        "select2": "3",
+        "select2": "4",
         "simple-line-icons": "^2.4.1",
         "toastr": "^2.1.4",
         "webpack-notifier": "^1.6.0"
@@ -30,5 +30,8 @@
         "watch": "encore dev --watch",
         "build": "encore production"
     },
-    "dependencies": {}
+    "dependencies": {
+        "moment": "^2.22.2",
+        "numeral": "^2.0.6"
+    }
 }
