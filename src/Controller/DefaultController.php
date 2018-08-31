@@ -14,27 +14,11 @@ class DefaultController extends Controller
 
     /**
      *
-     * @Route("/routes")
+     * @Route("/")
      */
     public function routes()
     {
-        $router = $this->container->get('router');
-        $collection = $router->getRouteCollection();
-        $allRoutes = $collection->all();
-
-        $routes = array();
-
-        foreach ($allRoutes as $routeName => $route) {
-            $routes[$routeName] = $route->getPath();
-        }
-
-        $normalizer = new ObjectNormalizer();
-        $encoder = new JsonEncoder();
-
-        $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($routes, 'json');
-
-        return new Response($json);
+        return $this->render('index.html.twig');
 
     }
 }
