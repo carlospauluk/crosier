@@ -102,32 +102,34 @@ class UnimakeBusiness
                 $nfe->infNFe->dest->xNome = $notaFiscal->getPessoaDestinatario()->getNome();
             }
 
-            $nfe->infNFe->dest->enderDest->CEP = preg_replace("/[^0-9]/", "", $notaFiscal->getPessoaDestinatario()
+            $nfe->infNFe->dest->enderDest->xLgr = trim($notaFiscal->getPessoaDestinatario()
                 ->getEndereco()
-                ->getCep());
-            $nfe->infNFe->dest->enderDest->fone = preg_replace("/[^0-9]/", "", $notaFiscal->getPessoaDestinatario()->getFone1());
+                ->getLogradouro());
             $nfe->infNFe->dest->enderDest->nro = $notaFiscal->getPessoaDestinatario()
                 ->getEndereco()
                 ->getNumero();
-            $nfe->infNFe->dest->enderDest->UF = $notaFiscal->getPessoaDestinatario()
-                ->getEndereco()
-                ->getEstado();
             $nfe->infNFe->dest->enderDest->xBairro = $notaFiscal->getPessoaDestinatario()
                 ->getEndereco()
                 ->getBairro();
-            $nfe->infNFe->dest->enderDest->xLgr = $notaFiscal->getPessoaDestinatario()
-                ->getEndereco()
-                ->getLogradouro();
-            $nfe->infNFe->dest->enderDest->xMun = $notaFiscal->getPessoaDestinatario()
-                ->getEndereco()
-                ->getCidade();
-
             $municipio = $this->doctrine->getRepository(Municipio::class)->findByNomeAndUf($notaFiscal->getPessoaDestinatario()
                 ->getEndereco()
                 ->getCidade(), $notaFiscal->getPessoaDestinatario()
                 ->getEndereco()
                 ->getEstado());
             $nfe->infNFe->dest->enderDest->cMun = $municipio->getMunicipioCodigo();
+            $nfe->infNFe->dest->enderDest->xMun = $notaFiscal->getPessoaDestinatario()
+                ->getEndereco()
+                ->getCidade();
+            $nfe->infNFe->dest->enderDest->UF = $notaFiscal->getPessoaDestinatario()
+                ->getEndereco()
+                ->getEstado();
+            $nfe->infNFe->dest->enderDest->CEP = preg_replace("/[^0-9]/", "", $notaFiscal->getPessoaDestinatario()
+                ->getEndereco()
+                ->getCep());
+            $nfe->infNFe->dest->enderDest->cPais = 1058;
+            $nfe->infNFe->dest->enderDest->xPais = 'BRASIL';
+            $nfe->infNFe->dest->enderDest->fone = preg_replace("/[^0-9]/", "", $notaFiscal->getPessoaDestinatario()->getFone1());
+
 
             // 1=Contribuinte ICMS (informar a IE do destinatário);
             // 2=Contribuinte isento de Inscrição no cadastro de Contribuintes do ICMS;
@@ -279,7 +281,9 @@ class UnimakeBusiness
 
 
         if ($notaFiscal->getInfoCompl()) {
-            $nfe->infNFe->infAdic = $notaFiscal->getInfoCompl();
+            $infoCompl = preg_replace( "/\r/", "",$notaFiscal->getInfoCompl());
+            $infoCompl = preg_replace( "/\n/", ";",$infoCompl);
+            $nfe->infNFe->infAdic->infCpl = $infoCompl;
         }
 
 

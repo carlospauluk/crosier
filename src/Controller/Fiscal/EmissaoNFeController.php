@@ -11,6 +11,7 @@ use App\Entity\Fiscal\NotaFiscalItem;
 use App\Form\Fiscal\EmissaoFiscalType;
 use App\Form\Fiscal\NotaFiscalItemType;
 use App\Utils\Repository\FilterData;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -292,6 +293,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @param NotaFiscalItem|null $item
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @ParamConverter("item", class="App\Entity\Fiscal\NotaFiscalItem", options={"mapping": {"item": "id"}})
      */
     public function formItem(Request $request, NotaFiscal $notaFiscal, NotaFiscalItem $item = null)
     {
