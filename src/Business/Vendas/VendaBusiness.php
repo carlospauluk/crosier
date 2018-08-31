@@ -32,7 +32,7 @@ class VendaBusiness
     {
         $dir = getenv('PASTAARQUIVOSEKTFISCAL');
         $files = scandir($dir);
-        return array_search( 'controle.txt', $files) ? true : false;
+        return array_search('controle.txt', $files) ? true : false;
     }
 
     /**
@@ -48,7 +48,7 @@ class VendaBusiness
         $files = scandir($dir);
         foreach ($files as $file) {
 
-            if (!(substr($file, 0, 2) == 'pv' and substr($file, 0, -3) == 'txt')) {
+            if (!(substr($file, 0, 2) == 'pv' and substr($file, -3) == 'txt')) {
                 continue;
             }
 
@@ -63,8 +63,7 @@ class VendaBusiness
      * @return \App\Entity\Vendas\Venda
      * @throws \Exception
      */
-    private
-    function processarTXTsEKT()
+    private function processarTXTsEKT()
     {
         $dir = getenv('PASTAARQUIVOSEKTFISCAL');
         $files = scandir($dir);
@@ -191,7 +190,6 @@ class VendaBusiness
             $entityManager->persist($venda);
             $entityManager->flush();
 
-            return $venda;
         }
     }
 
