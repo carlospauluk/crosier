@@ -20,7 +20,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class ModoController extends FormListController
 {
 
-
     private $entityHandler;
 
     public function __construct(ModoEntityHandler $entityHandler)
@@ -87,6 +86,32 @@ class ModoController extends FormListController
     public function list(Request $request)
     {
         return $this->doList($request);
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigo',
+                'descricao'
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/modo/datatablesJsList/", name="fin_modo_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
     }
 
     /**

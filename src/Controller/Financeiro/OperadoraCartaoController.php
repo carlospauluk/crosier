@@ -90,6 +90,32 @@ class OperadoraCartaoController extends FormListController
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'descricao',
+                'carteira' => ['id', 'codigo', 'descricao']
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/operadoraCartao/datatablesJsList/", name="fin_operadoraCartao_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
+    }
+
+    /**
      *
      * @Route("/fin/operadoraCartao/delete/{id}/", name="fin_operadoraCartao_delete", requirements={"id"="\d+"})
      * @param Request $request

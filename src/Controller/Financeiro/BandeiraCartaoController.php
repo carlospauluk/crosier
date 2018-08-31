@@ -46,7 +46,7 @@ class BandeiraCartaoController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData('descricao', 'LIKE', $params['filter']['descricao'])
+            new FilterData(array('descricao','labels'), 'LIKE', $params['filter']['descricao'])
         );
     }
 
@@ -87,6 +87,34 @@ class BandeiraCartaoController extends FormListController
     public function list(Request $request)
     {
         return $this->doList($request);
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigo',
+                'descricao',
+                'labels',
+                'modo' => ['id', 'codigo', 'descricao']
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/bandeiraCartao/datatablesJsList/", name="fin_bandeiraCartao_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
     }
 
     /**

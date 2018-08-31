@@ -90,6 +90,32 @@ class CentroCustoController extends FormListController
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigo',
+                'descricao'
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/centroCusto/datatablesJsList/", name="fin_centroCusto_datatablesJsList")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
+    }
+
+    /**
      *
      * @Route("/fin/centroCusto/delete/{id}/", name="fin_centroCusto_delete", requirements={"id"="\d+"})
      * @param Request $request
