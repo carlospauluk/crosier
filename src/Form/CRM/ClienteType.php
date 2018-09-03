@@ -125,7 +125,7 @@ class ClienteType extends AbstractType
 
         $builder->add('dtEmissaoRg', TextType::class, array(
             'label' => 'Dt Emissão RG',
-            'attr' => array('class' => 'crsr-datetime'),
+            'attr' => array('class' => 'crsr-datetime PESSOA_FISICA'),
             'required' => false
         ));
 
@@ -170,12 +170,16 @@ class ClienteType extends AbstractType
             ),
             'required' => false,
             'attr' => array(
-                'class' => 'DADOSPESSOA'
+                'class' => 'PESSOA_FISICA'
             )
         ));
 
-        $builder->add('sexo', TextType::class, array(
+        $builder->add('sexo', ChoiceType::class, array(
             'label' => 'Sexo',
+            'choices' => array(
+                'Masculino' => 'MASCULINO',
+                'Feminino' => 'FEMININO'
+            ),
             'attr' => array(
                 'class' => 'PESSOA_FISICA'
             ),
@@ -190,8 +194,15 @@ class ClienteType extends AbstractType
             'required' => false
         ));
 
-        $builder->add('estadoCivil', TextType::class, array(
+        $builder->add('estadoCivil', ChoiceType::class, array(
             'label' => 'Estado Civil',
+            'choices' => array(
+                'Solteiro' => 'SOLTEIRO',
+                'Casado' => 'CASADO',
+                'Viúvo' => 'VIUVO',
+                'Separado' => 'SEPARADO',
+                'Divorciado' => 'DIVORCIDADO'
+            ),
             'attr' => array(
                 'class' => 'PESSOA_FISICA'
             ),
@@ -203,7 +214,8 @@ class ClienteType extends AbstractType
             'choices' => array(
                 'Sim' => true,
                 'Não' => false
-            )
+            ),
+            'required' => false
         ));
 
         $builder->add('temWhatsapp', ChoiceType::class, array(
@@ -211,7 +223,8 @@ class ClienteType extends AbstractType
             'choices' => array(
                 'Sim' => true,
                 'Não' => false
-            )
+            ),
+            'required' => false
         ));
 
 
@@ -262,7 +275,7 @@ class ClienteType extends AbstractType
         $builder->add('contato', TextType::class, array(
             'label' => 'Contato',
             'attr' => array(
-                'class' => 'DADOSPESSOA'
+                'class' => 'PESSOA_JURIDICA'
             ),
             'required' => false
         ));
@@ -270,7 +283,7 @@ class ClienteType extends AbstractType
         $builder->add('website', TextType::class, array(
             'label' => 'Site',
             'attr' => array(
-                'class' => ''
+                'class' => 'PESSOA_JURIDICA'
             ),
             'required' => false
         ));

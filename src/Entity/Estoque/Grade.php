@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Estoque\GradeRepository")
  * @ORM\Table(name="est_grade")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Grade extends EntityId
 {

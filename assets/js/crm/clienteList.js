@@ -2,6 +2,8 @@
 
 let listId = "#clienteList";
 
+import Moment from 'moment';
+
 function getDatatablesColumns() {
     return [
         {
@@ -16,6 +18,16 @@ function getDatatablesColumns() {
             render: function (data, type, row) {
                 return data.nome;
             }
+        },
+        {
+            name: 'e.updated',
+            data: 'updated',
+            title: 'Atualizado',
+            render: function (data, type, row) {
+                return Moment.unix(data.timestamp).format('DD/MM/YYYY HH:mm:ss');
+            },
+            className: 'text-center'
+
         },
         {
             name: 'e.id',

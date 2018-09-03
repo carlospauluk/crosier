@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CarteiraRepository")
  * @ORM\Table(name="fin_carteira")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Carteira extends EntityId
 {

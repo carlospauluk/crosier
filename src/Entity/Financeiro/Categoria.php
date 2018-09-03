@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CategoriaRepository")
  * @ORM\Table(name="fin_categoria")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Categoria extends EntityId
 {

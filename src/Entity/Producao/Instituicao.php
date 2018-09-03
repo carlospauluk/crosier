@@ -12,6 +12,7 @@ use App\Entity\CRM\Cliente;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\InstituicaoRepository")
  * @ORM\Table(name="prod_instituicao")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Instituicao extends EntityId
 {

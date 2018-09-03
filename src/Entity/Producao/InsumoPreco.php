@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\InsumoPrecoRepository")
  * @ORM\Table(name="prod_insumo_preco")
+ * @ORM\HasLifecycleCallbacks()
  */
 class InsumoPreco extends EntityId
 {

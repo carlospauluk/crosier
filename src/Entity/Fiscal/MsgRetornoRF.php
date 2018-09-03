@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\MsgRetornoRFRepository")
  * @ORM\Table(name="fis_msg_retorno_rf")
+ * @ORM\HasLifecycleCallbacks()
  */
 class MsgRetornoRF extends EntityId
 {

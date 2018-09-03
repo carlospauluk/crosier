@@ -10,6 +10,7 @@ use App\Entity\Estoque\Grade;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\ConfeccaoRepository")
  * @ORM\Table(name="prod_confeccao")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Confeccao extends EntityId
 {

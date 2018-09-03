@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Entity\Base;
 
+use ReflectionClass;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -10,7 +12,6 @@ class EntityId
     /**
      *
      * @ORM\Column(name="inserted", type="datetime", nullable=false)
-     * @Assert\NotNull(message = "O campo 'inserted' precisa ser informado")
      * @Assert\Type("\DateTime")
      */
     public $inserted;
@@ -18,7 +19,6 @@ class EntityId
     /**
      *
      * @ORM\Column(name="updated", type="datetime", nullable=false)
-     * @Assert\NotNull(message = "O campo 'updated' precisa ser informado")
      * @Assert\Type("\DateTime")
      */
     public $updated;
@@ -26,36 +26,33 @@ class EntityId
     /**
      *
      * @ORM\Column(name="estabelecimento_id", type="bigint", nullable=false)
-     * @Assert\NotNull(message = "O campo 'estabelecimento_id' precisa ser informado")
      */
     public $estabelecimento;
 
     /**
      *
      * @ORM\Column(name="user_inserted_id", type="bigint", nullable=false)
-     * @Assert\NotNull(message = "O campo 'user_inserted_id' precisa ser informado")
      */
     public $userInserted;
 
     /**
      *
      * @ORM\Column(name="user_updated_id", type="bigint", nullable=false)
-     * @Assert\NotNull(message = "O campo 'user_updated_id' precisa ser informado")
      */
     public $userUpdated;
-    
+
     public function __construct()
     {
         ORM\Annotation::class;
         Assert\All::class;
     }
 
-    public function getInserted()
+    public function getInserted(): ?\DateTime
     {
         return $this->inserted;
     }
 
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -75,12 +72,12 @@ class EntityId
         return $this->userUpdated;
     }
 
-    public function setInserted($inserted)
+    public function setInserted(?\DateTime $inserted)
     {
         $this->inserted = $inserted;
     }
 
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated)
     {
         $this->updated = $updated;
     }
@@ -98,5 +95,42 @@ class EntityId
     public function setUserUpdated($userUpdated)
     {
         $this->userUpdated = $userUpdated;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        $this->handleUppercaseFields();
+        $this->setInserted(new \DateTime('now'));
+        $this->setEstabelecimento(1);
+        $this->setUserInserted(1);
+        $this->setUpdated(new \DateTime('now'));
+        $this->setUserUpdated(1);
+    }
+
+    /**
+     * @ORM\PreUpdate()
+     */
+    public function preUpdate()
+    {
+        $this->handleUppercaseFields();
+        $this->setUpdated(new \DateTime());
+        $this->setUserUpdated(1);
+    }
+
+
+    private function handleUppercaseFields() {
+        $uppercaseFieldsJson = file_get_contents('../src/Entity/uppercaseFields.json');
+        $uppercaseFields = json_decode($uppercaseFieldsJson);
+        $class = str_replace('\\', '_', get_class($this));
+        $reflectionClass = new ReflectionClass(get_class($this));
+        $campos = $uppercaseFields->$class;
+        foreach ($campos as $field) {
+            $property = $reflectionClass->getProperty($field);
+            $property->setAccessible(true);
+            $property->setValue($this, mb_strtoupper($property->getValue($this)));
+        }
     }
 }

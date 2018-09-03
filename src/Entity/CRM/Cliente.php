@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\CRM\ClienteRepository")
  * @ORM\Table(name="crm_cliente")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Cliente extends EntityId
 {
@@ -151,7 +152,7 @@ class Cliente extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa", fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa", fetch="EAGER", cascade={"persist"})
      * @ORM\JoinColumn(name="pessoa_id", nullable=false)
      *
      */
@@ -171,11 +172,10 @@ class Cliente extends EntityId
 
     /**
      *
-     * @ManyToMany(targetEntity="App\Entity\Base\Endereco")
+     * @ManyToMany(targetEntity="App\Entity\Base\Endereco",cascade={"persist"})
      * @JoinTable(name="crm_cliente_enderecos",
      *      joinColumns={@JoinColumn(name="crm_cliente_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@JoinColumn(name="bon_endereco_id", referencedColumnName="id")}
-     *      )
+     *      inverseJoinColumns={@JoinColumn(name="bon_endereco_id", referencedColumnName="id")})
      */
     private $enderecos;
 

@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\RH\FuncionarioRepository")
  * @ORM\Table(name="rh_funcionario")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Funcionario extends EntityId
 {

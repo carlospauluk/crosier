@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoRepository")
  * @ORM\Table(name="fin_grupo")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Grupo extends EntityId
 {

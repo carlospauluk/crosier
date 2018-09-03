@@ -6,52 +6,130 @@
 {% block page_content %}
 
 
-<div class="card">
-	<div class="card-header">
+    <div class="card">
+        <div class="card-header">
 
-		<div class="row">
-			<div class="col-8">
-				<h3>Cliente</h3>
-			</div>
-			<div class="col-4 text-right">
-				<button type="button" class="btn btn-secondary"
-					onclick="window.location.href='{{ url('crm_cliente_list') }}'">
-					<i class="fas fa-sync" aria-hidden="true"></i> Listar
-				</button>
-			</div>
-		</div>
+            <div class="row">
+                <div class="col-8">
+                    <h3>Cliente</h3>
+                </div>
+                <div class="col-4 text-right">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="window.location.href='{{ url('crm_cliente_list') }}'">
+                        <i class="fas fa-sync" aria-hidden="true"></i> Listar
+                    </button>
+                </div>
+            </div>
 
-	</div>
+        </div>
 
-	<div class="card-body">
+        <div class="card-body">
 
-		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+            <ul class="nav nav-tabs" id="principal" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="cabecalho-tab" data-toggle="tab" href="#cabecalho" role="tab"
+                       aria-controls="cabecalho" aria-selected="true">Dados</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="enderecos-tab" data-toggle="tab" href="#enderecos" role="tab"
+                       aria-controls="enderecos" aria-selected="false">Endereços</a>
+                </li>
+            </ul>
 
-		{{ form_start(form) }}
-		{{ form_widget(form) }}
-
-		<div class="row">
-			<div class="col text-right">
-				<button type="submit" class="btn btn-primary btn-lg" value="Salvar">
-					<i class="fas fa-save" aria-hidden="true"></i> Salvar
-				</button>
-
-				<button type="button" value="Resetar" class="btn btn-secondary"
-					data-url="{{ url('crm_cliente_form') }}"
-					data-target="#confirmationModal" data-toggle="modal">
-					<i class="fas fa-undo" aria-hidden="true"></i> Recarregar
-				</button>
-			</div>
-		</div>
+            <div class="form-group row">
+            </div>
 
 
-		{{ form_end(form) }}
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="cabecalho" role="tabpanel" aria-labelledby="cabecalho-tab">
+
+                    {% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+
+                    {{ form_start(form) }}
+
+                    {{ form_row(form._token) }}
+                    {{ form_row(form.id) }}
+                    {{ form_widget(form.pessoa_id) }}
+
+                    {{ form_row(form.tipoPessoa) }}
 
 
-	</div>
-</div>
+                    {{ form_row(form.codigo) }}
+
+                    {{ form_row(form.cpf) }}
+
+                    {{ form_row(form.nome) }}
+
+                    {{ form_row(form.rg) }}
+                    {{ form_row(form.dtEmissaoRg) }}
+                    {{ form_row(form.orgaoEmissorRg) }}
+                    {{ form_row(form.estadoRg) }}
+
+                    {{ form_row(form.sexo) }}
+                    {{ form_row(form.naturalidade) }}
+                    {{ form_row(form.estadoCivil) }}
 
 
+                    {{ form_row(form.cnpj) }}
+                    {{ form_row(form.razao_social) }}
+                    {{ form_row(form.nome_fantasia) }}
+
+                    {{ form_row(form.inscricaoEstadual) }}
+                    {{ form_row(form.inscricaoMunicipal) }}
+
+
+                    <div class="card">
+                        <h5 class="card-header">Contato</h5>
+                        <div class="card-body">
+
+                            {{ form_row(form.contato) }}
+                            {{ form_row(form.website) }}
+
+                            {{ form_row(form.fone1) }}
+                            {{ form_row(form.fone2) }}
+                            {{ form_row(form.fone3) }}
+                            {{ form_row(form.fone4) }}
+
+                            {{ form_row(form.temWhatsapp) }}
+                            {{ form_row(form.aceitaWhatsapp) }}
+
+                            {{ form_row(form.email) }}
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col text-right">
+                            <button type="submit" class="btn btn-primary btn-lg" value="Salvar">
+                                <i class="fas fa-save" aria-hidden="true"></i> Salvar
+                            </button>
+
+                            <button type="button" value="Resetar" class="btn btn-secondary"
+                                    data-url="{{ url('crm_cliente_form') }}"
+                                    data-target="#confirmationModal" data-toggle="modal">
+                                <i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+                            </button>
+                        </div>
+                    </div>
+
+
+                    {{ form_end(form, {'render_rest': false}) }}
+
+
+                </div>
+
+                <div class="tab-pane fade" id="enderecos" role="tabpanel" aria-labelledby="enderecos-tab">
+
+                    {% set route_form = 'crm_cliente_enderecoForm' %}
+                    {% set route_delete = 'crm_cliente_enderecoDelete' %}
+                    {{ include('Base/enderecoList.html.twig') }}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
 
 
 
@@ -59,5 +137,5 @@
 
 
 {% block down_scripts %}
-	<script src="{{ asset('build/fis/emissaoNFe/form.js') }}"></script>
+    <script src="{{ asset('build/crm/clienteForm.js') }}"></script>
 {% endblock %}

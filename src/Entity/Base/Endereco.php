@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\EnderecoRepository")
  * @ORM\Table(name="bon_endereco")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Endereco extends EntityId
 {

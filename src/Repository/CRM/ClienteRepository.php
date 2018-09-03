@@ -63,4 +63,18 @@ class ClienteRepository extends FilterRepository
             ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoa = p');
     }
 
+    public function findProximoCodigo() {
+        $ql = "SELECT c FROM App\Entity\CRM\Cliente c ORDER BY c.codigo DESC";
+        $query = $this->getEntityManager()->createQuery($ql);
+        $query->setMaxResults(1);
+        $results = $query->getResult();
+
+        if (count($results) > 1) {
+            throw new \Exception('Mais de um resultado encontrado');
+        }
+
+        $cliente = $results[0];
+        return $cliente->getCodigo() + 1;
+    }
+
 }

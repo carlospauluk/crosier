@@ -10,6 +10,7 @@ use App\Entity\Estoque\Subdepto;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\TipoArtigoRepository")
  * @ORM\Table(name="prod_tipo_artigo")
+ * @ORM\HasLifecycleCallbacks()
  */
 class TipoArtigo extends EntityId
 {

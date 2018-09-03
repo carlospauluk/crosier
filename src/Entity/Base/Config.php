@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\ConfigRepository")
  * @ORM\Table(name="cfg_config")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Config extends EntityId
 {

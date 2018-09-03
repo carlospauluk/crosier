@@ -11,6 +11,7 @@ use App\Entity\Base\Pessoa;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\MovimentacaoRepository")
  * @ORM\Table(name="fin_movimentacao")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Movimentacao extends EntityId
 {

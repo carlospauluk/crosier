@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Security\GroupRepository")
  * @ORM\Table(name="sec_group")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Group extends EntityId
 {

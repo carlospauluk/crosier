@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Estoque\ProdutoSaldoRepository")
  * @ORM\Table(name="est_produto_saldo")
+ * @ORM\HasLifecycleCallbacks()
  */
 class ProdutoSaldo extends EntityId
 {

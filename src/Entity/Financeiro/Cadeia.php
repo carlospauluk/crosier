@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\Collection;
  *        
  * @ORM\Entity()
  * @ORM\Table(name="fin_cadeia")
+ * @ORM\HasLifecycleCallbacks()
  * 
  * @author Carlos Eduardo Pauluk
  */

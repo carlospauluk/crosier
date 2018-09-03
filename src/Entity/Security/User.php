@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Security\UserRepository")
  * @ORM\Table(name="sec_user")
+ * @ORM\HasLifecycleCallbacks()
  */
 class User extends EntityId implements UserInterface, \Serializable
 {

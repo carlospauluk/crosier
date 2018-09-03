@@ -9,6 +9,7 @@ use App\Entity\Base\EntityId;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Security\RoleRepository")
  * @ORM\Table(name="sec_role")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Role extends EntityId
 {

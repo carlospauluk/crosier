@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\ParcelamentoRepository")
  * @ORM\Table(name="fin_parcelamento")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Parcelamento extends EntityId
 {

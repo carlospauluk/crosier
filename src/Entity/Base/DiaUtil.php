@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\DiaUtilRepository")
  * @ORM\Table(name="bon_dia_util")
+ * @ORM\HasLifecycleCallbacks()
  */
 class DiaUtil extends EntityId
 {

@@ -10,6 +10,7 @@ use App\Entity\Estoque\Produto;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Cortinas\ArtigoCortinaRepository")
  * @ORM\Table(name="crtn_artigo_cortina")
+ * @ORM\HasLifecycleCallbacks()
  */
 class ArtigoCortina extends EntityId
 {

@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NotaFiscalItemRepository")
  * @ORM\Table(name="fis_nf_item")
+ * @ORM\HasLifecycleCallbacks()
  */
 class NotaFiscalItem extends EntityId
 {

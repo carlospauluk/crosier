@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\PessoaRepository")
  * @ORM\Table(name="bon_pessoa")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Pessoa extends EntityId
 {
@@ -171,5 +172,6 @@ class Pessoa extends EntityId
     {
         $this->inscricaoEstadual = $inscricaoEstadual;
     }
+
 }
 

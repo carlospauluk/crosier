@@ -1,7 +1,8 @@
 'use strict';
 
-import Moment from "moment";
-import Numeral from "numeral";
+import Moment from 'moment';
+
+import Numeral from 'numeral';
 
 let listId = "#carteiraList";
 
@@ -52,13 +53,6 @@ function getDatatablesColumns() {
     ];
 }
 
-function getDatatablesColumnDefs() {
-    return [
-
-    ]
-}
-
-
 $(document).ready(function () {
 
     $(listId).DataTable({
@@ -74,7 +68,6 @@ $(document).ready(function () {
         },
         searching: false,
         columns: getDatatablesColumns(),
-        columnDefs: getDatatablesColumnDefs(),
         "language": {
             "url": "/build/static/datatables-Portuguese-Brasil.json"
         }

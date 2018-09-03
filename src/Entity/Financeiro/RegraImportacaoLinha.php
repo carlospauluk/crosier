@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *        
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\RegraImportacaoLinhaRepository")
  * @ORM\Table(name="fin_regra_import_linha")
+ * @ORM\HasLifecycleCallbacks()
  */
 class RegraImportacaoLinha extends EntityId
 {

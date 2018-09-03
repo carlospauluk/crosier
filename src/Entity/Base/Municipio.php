@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\MunicipioRepository")
  * @ORM\Table(name="bs_municipio")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Municipio extends EntityId
 {

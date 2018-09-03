@@ -27,8 +27,13 @@ Encore
      * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
      */
     .createSharedEntry('bse_layout', './assets/js/bse/layout.js')
+    .addEntry('bse/enderecoForm', './assets/js/bse/enderecoForm.js')
+
     .addEntry('fis/emissaoNFe/form', './assets/js/fis/emissaoNFe/form.js')
+
     .addEntry('crm/clienteList', './assets/js/crm/clienteList.js')
+    .addEntry('crm/clienteForm', './assets/js/crm/clienteForm.js')
+
     .addEntry('fin/carteiraList', './assets/js/fin/carteiraList.js')
     .addEntry('fin/bancoList', './assets/js/fin/bancoList.js')
     .addEntry('fin/grupoList', './assets/js/fin/grupoList.js')

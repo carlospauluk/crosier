@@ -11,6 +11,7 @@ use App\Entity\Estoque\Produto;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Vendas\VendaItemRepository")
  * @ORM\Table(name="ven_venda_item")
+ * @ORM\HasLifecycleCallbacks()
  */
 class VendaItem extends EntityId
 {

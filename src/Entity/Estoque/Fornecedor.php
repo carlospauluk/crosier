@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping\JoinColumn;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Estoque\FornecedorRepository")
  * @ORM\Table(name="est_fornecedor")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Fornecedor extends EntityId
 {

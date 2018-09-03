@@ -2,6 +2,7 @@
 
 namespace App\Business\CRM;
 
+use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -15,6 +16,21 @@ class ClienteBusiness
         $this->doctrine = $doctrine;
     }
 
+    public function parseFormData(&$formData)
+    {
+
+        foreach ($formData as $key => $value) {
+            if ($value == '') {
+                $formData[$key] = null;
+            }
+        }
+
+        $formData['codigo'] = (isset($formData['codigo']) and $formData['codigo'] > 0) ? $formData['codigo'] : null;
+        $formData['cpf'] = (isset($formData['cpf']) and $formData['cpf'] !== null) ? preg_replace("/[^0-9]/", "", $formData['cpf']) : null;
+        $formData['cnpj'] = (isset($formData['cnpj']) and $formData['cnpj'] !== null) ? preg_replace("/[^0-9]/", "", $formData['cnpj']) : null;
+
+    }
+
     /**
      * Transforma um Cliente em um array para manipulação no ClienteType.
      * @param Cliente $cliente
@@ -25,6 +41,8 @@ class ClienteBusiness
         $formData = array();
 
         // Campos gerais (tanto para PESSOA_FISICA quanto para PESSOA_JURIDICA)
+
+        $formData['id'] = $cliente->getId();
 
         $formData['tipoPessoa'] = $cliente->getPessoa()->getTipoPessoa();
         $formData['pessoa_id'] = $cliente->getPessoa()->getId();

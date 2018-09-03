@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\Collection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoItemRepository")
  * @ORM\Table(name="fin_grupo_item")
+ * @ORM\HasLifecycleCallbacks()
  *
  * @author Carlos Eduardo Pauluk
  */

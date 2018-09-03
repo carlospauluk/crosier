@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\ConfeccaoItemRepository")
  * @ORM\Table(name="prod_confeccao_item")
+ * @ORM\HasLifecycleCallbacks()
  */
 class ConfeccaoItem extends EntityId
 {
