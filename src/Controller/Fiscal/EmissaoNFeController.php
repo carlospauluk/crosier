@@ -8,6 +8,7 @@ use App\Business\Fiscal\NotaFiscalBusiness;
 use App\Entity\Base\Pessoa;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\NotaFiscalItem;
+use App\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use App\Form\Fiscal\EmissaoFiscalType;
 use App\Form\Fiscal\NotaFiscalItemType;
 use App\Utils\Repository\FilterData;
@@ -25,12 +26,17 @@ class EmissaoNFeController extends Controller
 
     private $pessoaBusiness;
 
-    public function __construct(NotaFiscalBusiness $notaFiscalBusiness, EntityIdBusiness $entityIdBusiness, PessoaBusiness $pessoaBusiness)
+    private $notaFiscalItemEntityHandler;
+
+    public function __construct(NotaFiscalBusiness $notaFiscalBusiness,
+                                EntityIdBusiness $entityIdBusiness,
+                                PessoaBusiness $pessoaBusiness,
+                                NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler)
     {
-        Route::class;
         $this->notaFiscalBusiness = $notaFiscalBusiness;
         $this->entityIdBusiness = $entityIdBusiness;
         $this->pessoaBusiness = $pessoaBusiness;
+        $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
     }
 
     /**
@@ -41,7 +47,8 @@ class EmissaoNFeController extends Controller
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
-    public function form(Request $request, NotaFiscal $notaFiscal = null)
+    public
+    function form(Request $request, NotaFiscal $notaFiscal = null)
     {
         if (!$notaFiscal) {
             $notaFiscal = new NotaFiscal();
@@ -117,7 +124,8 @@ class EmissaoNFeController extends Controller
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Exception
      */
-    public function faturar(Request $request, NotaFiscal $notaFiscal = null)
+    public
+    function faturar(Request $request, NotaFiscal $notaFiscal = null)
     {
         if (!$notaFiscal or !$notaFiscal->getId()) {
             $this->addFlash('erro', 'E a Nota Fiscal?');
@@ -136,7 +144,8 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function cancelarForm(Request $request, NotaFiscal $notaFiscal)
+    public
+    function cancelarForm(Request $request, NotaFiscal $notaFiscal)
     {
         if (!$notaFiscal) {
             $this->addFlash('error', 'Nota Fiscal não encontrada!');
@@ -182,7 +191,8 @@ class EmissaoNFeController extends Controller
      *
      * @Route("/fis/emissaonfe/reimprimirCancelamento/{notaFiscal}", name="fis_emissaonfe_reimprimirCancelamento")
      */
-    public function reimprimirCancelamento(Request $request, NotaFiscal $notaFiscal)
+    public
+    function reimprimirCancelamento(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimirCancelamento($notaFiscal);
         return $this->redirectToRoute('fis_emissaonfe_form', array(
@@ -197,7 +207,8 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal)
+    public
+    function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal)
     {
         if (!$notaFiscal) {
             $this->addFlash('error', 'Nota Fiscal não encontrada!');
@@ -246,7 +257,8 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function consultarStatus(Request $request, NotaFiscal $notaFiscal)
+    public
+    function consultarStatus(Request $request, NotaFiscal $notaFiscal)
     {
         $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
         return $this->redirectToRoute('fis_emissaonfe_form', array(
@@ -261,7 +273,8 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function reimprimir(Request $request, NotaFiscal $notaFiscal)
+    public
+    function reimprimir(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimir($notaFiscal);
         $this->addFlash('success', 'Nota Fiscal enviada para reimpressão!');
@@ -277,7 +290,8 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function reimprimirCartaCorrecao(Request $request, NotaFiscal $notaFiscal)
+    public
+    function reimprimirCartaCorrecao(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimirCartaCorrecao($notaFiscal);
         $this->addFlash('success', 'Carta de Correção enviada para reimpressão!');
@@ -300,8 +314,10 @@ class EmissaoNFeController extends Controller
         if (!$item) {
             $item = new NotaFiscalItem();
             $item->setNotaFiscal($notaFiscal);
-            $item->setOrdem(1);
-            $this->entityIdBusiness->handlePersist($item);
+        }
+
+        if (!$item->getOrdem()) {
+            $item->setOrdem(0);
         }
 
         $form = $this->createForm(NotaFiscalItemType::class, $item);
@@ -316,12 +332,11 @@ class EmissaoNFeController extends Controller
 
                 // ... perform some action, such as saving the task to the database
                 // for example, if Task is a Doctrine entity, save it!
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($item);
-                $entityManager->flush();
+                $entityManager = $this->notaFiscalItemEntityHandler->persist($item);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute('fis_emissaonfe_form', array(
-                    'notaFiscal' => $notaFiscal->getId()
+                    'notaFiscal' => $notaFiscal->getId(),
+                    '_fragment' => 'itens'
                 ));
             } else {
                 $form->getErrors(true, false);
@@ -340,7 +355,8 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscalItem|null $item
      * @return void
      */
-    public function deleteItem(Request $request, NotaFiscalItem $item)
+    public
+    function deleteItem(Request $request, NotaFiscalItem $item)
     {
         $notaFiscalId = $item->getNotaFiscal()->getId();
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
@@ -367,7 +383,8 @@ class EmissaoNFeController extends Controller
      * @param Request $request
      * @return void
      */
-    public function list(Request $request)
+    public
+    function list(Request $request)
     {
         $dados = null;
         $params = $request->query->all();
@@ -383,7 +400,7 @@ class EmissaoNFeController extends Controller
 
             $filterDatas = array(
                 new FilterData('tipoNotaFiscal', 'EQ', $params['filter']['tipoNotaFiscal']),
-                new FilterData(array('p.nome','p.nomeFantasia'), 'LIKE', $params['filter']['pessoaDestinatario_nome'] ?? null),
+                new FilterData(array('p.nome', 'p.nomeFantasia'), 'LIKE', $params['filter']['pessoaDestinatario_nome'] ?? null),
                 new FilterData('dtEmissao', 'BETWEEN_DATE', isset($params['filter']['dtEmissao']) ? $params['filter']['dtEmissao'] : null)
             );
             $dados = $repo->findByFilters($filterDatas);

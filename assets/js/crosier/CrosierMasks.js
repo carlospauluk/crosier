@@ -23,9 +23,10 @@ class CrosierMasks {
                 thousands: '.',
                 decimal: ',',
                 affixesStay: true,
+                allowZero: true,
                 precision: 2
             });
-            $(this).maskMoney('mask');
+            $(this).trigger('mask.maskMoney');
 
         });
     }
@@ -40,6 +41,8 @@ class CrosierMasks {
             precision: 2,
             allowZero: true
         });
+        $(".crsr-dec2").trigger('mask.maskMoney');
+
         $(".crsr-dec3").maskMoney({
             prefix: '',
             thousands: '.',
@@ -48,6 +51,9 @@ class CrosierMasks {
             precision: 3,
             allowZero: true
         });
+        $(".crsr-dec3").trigger('mask.maskMoney');
+
+
         $(".crsr-dec4").maskMoney({
             prefix: '',
             thousands: '.',
@@ -56,6 +62,7 @@ class CrosierMasks {
             precision: 4,
             allowZero: true
         });
+        $(".crsr-dec4").trigger('mask.maskMoney');
 
     }
 

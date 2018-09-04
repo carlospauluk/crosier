@@ -19,18 +19,6 @@ function prepareForm() {
         $(".PESSOA_JURIDICA").parent().parent().css('display', '');
     }
 
-    // Javascript to enable link to tab
-    let url = document.location.toString();
-    if (url.match('#')) {
-        $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
-    }
-
-    // Change hash for page-reload
-    $('.nav-tabs a').on('shown.bs.tab', function (e) {
-        window.location.hash = e.target.hash;
-        window.scrollTo(0, 0);
-    });
-
 
 }
 

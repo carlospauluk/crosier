@@ -41,20 +41,22 @@ class NotaFiscalItemType extends AbstractType
                 'class' => 'crsr-dec2'
             )
         ));
-        $builder->add('icms_valor', NumberType::class, array(
+        $builder->add('icms_valor', MoneyType::class, array(
             'label' => 'ICMS Valor',
+            'currency' => 'BRL',
             'grouping' => 'true',
-            'required' => false,
+            'required' => true,
             'attr' => array(
-                'class' => 'crsr-dec2'
+                'class' => 'crsr-money'
             )
         ));
-        $builder->add('icms_valor_bc', NumberType::class, array(
+        $builder->add('icms_valor_bc', MoneyType::class, array(
             'label' => 'ICMS BC',
+            'currency' => 'BRL',
             'grouping' => 'true',
-            'required' => false,
+            'required' => true,
             'attr' => array(
-                'class' => 'crsr-dec2'
+                'class' => 'crsr-money'
             )
         ));
         $builder->add('ncm', TextType::class, array(
