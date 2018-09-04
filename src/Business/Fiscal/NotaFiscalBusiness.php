@@ -114,6 +114,7 @@ class NotaFiscalBusiness
                     ->getEndereco()
                     ->getCep();
             }
+            $formData['fone1'] = $notaFiscal->getPessoaDestinatario()->getFone1();
         }
 
         // Campos para 'frete'
