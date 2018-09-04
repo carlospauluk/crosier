@@ -157,6 +157,8 @@ class NotaFiscalBusiness
 
         $formData['carta_correcao'] = $notaFiscal->getCartaCorrecao();
 
+        $formData['a03idNfReferenciada'] = $notaFiscal->getA03idNfReferenciada();
+
         return $formData;
     }
 
@@ -230,6 +232,8 @@ class NotaFiscalBusiness
             $transpFornecedor = $this->doctrine->getRepository(Fornecedor::class)->find($formData['transpFornecedor_id']);
             $notaFiscal->setTranspFornecedor($transpFornecedor);
         }
+
+        $notaFiscal->setA03idNfReferenciada($formData['a03idNfReferenciada']);
 
         return $notaFiscal;
     }

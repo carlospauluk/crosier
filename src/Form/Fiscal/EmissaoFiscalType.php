@@ -486,6 +486,12 @@ class EmissaoFiscalType extends AbstractType
                 ),
                 'disabled' => $disabled
             ));
+
+            $builder->add('a03idNfReferenciada', TextType::class, array(
+                'label' => 'Id NF Referenciada',
+                'required' => false,
+                'disabled' => $disabled
+            ));
         });
     }
 
