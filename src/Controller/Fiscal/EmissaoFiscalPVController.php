@@ -1,8 +1,11 @@
 <?php
+
 namespace App\Controller\Fiscal;
 
+use App\Business\CRM\ClienteBusiness;
 use App\Business\Vendas\VendaBusiness;
 use App\Entity\Base\Pessoa;
+use App\Entity\Fiscal\FinalidadeNF;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\NotaFiscalVenda;
 use App\Entity\Vendas\Venda;
@@ -19,11 +22,15 @@ class EmissaoFiscalPVController extends Controller
 
     private $notaFiscalBusiness;
 
-    public function __construct(VendaBusiness $vendaBusiness, NotaFiscalBusiness $notaFiscalBusiness)
+    private $clienteBusiness;
+
+    public function __construct(VendaBusiness $vendaBusiness,
+                                NotaFiscalBusiness $notaFiscalBusiness,
+                                ClienteBusiness $clienteBusiness)
     {
-        Route::class;
         $this->vendaBusiness = $vendaBusiness;
         $this->notaFiscalBusiness = $notaFiscalBusiness;
+        $this->clienteBusiness = $clienteBusiness;
     }
 
     /**
@@ -53,37 +60,40 @@ class EmissaoFiscalPVController extends Controller
      */
     public function form(Request $request, Venda $venda = null)
     {
-        if (! $venda) {
+        if (!$venda) {
             $this->addFlash('error', 'Venda não encontrada!');
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         }
-        
+
         // Verifica se a venda já tem uma NotaFiscal associada
         $notaFiscal = $this->getDoctrine()
             ->getRepository(NotaFiscalVenda::class)
             ->findNotaFiscalByVenda($venda);
-        if (! $notaFiscal) {
+        if (!$notaFiscal) {
             $notaFiscal = new NotaFiscal();
             $notaFiscal->setTipoNotaFiscal('NFCE');
-            $pessoaDestinatario = new    Pessoa();
+            $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['key']);
+            $pessoaDestinatario = new Pessoa();
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
             $pessoaDestinatario->setTipoPessoa('PESSOA_FISICA');
-        } else {
-            // $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
         }
-        
+
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
         $dataPosted = $request->request->get('emissao_fiscal');
         if (is_array($dataPosted)) {
             $data = array_merge($data, $dataPosted);
         }
-        
+
         $form = $this->createForm(EmissaoFiscalType::class, $data);
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
+                $notaFiscal = $this->notaFiscalBusiness->formData2NotaFiscal($data);
+                if ($notaFiscal->getPessoaDestinatario() and !$notaFiscal->getPessoaDestinatario()->getId()) {
+                    $this->clienteBusiness->savePessoaClienteComEndereco($notaFiscal->getPessoaDestinatario());
+                }
                 $notaFiscal = $this->notaFiscalBusiness->saveNotaFiscalVenda($venda, $data);
                 $notaFiscal = $this->notaFiscalBusiness->faturar($notaFiscal);
                 $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
@@ -94,15 +104,15 @@ class EmissaoFiscalPVController extends Controller
                 $form->getErrors(true, true);
             }
         }
-        
+
         // Chamado aqui para setar os 'totalItem'
         $this->vendaBusiness->recalcularTotais($venda);
-        
+
         $permiteFaturamento = $this->notaFiscalBusiness->permiteFaturamento($notaFiscal);
         $permiteReimpressao = $this->notaFiscalBusiness->permiteReimpressao($notaFiscal);
         $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
-        
+
         $response = $this->render('Fiscal/emissaoFiscalPV/form.html.twig', array(
             'form' => $form->createView(),
             'venda' => $venda,
@@ -116,83 +126,6 @@ class EmissaoFiscalPVController extends Controller
     }
 
     /**
-     * Transforma um objeto NotaFiscal em um array com os dados para o EmissaoFiscalType.
-     *
-     * @param NotaFiscal $notaFiscal
-     * @return NULL[]|string[]|\App\Entity\Financeiro\TipoPessoa[]
-     */
-    private function notaFiscal2FormData(NotaFiscal $notaFiscal)
-    {
-        $formData = array();
-        
-        if ($notaFiscal->getPessoaDestinatario()) {
-            $tipoPessoa = $notaFiscal->getPessoaDestinatario()->getTipoPessoa();
-        } else {
-            $tipoPessoa = 'PESSOA_FISICA';
-        }
-        
-        // Passo para o EmissaoFiscalType para que possa decidir se os inputs serão desabilitados.
-        $formData['permiteFaturamento'] = $this->notaFiscalBusiness->permiteFaturamento($notaFiscal);
-        
-        $formData['uuid'] = $notaFiscal->getUuid();
-        $formData['dtEmissao'] = $notaFiscal->getDtEmissao();
-        $formData['dtSaiEnt'] = $notaFiscal->getDtSaiEnt();
-        $formData['numero'] = $notaFiscal->getNumero();
-        $formData['serie'] = $notaFiscal->getSerie();
-        $formData['ambiente'] = $notaFiscal->getAmbiente();
-        $formData['spartacusStatus'] = $notaFiscal->getSpartacusStatus();
-        $formData['spartacusStatusReceita'] = $notaFiscal->getSpartacusStatusReceita();
-        $formData['spartacusMensretornoReceita'] = $notaFiscal->getSpartacusMensretornoReceita();
-        
-        $formData['cancelamento_motivo'] = $notaFiscal->getMotivoCancelamento();
-        
-        $formData['_info_status'] = $notaFiscal->getInfoStatus();
-        
-        $formData['tipo'] = $notaFiscal->getTipoNotaFiscal();
-        $formData['tipoPessoa'] = $tipoPessoa;
-        
-        if ($notaFiscal->getPessoaDestinatario()) {
-            $formData['pessoa_id'] = $notaFiscal->getPessoaDestinatario()->getId();
-            if ($tipoPessoa == 'PESSOA_FISICA') {
-                $formData['cpf'] = $notaFiscal->getPessoaDestinatario()->getDocumento();
-                $formData['nome'] = $notaFiscal->getPessoaDestinatario()->getNome();
-            } else if ($tipoPessoa == 'PESSOA_JURIDICA') {
-                $formData['cnpj'] = $notaFiscal->getPessoaDestinatario()->getDocumento();
-                $formData['razao_social'] = $notaFiscal->getPessoaDestinatario()->getNome();
-                $formData['nome_fantasia'] = $notaFiscal->getPessoaDestinatario()->getNomeFantasia();
-            }
-        }
-        if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
-            
-            if ($notaFiscal->getPessoaDestinatario() and $notaFiscal->getPessoaDestinatario()->getEndereco()) {
-                $formData['logradouro'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getLogradouro();
-                $formData['numero'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getNumero();
-                $formData['complemento'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getComplemento();
-                $formData['bairro'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getBairro();
-                $formData['cidade'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getCidade();
-                $formData['estado'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getEstado();
-                $formData['cep'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getCep();
-            }
-        }
-        
-        return $formData;
-    }
-
-    /**
      *
      * @Route("/fis/emissaofiscalpv/processarPV/{pv}", name="fis_emissaofiscalpv_processarPV", defaults={"pv"=null}, requirements={"pv"="\d+"})
      */
@@ -200,15 +133,15 @@ class EmissaoFiscalPVController extends Controller
     {
         // Processa os arquivos do EKT para gerar a venda
         $this->vendaBusiness->processarTXTsEKTeApagarArquivos();
-        
+
         $venda = $this->getDoctrine()
             ->getRepository(Venda::class)
             ->findByPV($pv);
-        if (! $venda) {
+        if (!$venda) {
             $this->addFlash('error', 'Venda não encontrada!');
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         }
-        
+
         return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
             'id' => $venda->getId()
         ));
@@ -244,17 +177,17 @@ class EmissaoFiscalPVController extends Controller
      */
     public function cancelarForm(Request $request, NotaFiscal $notaFiscal, Venda $venda)
     {
-        if (! $venda) {
+        if (!$venda) {
             $this->addFlash('error', 'Venda não encontrada!');
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         }
-        if (! $notaFiscal) {
+        if (!$notaFiscal) {
             $this->addFlash('error', 'Venda não encontrada!');
             return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
                 'id' => $venda->getId()
             ));
         }
-        
+
         // Se foi passado via post
         $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
         $dataPosted = $request->request->get('emissao_fiscal');
@@ -263,7 +196,7 @@ class EmissaoFiscalPVController extends Controller
         }
         $form = $this->createForm(EmissaoFiscalType::class, $data);
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $notaFiscal->setMotivoCancelamento($data['cancelamento_motivo']);
@@ -275,10 +208,10 @@ class EmissaoFiscalPVController extends Controller
                 $form->getErrors(true, true);
             }
         }
-        
+
         $permiteCancelamento = $this->notaFiscalBusiness->permiteCancelamento($notaFiscal);
         $permiteReimpressaoCancelamento = $this->notaFiscalBusiness->permiteReimpressaoCancelamento($notaFiscal);
-        
+
         $response = $this->render('Fiscal/emissaoFiscalPV/cancelarForm.html.twig', array(
             'form' => $form->createView(),
             'venda' => $venda,

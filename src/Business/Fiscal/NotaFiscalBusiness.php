@@ -4,6 +4,7 @@ namespace App\Business\Fiscal;
 
 use App\Business\Base\EntityIdBusiness;
 use App\Business\Base\PessoaBusiness;
+use App\Entity\Base\Endereco;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\Entity\Estoque\Fornecedor;
@@ -37,7 +38,8 @@ class NotaFiscalBusiness
         $this->pessoaBusiness = $pessoaBusiness;
     }
 
-    public function parseFormData(&$formData) {
+    public function parseFormData(&$formData)
+    {
         $nf = new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL);
         $formData['transpPesoBruto'] = (isset($formData['transpPesoBruto']) and $formData['transpPesoBruto']) ? $nf->parse($formData['transpPesoBruto']) : null;
         $formData['transpPesoLiquido'] = (isset($formData['transpPesoLiquido']) and $formData['transpPesoLiquido']) ? $nf->parse($formData['transpPesoLiquido']) : null;
@@ -179,9 +181,46 @@ class NotaFiscalBusiness
             $notaFiscal = new NotaFiscal();
         }
 
+        $notaFiscal->setTipoNotaFiscal(isset($formData['tipo']) ? $formData['tipo'] : null);
+
         if (isset($formData['pessoa_id']) and $formData['pessoa_id']) {
             $pessoaDestinatario = $this->doctrine->getRepository(Pessoa::class)->find($formData['pessoa_id']);
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
+        } else {
+            if (isset($formData['tipoPessoa']) and (isset($formData['cpf']) or isset($formData['cnpj']))) {
+                $tipoPessoa = $formData['tipoPessoa'];
+                $pessoa = new Pessoa();
+                if ($tipoPessoa == 'PESSOA_FISICA') {
+                    $documento = $formData['cpf'];
+                    $nome = $formData['nome'];
+                    $pessoa->setDocumento($documento);
+                    $pessoa->setNome($nome);
+
+                } else {
+                    $documento = $formData['cnpj'];
+                    $razaoSocial = $formData['razaoSocial'];
+                    $nomeFantasia = $formData['nomeFantasia'];
+
+                    $pessoa->setDocumento($documento);
+                    $pessoa->setNome($razaoSocial);
+                    $pessoa->setNomeFantasia($nomeFantasia);
+                }
+                $notaFiscal->setPessoaDestinatario($pessoa);
+
+                // FIXME: depois que arrumar a zona de pessoa/cliente/fornecedor/funcionário, arrumar aqui...
+                if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
+                    $endereco = new Endereco();
+                    $endereco->setTipoEndereco('OUTROS');
+                    $endereco->setLogradouro($formData['lograouro']);
+                    $endereco->setNumero($formData['numero']);
+                    $endereco->setComplemento($formData['complemento']);
+                    $endereco->setBairro($formData['bairro']);
+                    $endereco->setCidade($formData['cidade']);
+                    $endereco->setEstado($formData['estado']);
+                    $pessoa->setEndereco($endereco);
+                }
+
+            }
         }
 
         $notaFiscal->setUuid(isset($formData['uuid']) ? $formData['uuid'] : null);
@@ -199,8 +238,6 @@ class NotaFiscalBusiness
         $notaFiscal->setNumero(isset($formData['numero_nf']) ? $formData['numero_nf'] : null);
         $notaFiscal->setSerie(isset($formData['serie']) ? $formData['serie'] : null);
         $notaFiscal->setAmbiente(isset($formData['ambiente']) ? $formData['ambiente'] : null);
-
-        $notaFiscal->setTipoNotaFiscal(isset($formData['tipo']) ? $formData['tipo'] : null);
 
         $notaFiscal->setTranspModalidadeFrete(isset($formData['transp_modalidade_frete']) ? $formData['transp_modalidade_frete'] : null);
         $notaFiscal->setIndicadorFormaPagto(isset($formData['indicador_forma_pagto']) ? $formData['indicador_forma_pagto'] : null);
@@ -267,7 +304,6 @@ class NotaFiscalBusiness
             $notaFiscal->setPessoaEmitente($emitente);
 
             $notaFiscal->setNaturezaOperacao('VENDA');
-            $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['codigo']);
 
             $dtEmissao = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
             $dtEmissao->modify('-4 minutes');
@@ -838,7 +874,7 @@ class NotaFiscalBusiness
         }
 
 //        if (!$notaFiscal->getChaveAcesso()) {
-            $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
+        $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
 //        }
 
 

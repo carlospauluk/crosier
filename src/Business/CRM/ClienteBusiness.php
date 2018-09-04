@@ -4,6 +4,7 @@ namespace App\Business\CRM;
 
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
+use App\EntityHandler\CRM\ClienteEntityHandler;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class ClienteBusiness
@@ -11,9 +12,12 @@ class ClienteBusiness
 
     private $doctrine;
 
-    public function __construct(RegistryInterface $doctrine)
+    private $clienteEntityHandler;
+
+    public function __construct(RegistryInterface $doctrine, ClienteEntityHandler $clienteEntityHandler)
     {
         $this->doctrine = $doctrine;
+        $this->clienteEntityHandler = $clienteEntityHandler;
     }
 
     public function parseFormData(&$formData)
@@ -153,4 +157,30 @@ class ClienteBusiness
 
         return $cliente;
     }
+
+
+    /**
+     * @param Pessoa $pessoa
+     */
+    public function savePessoaClienteComEndereco(Pessoa $pessoa)
+    {
+        $cliente = new Cliente();
+        if ($pessoa->getEndereco() and $pessoa->getEndereco()->getLogradouro()) {
+            $endereco = new Endereco();
+            $endereco->setLogradouro($pessoa->getEndereco()->getLogradouro());
+            $endereco->setNumero($pessoa->getEndereco()->getNumero());
+            $endereco->setBairro($pessoa->getEndereco()->getBairro());
+            $endereco->setCep($pessoa->getEndereco()->getCep());
+            $endereco->setComplemento($pessoa->getEndereco()->getComplemento());
+            $endereco->setCidade($pessoa->getEndereco()->getCidade());
+            $endereco->setEstado($pessoa->getEndereco()->getEstado());
+            $endereco->setTipoEndereco('OUTROS');
+            $cliente->addEndereco($endereco);
+        }
+        $cliente->setPessoa($pessoa);
+        $cliente->setFone1($pessoa->getFone1());
+        $cliente->setEmail($pessoa->getEmail());
+        return $this->clienteEntityHandler->persist($cliente);
+    }
+
 }
