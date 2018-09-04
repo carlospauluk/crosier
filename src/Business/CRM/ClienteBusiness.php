@@ -143,7 +143,7 @@ class ClienteBusiness
             // Campos para PESSOA_JURIDICA
 
             $cliente->getPessoa()->setDocumento($formData['cnpj']);
-            $cliente->getPessoa()->setNome($formData['nome']);
+            $cliente->getPessoa()->setNome($formData['razaoSocial']);
             $cliente->getPessoa()->setNomeFantasia($formData['nomeFantasia']);
             $cliente->setInscricaoEstadual($formData['inscricaoEstadual']);
             $cliente->setInscricaoMunicipal($formData['inscricaoMunicipal']);
