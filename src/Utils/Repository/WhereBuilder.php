@@ -144,8 +144,9 @@ class WhereBuilder
                 // Verifica se foi passado somente o nome do campo, sem o prefixo do alias da tabela
                 if (strpos($field, '.') === FALSE) {
                     $field = 'e.' . $field;
-                    $fieldP = $fieldP === null ? str_replace('.', '_', $field) : $fieldP;
                 }
+
+                $fieldP = $fieldP === null ? str_replace('.', '_', $field) : $fieldP;
 
 
                 switch ($filter->compar) {

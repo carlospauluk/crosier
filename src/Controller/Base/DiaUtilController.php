@@ -56,5 +56,55 @@ class DiaUtilController extends Controller
 //         $json = $serializer->serialize($results, 'json');
         
     }
+
+
+
+//public function incPeriodo($proFuturo, $ini, $fim) {
+//
+//
+//    $dtIni = \DateTime::createFromFormat('Y-m-d',$ini);
+//    $dtFim = \DateTime::createFromFormat('Y-m-d',$fim);
+//
+//    $dif = $dtFim->diff($dtIni)->days;
+//
+//
+//
+//    // Se na tela foi informado um período relatorial...
+//if (CalendarUtil.isPeriodoRelatorial(dtIni, dtFim)) {
+//Date r[] = CalendarUtil.iteratePeriodoRelatorial(dtIni, dtFim, proFuturo);
+//getFiltros().put("dtIni", r[0]);
+//getFiltros().put("dtFim", r[1]);
+//
+//} else {
+//
+//    if (qtdeDias == 0) {
+//        if (proFuturo) {
+//            dtIni = getMovimentacaoBusiness().getDiaUtilFinder()
+//                .findProximoDiaUtilComercial(CalendarUtil.incDias(dtIni, 1));
+//        } else {
+//            dtIni = getMovimentacaoBusiness().getDiaUtilFinder().findAnteriorDiaUtilComercial(dtIni);
+//        }
+//        dtFim = dtIni;
+//    } else {
+//        if (!proFuturo) {
+//            dtIni = CalendarUtil.incDias(dtIni, -qtdeDias.intValue());
+//            dtFim = CalendarUtil.incDias(dtFim, -qtdeDias.intValue());
+//        } else {
+//            dtIni = CalendarUtil.incDias(dtIni, qtdeDias.intValue());
+//            dtFim = CalendarUtil.incDias(dtFim, qtdeDias.intValue());
+//        }
+//
+//    }
+//    getFiltros().put("dtIni", dtIni);
+//    getFiltros().put("dtFim", dtFim);
+//
+//}
+//
+//pesquisar();
+//} catch (ViewException e) {
+//    logger.error(e);
+//    JSFUtils.addHandledException(e);
+//}
+//	}
     
 }

@@ -35,7 +35,10 @@ class MovimentacaoExtratoController extends MovimentacaoController
         $params = $request->query->all();
         if (!array_key_exists('filter', $params)) {
             // inicializa para evitar o erro
-            $params['filter'] = null;
+            $params['filter'] = array();
+            $params['filter']['dtUtil']['i'] = date('Y-m-d');
+            $params['filter']['dtUtil']['f'] = date('Y-m-d');
+            $params['filter']['carteira'] = $this->getDoctrine()->getRepository(Carteira::class)->find(1);
         }
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono o 'filter' aqui e foi-se.
         $parameters['filter'] = $params['filter'];
