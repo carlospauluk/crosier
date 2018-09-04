@@ -126,7 +126,7 @@ class EntityId
         $uppercaseFields = json_decode($uppercaseFieldsJson);
         $class = str_replace('\\', '_', get_class($this));
         $reflectionClass = new ReflectionClass(get_class($this));
-        $campos = $uppercaseFields->$class;
+        $campos = isset($uppercaseFields->$class) ? $uppercaseFields->$class : array()  ;
         foreach ($campos as $field) {
             $property = $reflectionClass->getProperty($field);
             $property->setAccessible(true);

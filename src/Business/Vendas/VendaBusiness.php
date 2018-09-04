@@ -157,9 +157,10 @@ class VendaBusiness
                     $vendaItem->setNcGradeTamanho($tamanho);
 
                     if ($reduzido == '88888') {
-                        $vendaItem->setGradeTamanho(null);
+                        $vendaItem->setGradeTamanho($gradeTamanhoUN);
 
                         $vendaItem->setNcm("62179000"); // Vestuário e seus acessórios, exceto de malha
+                        $vendaItem->setAlteracaoPreco(false);
                     } else {
 
                         $produto = $this->doctrine->getRepository(Produto::class)->findByReduzidoEktAndDtVenda($reduzido, $dtVenda);
