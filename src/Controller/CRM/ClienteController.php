@@ -132,19 +132,24 @@ class ClienteController extends FormListController
             }
         }
 
-        $endereco = new Endereco();
-        $formEndereco = $this->createForm(EnderecoType::class, $endereco,
-            array('action' => $this->generateUrl('crm_cliente_enderecoForm', array('endereco' => $endereco->getId(), 'ref' => $cliente->getId()))));
+        $formEnderecoView = null;
+        if ($cliente->getId()) {
+            $endereco = new Endereco();
+            $formEndereco = $this->createForm(EnderecoType::class, $endereco,
+                array('action' => $this->generateUrl('crm_cliente_enderecoForm', array('endereco' => $endereco->getId(), 'ref' => $cliente->getId()))));
+            $formEnderecoView = $formEndereco->createView();
+        }
+
         return $this->render($this->getFormView(), array(
             'ref' => $cliente,
             'form' => $form->createView(),
-            'formEndereco' => $formEndereco->createView()
+            'formEndereco' => $formEnderecoView
         ));
     }
 
     /**
      *
-     * @Route("/crm/cliente/enderecoForm/{ref}/{endereco}", name="crm_cliente_enderecoForm", defaults={"endereco"=null},)
+     * @Route("/crm/cliente/enderecoForm/{ref}/{endereco}", name="crm_cliente_enderecoForm", defaults={"endereco"=null})
      * @param Request $request
      * @param Cliente $ref
      * @param Endereco|null $endereco

@@ -71,8 +71,8 @@
 
 
                     {{ form_row(form.cnpj) }}
-                    {{ form_row(form.razao_social) }}
-                    {{ form_row(form.nome_fantasia) }}
+                    {{ form_row(form.razaoSocial) }}
+                    {{ form_row(form.nomeFantasia) }}
 
                     {{ form_row(form.inscricaoEstadual) }}
                     {{ form_row(form.inscricaoMunicipal) }}
@@ -120,9 +120,11 @@
 
                 <div class="tab-pane fade" id="enderecos" role="tabpanel" aria-labelledby="enderecos-tab">
 
+                    {% if ref.id %}
                     {% set route_form = 'crm_cliente_enderecoForm' %}
                     {% set route_delete = 'crm_cliente_enderecoDelete' %}
                     {{ include('Base/enderecoList.html.twig') }}
+                    {% endif %}
 
                 </div>
 

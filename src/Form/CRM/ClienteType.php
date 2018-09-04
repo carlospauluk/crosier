@@ -239,7 +239,7 @@ class ClienteType extends AbstractType
 
         ));
 
-        $builder->add('razao_social', TextType::class, array(
+        $builder->add('razaoSocial', TextType::class, array(
             'label' => 'Razão Social',
             'attr' => array(
                 'class' => 'PESSOA_JURIDICA'
@@ -247,7 +247,7 @@ class ClienteType extends AbstractType
             'required' => false
         ));
 
-        $builder->add('nome_fantasia', TextType::class, array(
+        $builder->add('nomeFantasia', TextType::class, array(
             'label' => 'Nome Fantasia',
             'attr' => array(
                 'class' => 'PESSOA_JURIDICA'

@@ -76,8 +76,8 @@ class ClienteBusiness
             // Campos para PESSOA_JURIDICA
 
             $formData['cnpj'] = $cliente->getPessoa()->getDocumento();
-            $formData['razao_social'] = $cliente->getPessoa()->getNome();
-            $formData['nome_fantasia'] = $cliente->getPessoa()->getNomeFantasia();
+            $formData['razaoSocial'] = $cliente->getPessoa()->getNome();
+            $formData['nomeFantasia'] = $cliente->getPessoa()->getNomeFantasia();
             $formData['inscricaoEstadual'] = $cliente->getInscricaoEstadual();
             $formData['inscricaoMunicipal'] = $cliente->getInscricaoMunicipal();
             $formData['contato'] = $cliente->getContato();
