@@ -5,6 +5,7 @@ namespace App\Business\Fiscal;
 use App\Business\Base\EntityIdBusiness;
 use App\Business\Base\PessoaBusiness;
 use App\Entity\Base\Municipio;
+use App\Entity\Fiscal\FinalidadeNF;
 use App\Entity\Fiscal\ModalidadeFrete;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\TipoNotaFiscal;
@@ -64,6 +65,11 @@ class UnimakeBusiness
         $nfe->infNFe->ide->natOp = $notaFiscal->getNaturezaOperacao();
 
         $nfe->infNFe->ide->dhEmi = $notaFiscal->getDtEmissao()->format('Y-m-d\TH:i:s\-03:00');
+
+        $nfe->infNFe->ide->tpNF = $notaFiscal->getEntrada() ? '0' : '1';
+
+        $finNFe = FinalidadeNF::get($notaFiscal->getFinalidadeNf())['codigo'];
+        $nfe->infNFe->ide->finNFe = $finNFe;
 
         if ($notaFiscal->getTipoNotaFiscal() == 55) {
             $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:s\-03:00');
@@ -130,11 +136,6 @@ class UnimakeBusiness
                 $nfe->infNFe->dest->enderDest->xPais = 'BRASIL';
                 $nfe->infNFe->dest->enderDest->fone = preg_replace("/[^0-9]/", "", $notaFiscal->getPessoaDestinatario()->getFone1());
             }
-
-
-
-
-
 
 
             // 1=Contribuinte ICMS (informar a IE do destinatário);
@@ -263,11 +264,11 @@ class UnimakeBusiness
                 // FIXME: depois que arrumar a bagunça com 'bon_pessoa', trocar aqui
                 $this->pessoaBusiness->fillTransients($notaFiscal->getTranspFornecedor()->getPessoa());
 
-                $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEnderecoCompleto(),0,60);
+                $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEnderecoCompleto(), 0, 60);
                 $nfe->infNFe->transp->transporta->xMun = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getCidade();
                 $nfe->infNFe->transp->transporta->UF = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEstado();
 
-                $nfe->infNFe->transp->vol->qVol = number_format( $notaFiscal->getTranspQtdeVolumes(), 0);
+                $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->getTranspQtdeVolumes(), 0);
                 $nfe->infNFe->transp->vol->esp = $notaFiscal->getTranspEspecieVolumes();
                 if ($notaFiscal->getTranspMarcaVolumes()) {
                     $nfe->infNFe->transp->vol->marca = $notaFiscal->getTranspMarcaVolumes();
@@ -276,19 +277,25 @@ class UnimakeBusiness
                     $nfe->infNFe->transp->vol->nVol = $notaFiscal->getTranspNumeracaoVolumes();
                 }
 
-                $nfe->infNFe->transp->vol->pesoL = number_format( $notaFiscal->getTranspPesoLiquido(), 3, '.', '');
-                $nfe->infNFe->transp->vol->pesoB = number_format( $notaFiscal->getTranspPesoBruto(), 3, '.', '');
+                $nfe->infNFe->transp->vol->pesoL = number_format($notaFiscal->getTranspPesoLiquido(), 3, '.', '');
+                $nfe->infNFe->transp->vol->pesoB = number_format($notaFiscal->getTranspPesoBruto(), 3, '.', '');
 
             }
         }
 
-        $nfe->infNFe->pag->detPag->tPag = '01';
-        $nfe->infNFe->pag->detPag->vPag = number_format($notaFiscal->getValorTotal(), 2, '.', '');
+        if ($finNFe == 3 or $finNFe == 4) {
+            $nfe->infNFe->pag->detPag->tPag = '90';
+            $nfe->infNFe->pag->detPag->vPag = '0.00';
+        } else {
+            $nfe->infNFe->pag->detPag->tPag = '01';
+            $nfe->infNFe->pag->detPag->vPag = number_format($notaFiscal->getValorTotal(), 2, '.', '');
+        }
+
 
 
         if ($notaFiscal->getInfoCompl()) {
-            $infoCompl = preg_replace( "/\r/", "",$notaFiscal->getInfoCompl());
-            $infoCompl = preg_replace( "/\n/", ";",$infoCompl);
+            $infoCompl = preg_replace("/\r/", "", $notaFiscal->getInfoCompl());
+            $infoCompl = preg_replace("/\n/", ";", $infoCompl);
             $nfe->infNFe->infAdic->infCpl = $infoCompl;
         }
 
@@ -530,7 +537,7 @@ class UnimakeBusiness
         $nSeqEvento = $notaFiscal->getCartaCorrecaoSeq();
 
 //        $nomeArquivo = $chaveNota . "_" . $tpEvento . "_" . str_pad($nSeqEvento,2,'0',STR_PAD_LEFT) . "-procEventoNFe.xml";
-        $nomeArquivo = $chaveNota . "_" . str_pad($nSeqEvento,2,'0',STR_PAD_LEFT) . "-procEventoNFe.xml";
+        $nomeArquivo = $chaveNota . "_" . str_pad($nSeqEvento, 2, '0', STR_PAD_LEFT) . "-procEventoNFe.xml";
 
         $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
 
