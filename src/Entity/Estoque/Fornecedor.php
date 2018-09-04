@@ -105,7 +105,7 @@ class Fornecedor extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Base\Pessoa", fetch="EAGER", cascade={"persist"})
      * @ORM\JoinColumn(name="pessoa_id", nullable=false)
      *
      * @var $pessoa Pessoa
@@ -204,7 +204,7 @@ class Fornecedor extends EntityId
 
     /**
      *
-     * @ManyToMany(targetEntity="App\Entity\Base\Endereco")
+     * @ManyToMany(targetEntity="App\Entity\Base\Endereco", cascade={"persist"})
      * @JoinTable(name="est_fornecedor_enderecos",
      *      joinColumns={@JoinColumn(name="est_fornecedor_id", referencedColumnName="id")},
      *      inverseJoinColumns={@JoinColumn(name="bon_endereco_id", referencedColumnName="id")}

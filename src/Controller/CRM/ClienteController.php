@@ -9,8 +9,8 @@ use App\Controller\FormListController;
 use App\Entity\Base\Endereco;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
-use App\EntityHandler\CRM\ClienteEntityHandler;
 use App\EntityHandler\Base\EnderecoEntityHandler;
+use App\EntityHandler\CRM\ClienteEntityHandler;
 use App\EntityHandler\EntityHandler;
 use App\Form\Base\EnderecoType;
 use App\Form\CRM\ClienteType;
@@ -27,7 +27,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ClienteController extends FormListController
 {
-
 
     private $entityHandler;
 
@@ -154,7 +153,7 @@ class ClienteController extends FormListController
      */
     public function enderecoForm(Request $request, Cliente $ref, Endereco $endereco = null)
     {
-        return $this->enderecoController->doEnderecoForm($this,$request,$ref,$endereco);
+        return $this->enderecoController->doEnderecoForm($this, $request, $ref, $endereco);
     }
 
     /**

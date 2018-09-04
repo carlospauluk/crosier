@@ -2,7 +2,9 @@
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\Fornecedor;
+use App\Repository\FilterRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -11,12 +13,32 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *        
  */
-class FornecedorRepository extends ServiceEntityRepository
+class FornecedorRepository extends FilterRepository
 {
 
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Fornecedor::class);
+    }
+
+    public function handleFrombyFilters(QueryBuilder &$qb)
+    {
+        return $qb->from($this->getEntityClass(), 'e')
+            ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoa = p');
+    }
+
+    public function findProximoCodigo() {
+        $ql = "SELECT c FROM App\Entity\Estoque\Fornecedor c ORDER BY c.codigo DESC";
+        $query = $this->getEntityManager()->createQuery($ql);
+        $query->setMaxResults(1);
+        $results = $query->getResult();
+
+        if (count($results) > 1) {
+            throw new \Exception('Mais de um resultado encontrado');
+        }
+
+        $cliente = $results[0];
+        return $cliente->getCodigo() + 1;
     }
     
     public function findByDocumento($documento)
@@ -51,5 +73,10 @@ class FornecedorRepository extends ServiceEntityRepository
         }
         
         return count($results) == 1 ? $results[0] : null;
+    }
+
+    public function getEntityClass()
+    {
+        return Fornecedor::class;
     }
 }

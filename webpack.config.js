@@ -31,6 +31,9 @@ Encore
 
     .addEntry('fis/emissaoNFe/form', './assets/js/fis/emissaoNFe/form.js')
 
+    .addEntry('est/fornecedorList', './assets/js/est/fornecedorList.js')
+    .addEntry('est/fornecedorForm', './assets/js/est/fornecedorForm.js')
+
     .addEntry('crm/clienteList', './assets/js/crm/clienteList.js')
     .addEntry('crm/clienteForm', './assets/js/crm/clienteForm.js')
 

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\EntityHandler\CRM;
+namespace App\EntityHandler\Estoque;
 
 use App\Entity\CRM\Cliente;
+use App\Entity\Estoque\Fornecedor;
 use App\EntityHandler\EntityHandler;
 
-class ClienteEntityHandler extends EntityHandler
+class FornecedorEntityHandler extends EntityHandler
 {
 
     public function beforePersist($fornecedor)
@@ -19,6 +20,6 @@ class ClienteEntityHandler extends EntityHandler
 
     public function getEntityClass()
     {
-        return Cliente::class;
+        return Fornecedor::class;
     }
 }

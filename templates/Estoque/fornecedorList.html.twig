@@ -1,0 +1,29 @@
+{% extends 'list.html.twig' %}
+
+
+{% set titulo = 'Fornecedores' %}
+{% set route_form = 'est_fornecedor_form' %}
+{% set route_list = 'est_fornecedor_list' %}
+{% set route_list_ajax = 'est_fornecedor_datatablesJsList' %}
+{% set list_id = 'fornecedorList' %}
+
+{% set campos_pesquisar %}
+
+    <div class="form-group">
+        <label for="p_descricao">Nome</label>
+        <input type="text" class="form-control" id="filter[p_nome]"
+               name="filter[p_nome]"
+               value="{{ filter.p_nome|default('') }}">
+    </div>
+    <div class="form-group">
+        <label for="p_descricao">Código</label>
+        <input type="number" size="15" class="form-control"
+               name="filter[codigo]"
+               value="{{ filter.codigo|default('') }}">
+    </div>
+{% endset %}
+
+
+{% block down_scripts %}
+    <script src="{{ asset('build/est/fornecedorList.js') }}"></script>
+{% endblock %}
