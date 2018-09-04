@@ -46,6 +46,7 @@ Encore
     .addEntry('fin/operadoraCartaoList', './assets/js/fin/operadoraCartaoList.js')
     .addEntry('fin/registroConferenciaList', './assets/js/fin/registroConferenciaList.js')
     .addEntry('fin/regraImportacaoLinhaList', './assets/js/fin/regraImportacaoLinhaList.js')
+    .addEntry('fin/movimentacaoList', './assets/js/fin/movimentacaoList.js')
 
 
     /*

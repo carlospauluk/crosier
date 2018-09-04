@@ -28,10 +28,14 @@ abstract class FilterRepository extends ServiceEntityRepository
         $qb->from($this->getEntityClass(), 'e');
     }
 
+    public function findAll($orderBy=null) {
+        return $this->findByFilters(null,$orderBy, $start = 0, $limit = null);
+    }
+
     public function getDefaultOrders()
     {
         return array(
-            ['column' => 'updated', 'dir' => 'desc']
+            ['column' => 'e.updated', 'dir' => 'desc']
         );
     }
 
@@ -58,15 +62,21 @@ abstract class FilterRepository extends ServiceEntityRepository
         if (!$orders) {
             $orders = $this->getDefaultOrders();
         }
-        foreach ($orders as $order) {
-            $qb->addOrderBy($order['column'], $order['dir']);
+        if (is_array($orders)) {
+            foreach ($orders as $order) {
+                $qb->addOrderBy($order['column'], isset($order['dir']) ? $order['dir'] : 'asc');
+            }
+        } else if (is_string($orders)) {
+            $qb->addOrderBy($orders, 'asc');
         }
 
         $dql = $qb->getDql();
         $sql = $qb->getQuery()->getSQL();
         $query = $qb->getQuery();
         $query->setFirstResult($start);
-        $query->setMaxResults($limit);
+        if ($limit) {
+            $query->setMaxResults($limit);
+        }
         return $query->execute();
     }
 }

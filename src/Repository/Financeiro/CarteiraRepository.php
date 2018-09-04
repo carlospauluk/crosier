@@ -19,4 +19,5 @@ class CarteiraRepository extends FilterRepository
         return Carteira::class;
     }
 
+
 }

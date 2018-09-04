@@ -1,57 +1,40 @@
 <?php
+
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Movimentacao;
+use App\Repository\FilterRepository;
 use App\Utils\Repository\WhereBuilder;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Movimentacao.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
-class MovimentacaoRepository extends ServiceEntityRepository
+class MovimentacaoRepository extends FilterRepository
 {
 
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Movimentacao::class);
     }
-    
-    public function findByFilters($filters, $orders = null)
+
+    public function handleFrombyFilters(QueryBuilder &$qb)
     {
-        $em = $this->getEntityManager();
-        $qb = $em->createQueryBuilder();
-        
-        $qb->select('e')->from('App\Entity\Financeiro\Movimentacao', 'e');
-        
-        WhereBuilder::build($qb, $filters);
-        
-        $dql = $qb->getDql();
-        
-        $sql = $qb->getQuery()->getSQL();
-        
-        // example5: retrieve the associated Query object with the processed DQL
-        $qb->setMaxResults(200);
-        $query = $qb->getQuery();
-        
-        return $query->execute();
+        return $qb->from($this->getEntityClass(), 'e')
+            ->leftJoin('App\Entity\Base\Pessoa', 'p', 'WITH', 'e.pessoa = p')
+            ->join('App\Entity\Financeiro\Carteira', 'cart', 'WITH', 'e.carteira = cart')
+            ->join('App\Entity\Financeiro\Categoria', 'categ', 'WITH', 'e.categoria = categ')
+            ->join('App\Entity\Financeiro\CentroCusto', 'cc', 'WITH', 'e.centroCusto = cc')
+            ->join('App\Entity\Financeiro\Modo', 'modo', 'WITH', 'e.modo = modo');
     }
 
-    public function findFirsts($max)
-    {
-        $em = $this->getEntityManager();
-        $qb = $em->createQueryBuilder();
-        
-        $qb->select('e')->from('App\Entity\Financeiro\Movimentacao', 'e');
 
-        $qb->setMaxResults($max);
-        
-        // example5: retrieve the associated Query object with the processed DQL
-        $query = $qb->getQuery();
-        
-        return $query->execute();
+    public function getEntityClass()
+    {
+        return Movimentacao::class;
     }
 }

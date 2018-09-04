@@ -32,13 +32,20 @@ class WhereBuilder
      */
     public static function build(QueryBuilder &$qb, $filters)
     {
+        if (!$filters) {
+            return;
+        }
         $andX = $qb->expr()->andX();
 
         $filtrando = false;
 
         foreach ($filters as $filter) {
 
-            if (!WhereBuilder::checkHasVal($filter)) continue;
+            WhereBuilder::parseVal($filter);
+
+            if (!WhereBuilder::checkHasVal($filter)) {
+                continue;
+            }
             $filtrando = true;
 
             $field_array = is_array($filter->field) ? $filter->field : array(
@@ -123,8 +130,9 @@ class WhereBuilder
 
         foreach ($filters as $filter) {
 
-            WhereBuilder::parseVal($filter);
-            if (!WhereBuilder::checkHasVal($filter)) continue;
+            if (!WhereBuilder::checkHasVal($filter)) {
+                continue;
+            }
 
             $field_array = is_array($filter->field) ? $filter->field : array(
                 $filter->field
@@ -136,9 +144,9 @@ class WhereBuilder
                 // Verifica se foi passado somente o nome do campo, sem o prefixo do alias da tabela
                 if (strpos($field, '.') === FALSE) {
                     $field = 'e.' . $field;
+                    $fieldP = $fieldP === null ? str_replace('.', '_', $field) : $fieldP;
                 }
 
-                $fieldP = $fieldP === null ? str_replace('.', '_', $field) : $fieldP;
 
                 switch ($filter->compar) {
                     case 'BETWEEN':

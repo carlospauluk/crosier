@@ -1,0 +1,110 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-2">
+                    <h3>Extrato</h3>
+                </div>
+                <div class="col-10 text-right">
+
+                    <form action="{{ url('fin_movimentacao_extrato') }}" method="get" id="formPesquisar">
+                        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                <ul class="navbar-nav mr-auto">
+                                    <li class="nav-item active">
+                                        <select id="filter[carteira]" name="filter[carteira]" class="form-control">
+                                            {{ carteira.options|raw }}
+                                        </select>
+                                    </li>
+                                </ul>
+
+                                <input type="date" size="15" class="form-control" name="filter[dtUtil][i]"
+                                       style="width: 150px; float: left"
+                                       value="{{ filter.dtUtil.i|default('') }}">
+                                <input type="date" size="15" class="form-control" name="filter[dtUtil][f]"
+                                       style="width: 150px; float: left"
+                                       value="{{ filter.dtUtil.f|default('') }}">
+                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Pesquisar</button>
+
+                            </div>
+                        </nav>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive-sm">
+                <table class="table table-striped table-hover crsr-datatable">
+
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Id</th>
+                        <th scope="col">Categoria<br/>Modo</th>
+                        <th scope="col">Descrição</th>
+                        <th scope="col">Dt Vencto</th>
+                        <th scope="col">Dt Pagto</th>
+                        <th scope="col">Valor Total</th>
+                        <th scope="col">Alterado em</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for dia in dias %}
+                        {% for item in dia.movs %}
+                            <tr style="color: {{ item.categoria.codigo[0:1] == '1' ? 'blue' : 'red' }}">
+                                <th scope="row">{{ loop.index }}</th>
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.categoria.codigo|default('') }}
+                                    - {{ item.categoria.descricao|default('') }}</td>
+                                <td>{{ item.descricao|default('') }}</td>
+                                <td>{{ item.dtVencto|date('d/m/Y') }}</td>
+                                <td>{{ item.dtPagto|date('d/m/Y') }}</td>
+                                <td class="text-right">{{ item.valorTotal|number_format(2,',','.') }}</td>
+                                <td>{{ item.updated|date('d/m/Y H:i:s') }}</td>
+                                <td class="text-right">
+                                    <button type="button" class="btn btn-primary"
+                                            onclick="window.location.href='{{ url('fin_movimentacao_form', {id: item.id}) }}'">
+                                        <i class="fas fa-wrench" aria-hidden="true"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <th scope="row" colspan="7" class="text-right">
+                                Saldo em {{ dia.dtUtil|date('d/m/Y') }}: R$ 1.234,56<br/>
+                                Saldo (+ cheques) em {{ dia.dtUtil|date('d/m/Y') }}: R$ 1.234,56
+                            </th>
+                            <td/>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-primary"
+                                        onclick="window.location.href='{{ url('fin_movimentacao_form') }}'">
+                                    <i class="fas fa-sigma" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+

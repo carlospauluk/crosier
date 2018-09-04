@@ -36,7 +36,7 @@ abstract class FormListController extends Controller
      * @param EntityId|null $entityId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function doForm(Request $request, EntityId $entityId = null)
+    public function doForm(Request $request, EntityId $entityId = null, $parameters = array())
     {
         if (!$entityId) {
             $entityName = $this->getEntityHandler()->getEntityClass();
@@ -58,9 +58,10 @@ abstract class FormListController extends Controller
             }
         }
 
-        return $this->render($this->getFormView(), array(
-            'form' => $form->createView()
-        ));
+        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
+        $parameters['form'] = $form->createView();
+
+        return $this->render($this->getFormView(), $parameters);
     }
 
     abstract public function getFilterDatas($params);
@@ -73,16 +74,17 @@ abstract class FormListController extends Controller
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function doList(Request $request)
+    public function doList(Request $request, $parameters = array())
     {
         $params = $request->query->all();
         if (!array_key_exists('filter', $params)) {
             // inicializa para evitar o erro
             $params['filter'] = null;
         }
-        return $this->render($this->getListView(), array(
-            'filter' => $params['filter']
-        ));
+        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono o 'filter' aqui e foi-se.
+        $parameters['filter'] =  $params['filter'];
+
+        return $this->render($this->getListView(), $parameters);
     }
 
     /**
