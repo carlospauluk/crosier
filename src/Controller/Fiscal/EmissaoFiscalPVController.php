@@ -59,6 +59,8 @@ class EmissaoFiscalPVController extends Controller
         if (!$venda) {
             $this->addFlash('error', 'Venda não encontrada!');
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
+        } else {
+            $venda = $this->vendaBusiness->recalcularTotais($venda);
         }
 
         // Verifica se a venda já tem uma NotaFiscal associada
@@ -72,6 +74,12 @@ class EmissaoFiscalPVController extends Controller
             $pessoaDestinatario = new Pessoa();
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
             $pessoaDestinatario->setTipoPessoa('PESSOA_FISICA');
+        } else {
+            if (!$notaFiscal->getPessoaDestinatario()) {
+                $pessoaDestinatario = new Pessoa();
+                $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
+                $pessoaDestinatario->setTipoPessoa('PESSOA_FISICA');
+            }
         }
 
         // Se foi passado via post
@@ -97,9 +105,6 @@ class EmissaoFiscalPVController extends Controller
                 $form->getErrors(true, true);
             }
         }
-
-        // Chamado aqui para setar os 'totalItem'
-        $this->vendaBusiness->recalcularTotais($venda);
 
         $permiteFaturamento = $this->notaFiscalBusiness->permiteFaturamento($notaFiscal);
         $permiteReimpressao = $this->notaFiscalBusiness->permiteReimpressao($notaFiscal);

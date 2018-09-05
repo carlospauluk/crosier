@@ -143,7 +143,6 @@ class VendaBusiness
                     $vendaItem = new VendaItem();
                     $venda->addItem($vendaItem);
                     $vendaItem->setVenda($venda);
-                    $vendaItem = $this->vendaItemEntityHandler->persist($vendaItem);
                     $vendaItem->setNcm($ncm);
 
                     $vendaItem->setNcmExistente($this->doctrine->getRepository(NCM::class)

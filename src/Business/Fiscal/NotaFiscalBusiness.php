@@ -8,6 +8,7 @@ use App\Entity\Base\Endereco;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\Entity\Estoque\Fornecedor;
+use App\Entity\Fiscal\FinalidadeNF;
 use App\Entity\Fiscal\IndicadorFormaPagto;
 use App\Entity\Fiscal\NCM;
 use App\Entity\Fiscal\NotaFiscal;
@@ -217,13 +218,13 @@ class NotaFiscalBusiness
                 $pessoa = new Pessoa();
                 $pessoa->setTipoPessoa($tipoPessoa);
                 if ($tipoPessoa == 'PESSOA_FISICA') {
-                    $documento = preg_replace("/[^0-9]/", "",  $formData['cpf']);
+                    $documento = preg_replace("/[^0-9]/", "", $formData['cpf']);
                     $nome = $formData['nome'];
                     $pessoa->setDocumento($documento);
                     $pessoa->setNome($nome);
 
                 } else {
-                    $documento = preg_replace("/[^0-9]/", "",  $formData['cnpj']);
+                    $documento = preg_replace("/[^0-9]/", "", $formData['cnpj']);
                     $razaoSocial = $formData['razaoSocial'];
                     $nomeFantasia = $formData['nomeFantasia'];
                     $inscricaoEstadual = $formData['inscricaoEstadual'];
@@ -280,11 +281,9 @@ class NotaFiscalBusiness
 
         $notaFiscal->setInfoCompl(isset($formData['info_compl']) ? $formData['info_compl'] : null);
 
-        $fmt = new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL);
-
-        $notaFiscal->setSubtotal(isset($formData['subtotal']) ? $fmt->parse($formData['subtotal']) : null);
-        $notaFiscal->setTotalDescontos(isset($formData['total_descontos']) ? $fmt->parse($formData['total_descontos']) : null);
-        $notaFiscal->setValorTotal(isset($formData['valor_total']) ? $fmt->parse($formData['valor_total']) : null);
+        $notaFiscal->setSubtotal(isset($formData['subtotal']) ? floatval($formData['subtotal']) : null);
+        $notaFiscal->setTotalDescontos(isset($formData['totalDescontos']) ? floatval($formData['totalDescontos']) : null);
+        $notaFiscal->setValorTotal(isset($formData['valorTotal']) ? floatval($formData['valorTotal']) : null);
 
         $notaFiscal->setCartaCorrecao(isset($formData['carta_correcao']) ? $formData['carta_correcao'] : null);
 
@@ -322,6 +321,10 @@ class NotaFiscalBusiness
         try {
             $this->doctrine->getManager()->beginTransaction();
 
+            if (!$notaFiscal->getPessoaDestinatario()->getDocumento()) {
+                $notaFiscal->setPessoaDestinatario(null);
+            }
+
             if ($notaFiscal->getPessoaDestinatario() and !$notaFiscal->getPessoaDestinatario()->getId()) {
                 $cliente = $this->clienteBusiness->savePessoaClienteComEndereco($notaFiscal->getPessoaDestinatario());
                 $notaFiscal->setPessoaCadastro('CLIENTE');
@@ -347,6 +350,7 @@ class NotaFiscalBusiness
             $notaFiscal->setDtEmissao($dtEmissao);
             $notaFiscal->setDtSaiEnt($dtEmissao);
 
+            $notaFiscal->setFinalidadeNf(FinalidadeNF::NORMAL['key']);
 
             $this->handleIdeFields($notaFiscal);
 
@@ -386,9 +390,9 @@ class NotaFiscalBusiness
 
                 $nfItem->setOrdem($ordem++);
 
-                $nfItem->setQtde($vendaItem->getQtde());
-                $nfItem->setValorUnit($vendaItem->getPrecoVenda());
-                $nfItem->setValorTotal($vendaItem->getTotalItem());
+                $nfItem->setQtde(floatval($vendaItem->getQtde()));
+                $nfItem->setValorUnit(floatval($vendaItem->getPrecoVenda()));
+                $nfItem->setValorTotal(floatval($vendaItem->getTotalItem()));
 
                 $vDesconto = round(bcmul($vendaItem->getTotalItem(), $fatorDesconto, 4), 2);
                 $nfItem->setValorDesconto($vDesconto);
