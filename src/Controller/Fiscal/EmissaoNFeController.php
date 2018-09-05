@@ -2,7 +2,6 @@
 
 namespace App\Controller\Fiscal;
 
-use App\Business\Base\EntityIdBusiness;
 use App\Business\Base\PessoaBusiness;
 use App\Business\Fiscal\NotaFiscalBusiness;
 use App\Entity\Base\Pessoa;
@@ -22,19 +21,15 @@ class EmissaoNFeController extends Controller
 
     private $notaFiscalBusiness;
 
-    private $entityIdBusiness;
-
     private $pessoaBusiness;
 
     private $notaFiscalItemEntityHandler;
 
     public function __construct(NotaFiscalBusiness $notaFiscalBusiness,
-                                EntityIdBusiness $entityIdBusiness,
                                 PessoaBusiness $pessoaBusiness,
                                 NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler)
     {
         $this->notaFiscalBusiness = $notaFiscalBusiness;
-        $this->entityIdBusiness = $entityIdBusiness;
         $this->pessoaBusiness = $pessoaBusiness;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
     }

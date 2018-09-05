@@ -21,10 +21,9 @@ abstract class EntityHandler
 
     private $entityIdBusiness;
 
-    public function __construct(RegistryInterface $doctrine, EntityIdBusiness $entityIdBusiness)
+    public function __construct(RegistryInterface $doctrine)
     {
         $this->entityManager = $doctrine->getEntityManager();
-        $this->entityIdBusiness = $entityIdBusiness;
     }
 
     public function beforePersist($entityId)
@@ -34,10 +33,10 @@ abstract class EntityHandler
     public function persist(EntityId $entityId)
     {
         $this->beforePersist($entityId);
-        $this->entityIdBusiness->handlePersist($entityId);
         $this->entityManager->persist($entityId);
         $this->entityManager->flush();
         $this->afterPersist($entityId);
+        return $entityId;
     }
     public function afterPersist($entityId)
     {

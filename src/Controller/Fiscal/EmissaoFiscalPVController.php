@@ -22,15 +22,11 @@ class EmissaoFiscalPVController extends Controller
 
     private $notaFiscalBusiness;
 
-    private $clienteBusiness;
-
     public function __construct(VendaBusiness $vendaBusiness,
-                                NotaFiscalBusiness $notaFiscalBusiness,
-                                ClienteBusiness $clienteBusiness)
+                                NotaFiscalBusiness $notaFiscalBusiness)
     {
         $this->vendaBusiness = $vendaBusiness;
         $this->notaFiscalBusiness = $notaFiscalBusiness;
-        $this->clienteBusiness = $clienteBusiness;
     }
 
     /**
@@ -91,10 +87,7 @@ class EmissaoFiscalPVController extends Controller
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $notaFiscal = $this->notaFiscalBusiness->formData2NotaFiscal($data);
-                if ($notaFiscal->getPessoaDestinatario() and !$notaFiscal->getPessoaDestinatario()->getId()) {
-                    $this->clienteBusiness->savePessoaClienteComEndereco($notaFiscal->getPessoaDestinatario());
-                }
-                $notaFiscal = $this->notaFiscalBusiness->saveNotaFiscalVenda($venda, $data);
+                $notaFiscal = $this->notaFiscalBusiness->saveNotaFiscalVenda($venda, $notaFiscal);
                 $notaFiscal = $this->notaFiscalBusiness->faturar($notaFiscal);
                 $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
                 return $this->redirectToRoute('fis_emissaofiscalpv_form', array(

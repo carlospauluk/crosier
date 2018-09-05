@@ -10,7 +10,6 @@
 
 	</div>
 
-	Id: {{ form.nota_fiscal_id.vars.value }}
 
 	<div class="card-body">
 
@@ -31,8 +30,9 @@
 		{{ form_row(form.nome) }}
 
 		{{ form_row(form.cnpj) }}
-		{{ form_row(form.razao_social) }}
-		{{ form_row(form.nome_fantasia) }}
+		{{ form_row(form.razaoSocial) }}
+		{{ form_row(form.nomeFantasia) }}
+        {{ form_row(form.inscricaoEstadual) }}
 
 		{{ form_row(form.fone1) }}
 		{{ form_row(form.email) }}

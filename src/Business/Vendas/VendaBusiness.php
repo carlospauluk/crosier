@@ -2,7 +2,6 @@
 
 namespace App\Business\Vendas;
 
-use App\Business\Base\EntityIdBusiness;
 use App\Entity\Estoque\Grade;
 use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\ProdutoPreco;
@@ -13,6 +12,8 @@ use App\Entity\Vendas\PlanoPagto;
 use App\Entity\Vendas\TipoVenda;
 use App\Entity\Vendas\Venda;
 use App\Entity\Vendas\VendaItem;
+use App\EntityHandler\Vendas\VendaEntityHandler;
+use App\EntityHandler\Vendas\VendaItemEntityHandler;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class VendaBusiness
@@ -20,12 +21,17 @@ class VendaBusiness
 
     private $doctrine;
 
-    private $entityIdBusiness;
+    private $vendaEntityHandler;
 
-    public function __construct(RegistryInterface $doctrine, EntityIdBusiness $entityIdBusiness)
+    private $vendaItemEntityHandler;
+
+    public function __construct(RegistryInterface $doctrine,
+                                VendaEntityHandler $vendaEntityHandler,
+                                VendaItemEntityHandler $vendaItemEntityHandler)
     {
         $this->doctrine = $doctrine;
-        $this->entityIdBusiness = $entityIdBusiness;
+        $this->vendaEntityHandler = $vendaEntityHandler;
+        $this->vendaItemEntityHandler = $vendaItemEntityHandler;
     }
 
     public function checkAcessoPVs()
@@ -137,7 +143,7 @@ class VendaBusiness
                     $vendaItem = new VendaItem();
                     $venda->addItem($vendaItem);
                     $vendaItem->setVenda($venda);
-                    $this->entityIdBusiness->handlePersist($vendaItem);
+                    $vendaItem = $this->vendaItemEntityHandler->persist($vendaItem);
                     $vendaItem->setNcm($ncm);
 
                     $vendaItem->setNcmExistente($this->doctrine->getRepository(NCM::class)
@@ -187,8 +193,7 @@ class VendaBusiness
             $venda->setStatus('PREVENDA');
 
             $entityManager = $this->doctrine->getManager();
-            $this->entityIdBusiness->handlePersist($venda);
-            $entityManager->persist($venda);
+            $this->vendaEntityHandler->persist($venda);
             $entityManager->flush();
 
         }

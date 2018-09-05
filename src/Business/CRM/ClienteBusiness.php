@@ -2,6 +2,7 @@
 
 namespace App\Business\CRM;
 
+use App\Entity\Base\Endereco;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\EntityHandler\CRM\ClienteEntityHandler;
@@ -161,26 +162,40 @@ class ClienteBusiness
 
     /**
      * @param Pessoa $pessoa
+     * @return \App\Entity\Base\EntityId
+     * @throws \Exception
      */
     public function savePessoaClienteComEndereco(Pessoa $pessoa)
     {
-        $cliente = new Cliente();
-        if ($pessoa->getEndereco() and $pessoa->getEndereco()->getLogradouro()) {
-            $endereco = new Endereco();
-            $endereco->setLogradouro($pessoa->getEndereco()->getLogradouro());
-            $endereco->setNumero($pessoa->getEndereco()->getNumero());
-            $endereco->setBairro($pessoa->getEndereco()->getBairro());
-            $endereco->setCep($pessoa->getEndereco()->getCep());
-            $endereco->setComplemento($pessoa->getEndereco()->getComplemento());
-            $endereco->setCidade($pessoa->getEndereco()->getCidade());
-            $endereco->setEstado($pessoa->getEndereco()->getEstado());
-            $endereco->setTipoEndereco('OUTROS');
-            $cliente->addEndereco($endereco);
+        $cliente = null;
+        if (!$pessoa->getId() and $pessoa->getDocumento()) {
+            $pessoa = $this->doctrine->getRepository(Pessoa::class)->findByDocumento($pessoa->getDocumento());
         }
-        $cliente->setPessoa($pessoa);
-        $cliente->setFone1($pessoa->getFone1());
-        $cliente->setEmail($pessoa->getEmail());
-        return $this->clienteEntityHandler->persist($cliente);
+        if ($pessoa) {
+            $cliente = $this->doctrine->getRepository(Cliente::class)->findByPessoa($pessoa);
+        }
+        if (!$cliente) {
+            $cliente = new Cliente();
+            if ($pessoa->getEndereco() and $pessoa->getEndereco()->getLogradouro()) {
+                $endereco = new Endereco();
+                $endereco->setLogradouro($pessoa->getEndereco()->getLogradouro());
+                $endereco->setNumero($pessoa->getEndereco()->getNumero());
+                $endereco->setBairro($pessoa->getEndereco()->getBairro());
+                $endereco->setCep($pessoa->getEndereco()->getCep());
+                $endereco->setComplemento($pessoa->getEndereco()->getComplemento());
+                $endereco->setCidade($pessoa->getEndereco()->getCidade());
+                $endereco->setEstado($pessoa->getEndereco()->getEstado());
+                $endereco->setTipoEndereco('OUTROS');
+                $cliente->addEndereco($endereco);
+            }
+            $cliente->setPessoa($pessoa);
+            $cliente->setFone1($pessoa->getFone1());
+            $cliente->setEmail($pessoa->getEmail());
+            $cliente->setInscricaoEstadual($pessoa->getInscricaoEstadual());
+            return $this->clienteEntityHandler->persist($cliente);
+        } else {
+            return $cliente;
+        }
     }
 
 }

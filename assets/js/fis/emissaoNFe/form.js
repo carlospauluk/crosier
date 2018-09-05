@@ -106,6 +106,9 @@ $(document).ready(function () {
         if (documento === documentoAtual) return;
         documentoAtual = documento;
 
+        $('.DADOSPESSOA').val('').change();
+        $('.DADOSPESSOA').prop('disabled', false);
+
         $.ajax({
             url: Routing.generate('bse_pessoa_findByNome') + '/' + documento.replace(/[^0-9]/g, ""),
             type: 'get',
@@ -116,6 +119,7 @@ $(document).ready(function () {
                 $('input[id=emissao_fiscal_razao_social]').val(data.nome);
                 $('input[id=emissao_fiscal_nome_fantasia]').val(data.nomeFantasia);
                 $('input[id=emissao_fiscal_razao_social]').val(data.razaoSocial);
+                $('input[id=emissao_fiscal_inscricao_estadual]').val(data.inscricaoEstadual);
 
                 $('input[id=emissao_fiscal_fone1]').val(data.fone1);
                 $('input[id=emissao_fiscal_email]').val(data.email);
@@ -132,6 +136,8 @@ $(document).ready(function () {
 
                 if (data.id) {
                     $('.DADOSPESSOA').prop('disabled', true);
+                    // Desabilito todos menos o pessoa_id, senão não passa pelo submit
+                    $('input[id=emissao_fiscal_pessoa_id]').prop('disabled', false);
                 }
             }
         });

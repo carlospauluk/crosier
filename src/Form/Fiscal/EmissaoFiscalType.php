@@ -83,7 +83,10 @@ class EmissaoFiscalType extends AbstractType
 
             $builder->add('pessoa_id', HiddenType::class, array(
                 'required' => false,
-                'disabled' => $disabled
+                'disabled' => $disabled,
+                'attr' => array(
+                    'class' => 'DADOSPESSOA'
+                )
             ));
 
             $builder->add('numero_nf', IntegerType::class, array(
@@ -187,7 +190,7 @@ class EmissaoFiscalType extends AbstractType
 
             ));
             // Adiciona campo RAZAO SOCIAL (bon_pessoa.nome)
-            $builder->add('razao_social', TextType::class, array(
+            $builder->add('razaoSocial', TextType::class, array(
                 'label' => 'Razão Social',
                 'attr' => array(
                     'class' => 'PESSOA_JURIDICA DADOSPESSOA'
@@ -196,13 +199,23 @@ class EmissaoFiscalType extends AbstractType
                 'disabled' => $disabled
             ));
             // Adiciona campo NOME FANTASIA
-            $builder->add('nome_fantasia', TextType::class, array(
+            $builder->add('nomeFantasia', TextType::class, array(
                 'label' => 'Nome Fantasia',
                 'attr' => array(
                     'class' => 'PESSOA_JURIDICA DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled
+            ));
+
+            $builder->add('inscricaoEstadual', TextType::class, array(
+                'label' => 'Inscr Estadual',
+                'attr' => array(
+                    'class' => 'PESSOA_JURIDICA'
+                ),
+                'required' => false,
+                'disabled' => $disabled
+
             ));
 
             $builder->add('fone1', TextType::class, array(

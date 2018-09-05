@@ -2,13 +2,12 @@
 
 namespace App\Business\Fiscal;
 
-use App\Business\Base\EntityIdBusiness;
 use App\Business\Base\PessoaBusiness;
+use App\Business\CRM\ClienteBusiness;
 use App\Entity\Base\Endereco;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\Entity\Estoque\Fornecedor;
-use App\Entity\Fiscal\FinalidadeNF;
 use App\Entity\Fiscal\IndicadorFormaPagto;
 use App\Entity\Fiscal\NCM;
 use App\Entity\Fiscal\NotaFiscal;
@@ -17,8 +16,16 @@ use App\Entity\Fiscal\NotaFiscalItem;
 use App\Entity\Fiscal\NotaFiscalVenda;
 use App\Entity\Fiscal\TipoNotaFiscal;
 use App\Entity\Vendas\Venda;
+use App\EntityHandler\Fiscal\NotaFiscalEntityHandler;
+use App\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler;
+use App\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
+/**
+ * Classe responsável pelos trâmites com a entidade NotaFiscal.
+ *
+ * @package App\Business\Fiscal
+ */
 class NotaFiscalBusiness
 {
 
@@ -26,16 +33,31 @@ class NotaFiscalBusiness
 
     private $unimakeBusiness;
 
-    private $entityIdBusiness;
+    private $notaFiscalEntityHandler;
+
+    private $notaFiscalVendaEntityHandler;
+
+    private $notaFiscalHistoricoEntityHandler;
 
     private $pessoaBusiness;
 
-    public function __construct(RegistryInterface $doctrine, UnimakeBusiness $unimakeBusiness, EntityIdBusiness $entityIdBusiness, PessoaBusiness $pessoaBusiness)
+    private $clienteBusiness;
+
+    public function __construct(RegistryInterface $doctrine,
+                                UnimakeBusiness $unimakeBusiness,
+                                NotaFiscalEntityHandler $notaFiscalEntityHandler,
+                                NotaFiscalVendaEntityHandler $notaFiscalVendaEntityHandler,
+                                NotaFiscalHistoricoEntityHandler $notaFiscalHistoricoEntityHandler,
+                                PessoaBusiness $pessoaBusiness,
+                                ClienteBusiness $clienteBusiness)
     {
         $this->doctrine = $doctrine;
         $this->unimakeBusiness = $unimakeBusiness;
-        $this->entityIdBusiness = $entityIdBusiness;
+        $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
+        $this->notaFiscalVendaEntityHandler = $notaFiscalVendaEntityHandler;
+        $this->notaFiscalHistoricoEntityHandler = $notaFiscalHistoricoEntityHandler;
         $this->pessoaBusiness = $pessoaBusiness;
+        $this->clienteBusiness = $clienteBusiness;
     }
 
     public function parseFormData(&$formData)
@@ -87,8 +109,9 @@ class NotaFiscalBusiness
                 $formData['nome'] = $notaFiscal->getPessoaDestinatario()->getNome();
             } else if ($tipoPessoa == 'PESSOA_JURIDICA') {
                 $formData['cnpj'] = $notaFiscal->getPessoaDestinatario()->getDocumento();
-                $formData['razao_social'] = $notaFiscal->getPessoaDestinatario()->getNome();
-                $formData['nome_fantasia'] = $notaFiscal->getPessoaDestinatario()->getNomeFantasia();
+                $formData['razaoSocial'] = $notaFiscal->getPessoaDestinatario()->getNome();
+                $formData['nomeFantasia'] = $notaFiscal->getPessoaDestinatario()->getNomeFantasia();
+                $formData['inscricaoEstadual'] = $notaFiscal->getPessoaDestinatario()->getInscricaoEstadual();
             }
         }
         if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
@@ -183,42 +206,52 @@ class NotaFiscalBusiness
 
         $notaFiscal->setTipoNotaFiscal(isset($formData['tipo']) ? $formData['tipo'] : null);
 
+        // Se veio o pessoa_id, é porque achou na busca por CPF/CNPJ
         if (isset($formData['pessoa_id']) and $formData['pessoa_id']) {
             $pessoaDestinatario = $this->doctrine->getRepository(Pessoa::class)->find($formData['pessoa_id']);
             $notaFiscal->setPessoaDestinatario($pessoaDestinatario);
         } else {
+            // tipoPessoa sempre deverá estar setado, mas verifica se passou o cpf ou cnpj (não é NFCe anônima)
             if (isset($formData['tipoPessoa']) and (isset($formData['cpf']) or isset($formData['cnpj']))) {
                 $tipoPessoa = $formData['tipoPessoa'];
                 $pessoa = new Pessoa();
+                $pessoa->setTipoPessoa($tipoPessoa);
                 if ($tipoPessoa == 'PESSOA_FISICA') {
-                    $documento = $formData['cpf'];
+                    $documento = preg_replace("/[^0-9]/", "",  $formData['cpf']);
                     $nome = $formData['nome'];
                     $pessoa->setDocumento($documento);
                     $pessoa->setNome($nome);
 
                 } else {
-                    $documento = $formData['cnpj'];
+                    $documento = preg_replace("/[^0-9]/", "",  $formData['cnpj']);
                     $razaoSocial = $formData['razaoSocial'];
                     $nomeFantasia = $formData['nomeFantasia'];
+                    $inscricaoEstadual = $formData['inscricaoEstadual'];
 
                     $pessoa->setDocumento($documento);
                     $pessoa->setNome($razaoSocial);
                     $pessoa->setNomeFantasia($nomeFantasia);
+                    $pessoa->setInscricaoEstadual($inscricaoEstadual);
                 }
                 $notaFiscal->setPessoaDestinatario($pessoa);
 
-                // FIXME: depois que arrumar a zona de pessoa/cliente/fornecedor/funcionário, arrumar aqui...
+                // FIXME: depois que resolver a zona de pessoa/cliente/fornecedor/funcionário, arrumar aqui...
                 if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
                     $endereco = new Endereco();
                     $endereco->setTipoEndereco('OUTROS');
-                    $endereco->setLogradouro($formData['lograouro']);
+                    $endereco->setLogradouro($formData['logradouro']);
                     $endereco->setNumero($formData['numero']);
                     $endereco->setComplemento($formData['complemento']);
                     $endereco->setBairro($formData['bairro']);
+                    $endereco->setCep($formData['cep']);
                     $endereco->setCidade($formData['cidade']);
                     $endereco->setEstado($formData['estado']);
                     $pessoa->setEndereco($endereco);
+
+                    $pessoa->setFone1($formData['fone1']);
+                    $pessoa->setEmail($formData['email']);
                 }
+
 
             }
         }
@@ -284,10 +317,16 @@ class NotaFiscalBusiness
      * @throws \Exception
      * @return NULL|\App\Entity\Fiscal\NotaFiscal
      */
-    public function saveNotaFiscalVenda(Venda $venda, $dataNotaFiscal)
+    public function saveNotaFiscalVenda(Venda $venda, NotaFiscal $notaFiscal)
     {
         try {
             $this->doctrine->getManager()->beginTransaction();
+
+            if ($notaFiscal->getPessoaDestinatario() and !$notaFiscal->getPessoaDestinatario()->getId()) {
+                $cliente = $this->clienteBusiness->savePessoaClienteComEndereco($notaFiscal->getPessoaDestinatario());
+                $notaFiscal->setPessoaCadastro('CLIENTE');
+                $notaFiscal->setPessoaDestinatario($cliente->getPessoa());
+            }
 
             $notaFiscal = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
             $novaNota = false;
@@ -295,8 +334,6 @@ class NotaFiscalBusiness
                 $notaFiscal = new NotaFiscal();
                 $novaNota = true;
             }
-
-            $notaFiscal->setTipoNotaFiscal($dataNotaFiscal['tipo']);
 
             $notaFiscal->setEntrada(false);
 
@@ -320,11 +357,6 @@ class NotaFiscalBusiness
 
             $notaFiscal->setIndicadorFormaPagto($venda->getPlanoPagto()
                 ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
-
-            if (isset($dataNotaFiscal['pessoa_id']) and $dataNotaFiscal['pessoa_id']) {
-                $pessoa = $this->doctrine->getRepository(Pessoa::class)->find($dataNotaFiscal['pessoa_id']);
-                $notaFiscal->setPessoaDestinatario($pessoa);
-            }
 
             $notaFiscal->getItens()->clear();
             $this->doctrine->getManager()->flush();
@@ -383,8 +415,6 @@ class NotaFiscalBusiness
                     $nfItem->setDescricao($vendaItem->getNcDescricao() . " (" . $vendaItem->getNcGradeTamanho() . ")");
                 }
 
-                $this->entityIdBusiness->handlePersist($nfItem);
-
                 $notaFiscal->addItem($nfItem);
             }
 
@@ -404,16 +434,14 @@ class NotaFiscalBusiness
             }
 
 
-            $this->entityIdBusiness->handlePersist($notaFiscal);
-            $this->doctrine->getManager()->persist($notaFiscal);
+            $notaFiscal = $this->notaFiscalEntityHandler->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
                 $notaFiscalVenda->setNotaFiscal($notaFiscal);
                 $notaFiscalVenda->setVenda($venda);
-                $this->entityIdBusiness->handlePersist($notaFiscalVenda);
-                $this->doctrine->getManager()->persist($notaFiscalVenda);
+                $this->notaFiscalVendaEntityHandler->persist($notaFiscalVenda);
             }
 
             $this->doctrine->getManager()->commit();
@@ -463,8 +491,7 @@ class NotaFiscalBusiness
 
             $this->calcularTotais($notaFiscal);
 
-            $this->entityIdBusiness->handlePersist($notaFiscal);
-            $this->doctrine->getManager()->persist($notaFiscal);
+            $this->notaFiscalEntityHandler->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
 
             $this->doctrine->getManager()->commit();
@@ -786,8 +813,7 @@ class NotaFiscalBusiness
         if (!$notaFiscal->getChaveAcesso()) {
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
 
-            $this->entityIdBusiness->handlePersist($notaFiscal);
-            $this->doctrine->getManager()->persist($notaFiscal);
+            $notaFiscal = $this->notaFiscalEntityHandler->persist($notaFiscal);
             $this->doctrine->getManager()->flush();
         }
         return $notaFiscal;
@@ -827,8 +853,7 @@ class NotaFiscalBusiness
         $historico->setDescricao($descricao ? $descricao : " ");
         $historico->setObs($obs);
         $historico->setNotaFiscal($notaFiscal);
-        $this->entityIdBusiness->handlePersist($historico);
-        $this->doctrine->getManager()->persist($historico);
+        $this->notaFiscalHistoricoEntityHandler->persist($historico);
         $this->doctrine->getManager()->flush();
     }
 
