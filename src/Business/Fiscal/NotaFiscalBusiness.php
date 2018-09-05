@@ -331,10 +331,11 @@ class NotaFiscalBusiness
                 $notaFiscal->setPessoaDestinatario($cliente->getPessoa());
             }
 
-            $notaFiscal = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
-            $novaNota = false;
-            if (!$notaFiscal) {
-                $notaFiscal = new NotaFiscal();
+            $jaExiste = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
+            if ($jaExiste) {
+                $notaFiscal = $jaExiste;
+                $novaNota = false;
+            } else {
                 $novaNota = true;
             }
 
