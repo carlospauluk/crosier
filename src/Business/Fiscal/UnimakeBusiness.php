@@ -99,7 +99,7 @@ class UnimakeBusiness
 
             $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
 
-            if ($notaFiscal->getPessoaDestinatario()->getEndereco()) {
+            if ($notaFiscal->getTipoNotaFiscal() == 55 and $notaFiscal->getPessoaDestinatario()->getEndereco()) {
                 $ufDestinatario = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getEstado();
