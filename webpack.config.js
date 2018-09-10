@@ -47,6 +47,8 @@ Encore
     .addEntry('fin/registroConferenciaList', './assets/js/fin/registroConferenciaList.js')
     .addEntry('fin/regraImportacaoLinhaList', './assets/js/fin/regraImportacaoLinhaList.js')
     .addEntry('fin/movimentacaoList', './assets/js/fin/movimentacaoList.js')
+    .addEntry('fin/movimentacaoExtratoList', './assets/js/fin/movimentacaoExtratoList.js')
+    .addEntry('fin/movimentacaoImport', './assets/js/fin/movimentacaoImport.js')
 
 
     /*

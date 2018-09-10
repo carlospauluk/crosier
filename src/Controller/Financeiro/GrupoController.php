@@ -5,12 +5,17 @@ namespace App\Controller\Financeiro;
 
 use App\Controller\FormListController;
 use App\Entity\Financeiro\Grupo;
+use App\Entity\Financeiro\GrupoItem;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\GrupoEntityHandler;
 use App\Form\Financeiro\GrupoType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Class GrupoController
@@ -126,6 +131,61 @@ class GrupoController extends FormListController
     public function delete(Request $request, Grupo $grupo)
     {
         return $this->doDelete($request, $grupo);
+    }
+
+    /**
+     *
+     * @Route("/fin/grupo/select2json", name="fin_grupo_select2json", methods={"GET"}, options = { "expose" = true })
+     * @param Request $request
+     * @return Response
+     */
+    public function grupoSelect2json(Request $request)
+    {
+        $grupos = $this->getDoctrine()->getRepository(Grupo::class)->findAll();
+
+        $rs = array();
+        foreach ($grupos as $grupo) {
+            $r['id'] = $grupo->getId();
+            $r['text'] = $grupo->getDescricao();
+            $rs[] = $r;
+        }
+
+        $normalizer = new ObjectNormalizer();
+        $encoder = new JsonEncoder();
+
+        $serializer = new Serializer(array($normalizer), array($encoder));
+        $json = $serializer->serialize($rs, 'json');
+
+        return new Response($json);
+
+    }
+
+    /**
+     *
+     * @Route("/fin/grupoItem/select2json/{grupo}", name="fin_grupoItem_select2json", methods={"GET"}, options = { "expose" = true }, defaults={"grupo"=null}, requirements={"grupo"="\d+"})
+     * @param Request $request
+     * @param Grupo $item
+     * @return Response
+     */
+    public function grupoItemSelect2json(Request $request, Grupo $grupo)
+    {
+        $itens = $this->getDoctrine()->getRepository(GrupoItem::class)->findBy(['pai' => $grupo, 'fechado' => false]);
+
+        $rs = array();
+        foreach ($itens as $item) {
+            $r['id'] = $item->getId();
+            $r['text'] = $item->getDescricao();
+            $rs[] = $r;
+        }
+
+        $normalizer = new ObjectNormalizer();
+        $encoder = new JsonEncoder();
+
+        $serializer = new Serializer(array($normalizer), array($encoder));
+        $json = $serializer->serialize($rs, 'json');
+
+        return new Response($json);
+
     }
 
 

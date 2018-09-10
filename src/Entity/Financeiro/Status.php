@@ -14,28 +14,28 @@ final class Status
     const ABERTA = array(
         'label' => 'A pagar/receber',
         'sigla' => 'ABERTA',
-        'icone' => 'waiting'
+        'icone' => 'fas fa-stopwatch'
     );
 
     // Em caso de cheque, quando já foi dado porém ainda não compensou // FIXME: meio inútil isso, não?
     const A_COMPENSAR = array(
         'label' => 'A compensar',
         'sigla' => 'A_COMPENSAR',
-        'icone' => 'waiting'
+        'icone' => 'fas fa-stopwatch'
     );
 
     // Movimentações com previsão para realização
     const PREVISTA = array(
         'label' => 'Prevista',
         'sigla' => 'PREVISTA',
-        'icone' => 'waiting'
+        'icone' => 'fas fa-stopwatch'
     );
 
     // Movimentação já realizada
     const REALIZADA = array(
         'label' => 'Realizada',
         'sigla' => 'REALIZADA',
-        'icone' => 'checked'
+        'icone' => 'fas fa-check-circle'
     );
 
     const ALL = array(
@@ -52,6 +52,15 @@ final class Status
             $arr[$status['label']] = $status['sigla'];
         }
         return $arr;
+    }
+
+    public static function get($sigla) {
+        foreach (Status::ALL as $st) {
+            if ($st['sigla'] === $sigla) {
+                return $st;
+            }
+        }
+        return null;
     }
 
     

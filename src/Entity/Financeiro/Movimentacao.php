@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -92,7 +93,7 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\BandeiraCartao")
      * @ORM\JoinColumn(name="bandeira_cartao_id", nullable=true)
-     * 
+     *
      * @var $bandeiraCartao BandeiraCartao
      */
     private $bandeiraCartao;
@@ -316,7 +317,7 @@ class Movimentacao extends EntityId
 
     // ---------------------------------------------------------------------------------------
     // ---------- CAMPOS PARA "CHEQUE"
-    
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Banco")
@@ -347,7 +348,7 @@ class Movimentacao extends EntityId
 
     // ---------------------------------------------------------------------------------------
     // ---------- CAMPOS PARA "RECORRÊNCIA"
-    
+
     /**
      *
      * @ORM\Column(name="recorrente", type="boolean", nullable=false)
@@ -827,8 +828,43 @@ class Movimentacao extends EntityId
         $this->recorrVariacao = $recorrVariacao;
     }
 
+    public function getDescricaoMontada()
+    {
+        $sufixo = "";
+
+        if ($this->getQtdeParcelas() > 0) {
+            $zerosfill = strlen(parse_str($this->getQtdeParcelas()));
+            $zerosfill = $zerosfill < 2 ? 2 : $zerosfill;
+            $sufixo .= " (" . str_pad($this->getNumParcela(), $zerosfill, "0", STR_PAD_LEFT) . "/" . str_pad($this->getQtdeParcelas(), $zerosfill, "0", STR_PAD_LEFT) . ")";
+        }
+
+        if ($this->getDocumentoFiscal()) {
+            $sufixo .= "\n(NF: " . $this->getDocumentoFiscal() . ")";
+        }
+
+        if ($this->getChequeNumCheque()) {
+            $sufixo .= "\n(CHQ: " . $this->getChequeBanco()->getNome() . " - nº " . $this->getChequeNumCheque() . ")";
+        }
+
+        if ($this->getBandeiraCartao()) {
+            $sufixo .= "\n(Bandeira: " . $this->getBandeiraCartao()->getDescricao() . ")";
+        }
+
+        if ($this->getOperadoraCartao()) {
+            $sufixo .= "\n(Operadora: " . $this->getOperadoraCartao()->getDescricao() . ")";
+        }
+
+        if ($this->getGrupoItem()) {
+            $sufixo .= "\n" . $this->getGrupoItem()->getDescricao() . ")";
+        }
+
+        $descricaoMontada = $this->getDescricao() . $sufixo;
+
+        return $descricaoMontada;
+    }
+
     // ---------------------------------------------------------------------------------------
-    
+
     /**
      * Utilitário para pegar as informações mais rapidamente via JSF.
      *
@@ -885,6 +921,10 @@ class Movimentacao extends EntityId
         // str.append("Total: " + NumberFormat.getCurrencyInstance().format(getValorTotal()));
         // }
         // return str.toString();
+    }
+
+    public function getStatusIcone() {
+        return Status::get($this->getStatus())['icone'];
     }
 }
 

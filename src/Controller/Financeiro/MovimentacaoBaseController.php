@@ -19,12 +19,57 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Class MovimentacaoController
+ * Class MovimentacaoBaseController
  * @package App\Controller\Financeiro
  * @author Carlos Eduardo Pauluk
  */
-class MovimentacaoController extends MovimentacaoBaseController
+class MovimentacaoBaseController extends FormListController
 {
+
+    private $entityHandler;
+
+    private $business;
+
+    public function __construct(MovimentacaoEntityHandler $entityHandler, MovimentacaoBusiness $business) {
+        $this->entityHandler = $entityHandler;
+        $this->business = $business;
+    }
+
+    public function getEntityHandler(): ?EntityHandler
+    {
+        return $this->entityHandler;
+    }
+
+    public function getBusiness(): MovimentacaoBusiness
+    {
+        return $this->business;
+    }
+
+    public function getFormRoute()
+    {
+        return 'fin_movimentacao_form';
+    }
+
+    public function getFormView()
+    {
+        return 'Financeiro/movimentacaoForm.html.twig';
+    }
+
+    public function getListView()
+    {
+        return 'Financeiro/movimentacaoList.html.twig';
+    }
+
+    public function getListRoute()
+    {
+        return 'fin_movimentacao_list';
+    }
+
+
+    public function getTypeClass()
+    {
+        return MovimentacaoType::class;
+    }
 
     /**
      *
@@ -89,31 +134,41 @@ class MovimentacaoController extends MovimentacaoBaseController
         return $this->doDelete($request, $movimentacao);
     }
 
-    /**
-     *
-     * @Route("/fin/movimentacao/listParcelamento/{parcelamento}", name="fin_movimentacao_listParcelamento", requirements={"parcelamento"="\d+"})
-     * @param Parcelamento $parcelamento
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function listParcelamento(Parcelamento $parcelamento)
+    public function getFilterDatas($params)
     {
-        $filterDatas = array(
-            new FilterData('parcelamento', 'EQ', $parcelamento)
+        return array(
+            new FilterData(array('id', 'descricao'), 'LIKE', isset($params['filter']['descricao']) ? $params['filter']['descricao'] : null),
+            new FilterData('dtUtil', 'BETWEEN', isset($params['filter']['dtUtil']) ? $params['filter']['dtUtil'] : null),
+            new FilterData('valorTotal', 'BETWEEN', isset($params['filter']['valorTotal']) ? $params['filter']['valorTotal'] : null, 'decimal'),
+            new FilterData('carteira', 'IN', isset($params['filter']['carteira']) ? $params['filter']['carteira'] : null),
+            new FilterData('status', 'IN', isset($params['filter']['status']) ? $params['filter']['status'] : null),
+            new FilterData('modo', 'IN', isset($params['filter']['modo']) ? $params['filter']['modo'] : null),
+            new FilterData('categoria', 'IN', isset($params['filter']['categoria']) ? $params['filter']['categoria'] : null)
         );
 
-        $orders = array(
-            ['column' => 'e.dtVenctoEfetiva', 'dir' => 'asc']
-        );
-
-        $movs = $this->getDoctrine()->getRepository(Movimentacao::class)->findByFilters($filterDatas, $orders, 0, 0);
-
-        $total = $this->getBusiness()->somarMovimentacoes($movs);
-
-        $vParams['movs'] = $movs;
-        $vParams['total'] = $total;
-
-        return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', $vParams);
     }
+
+    protected function getFilterChoices()
+    {
+        $filterChoices = array();
+
+        $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
+        $carteiras = $repoCarteira->findAll();
+        $filterChoices['carteiras'] = $carteiras;
+
+        $filterChoices['status'] = Status::ALL;
+
+        $repoModo = $this->getDoctrine()->getRepository(Modo::class);
+        $modos = $repoModo->findAll();
+        $filterChoices['modos'] = $modos;
+
+        $repoCateg = $this->getDoctrine()->getRepository(Categoria::class);
+        $categorias = $repoCateg->buildTreeList();
+        $filterChoices['categorias'] = $categorias;
+
+        return $filterChoices;
+    }
+
 
 
 }

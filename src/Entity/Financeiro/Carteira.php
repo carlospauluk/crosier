@@ -122,9 +122,13 @@ class Carteira extends EntityId
         $this->id = $id;
     }
 
-    public function getCodigo()
+    public function getCodigo($format=false)
     {
-        return $this->codigo;
+        if ($format) {
+            return str_pad($this->codigo,3,"0",STR_PAD_LEFT);
+        } else {
+            return $this->codigo;
+        }
     }
 
     public function setCodigo($codigo)
@@ -135,6 +139,10 @@ class Carteira extends EntityId
     public function getDescricao()
     {
         return $this->descricao;
+    }
+
+    public function getDescricaoMontada() {
+        return $this->getCodigo(true) . ' - ' . $this->getDescricao();
     }
 
     public function setDescricao($descricao)

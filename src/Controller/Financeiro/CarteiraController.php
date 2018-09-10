@@ -4,12 +4,17 @@ namespace App\Controller\Financeiro;
 
 use App\Controller\FormListController;
 use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\Grupo;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\CarteiraEntityHandler;
 use App\Form\Financeiro\CarteiraType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Class CarteiraController
@@ -18,7 +23,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CarteiraController extends FormListController
 {
-
 
     private $entityHandler;
 
@@ -127,6 +131,33 @@ class CarteiraController extends FormListController
     public function delete(Request $request, Carteira $carteira)
     {
         return $this->doDelete($request, $carteira);
+    }
+
+    /**
+     *
+     * @Route("/fin/carteira/select2json", name="fin_carteira_select2json", methods={"GET"}, options = { "expose" = true })
+     * @param Request $request
+     * @param Grupo $item
+     * @return Response
+     */
+    public function carteiraSelect2json(Request $request)
+    {
+        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy(['concreta' => true],['codigo' => 'ASC']);
+
+        $rs = array();
+        foreach ($itens as $item) {
+            $r['id'] = $item->getId();
+            $r['text'] = $item->getDescricaoMontada();
+            $rs[] = $r;
+        }
+
+        $normalizer = new ObjectNormalizer();
+        $encoder = new JsonEncoder();
+
+        $serializer = new Serializer(array($normalizer), array($encoder));
+        $json = $serializer->serialize($rs, 'json');
+
+        return new Response($json);
     }
 
 

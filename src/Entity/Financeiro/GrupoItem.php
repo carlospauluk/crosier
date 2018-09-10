@@ -31,7 +31,7 @@ class GrupoItem extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Grupo")
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\JoinColumn(name="grupo_pai_id", nullable=true)
      *
      * @var $pai Grupo
      */
@@ -101,7 +101,7 @@ class GrupoItem extends EntityId
 
     /**
      *
-     * @ORM\Column(name="caixa", type="boolean", nullable=false)
+     * @ORM\Column(name="fechado", type="boolean", nullable=false)
      * @Assert\NotNull()
      */
     private $fechado = false;

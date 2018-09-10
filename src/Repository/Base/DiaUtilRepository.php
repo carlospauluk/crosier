@@ -12,7 +12,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *        
  */
-class DiaUtilRepository extends ServiceEntityRepository
+class  DiaUtilRepository extends ServiceEntityRepository
 {
 
     private $logger;
@@ -25,6 +25,8 @@ class DiaUtilRepository extends ServiceEntityRepository
 
     public function findDiasUteisBy(\DateTime $ini, \DateTime $fim, $comercial = null, $financeiro = null)
     {
+        $ini->setTime(0,0,0,0);
+        $fim->setTime(23,59,59,999999);
         $params = array();
         
         $dql = "SELECT d FROM App\Entity\Base\DiaUtil d WHERE d.dia BETWEEN :ini AND :fim ";
@@ -134,6 +136,7 @@ class DiaUtilRepository extends ServiceEntityRepository
      */
     public function findProximoDiaUtilComercial(\DateTime $dia): ?DiaUtil
     {
+        $dia->setTime(0,0,0,0);
         $fim = clone $dia;
         $fim->add(new \DateInterval('P20D'));
         
@@ -148,9 +151,10 @@ class DiaUtilRepository extends ServiceEntityRepository
     public function findAnteriorDiaUtilComercial(\DateTime $dia): ?DiaUtil
     {
         $ini = clone $dia;
+        $ini->setTime(23,59,59,999999);
         $ini->sub(new \DateInterval('P20D'));
         
-        $lista = $this->findDiasUteisComerciais($ini, $dia);
+        $lista = $this->findDiasUteisComerciaisBy($ini, $dia);
         
         return isset($lista[count($lista) - 1]) ? $lista[count($lista) - 1] : null;
     }
