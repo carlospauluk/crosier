@@ -11,7 +11,25 @@ namespace App\Utils;
 class DateTimeUtils
 {
 
-    public static function monthDiff(\DateTime $dtIni, \DateTime $dtFim) {
+    public static function parseDateStr($dateStr)
+    {
+        if (strlen($dateStr) == 5) { // dd/mm
+            return \DateTime::createFromFormat('d/m', $dateStr);
+        } else if (strlen($dateStr) == 8) { // dd/mm/yy
+            return \DateTime::createFromFormat('d/m/y', $dateStr);
+        } else if (strlen($dateStr) == 10) { // dd/mm/YYYY
+            return \DateTime::createFromFormat('d/m/Y', $dateStr);
+        } else if (strlen($dateStr) == 16) { // dd/mm/YYYY 12:34
+            return \DateTime::createFromFormat('d/m/Y H:i', $dateStr);
+        } else if (strlen($dateStr) == 19) { // dd/mm/YYYY 12:34:00
+            return \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr);
+        } else {
+            throw new \Exception('Impossível parse na data [' . $dateStr . ']');
+        }
+    }
+
+    public static function monthDiff(\DateTime $dtIni, \DateTime $dtFim)
+    {
         if ($dtIni->getTimestamp() > $dtFim->getTimestamp()) {
             throw new \Exception("dtIni > dtFim");
         }
@@ -158,7 +176,7 @@ class DateTimeUtils
                 if ($dtIniDia == 16) {
                     $proxDtIni = $dtFim->setDate($dtIni->format('Y'), $dtIni->format('m'), 1)->format('Y-m-d');
                 } else { // iniDia == 01
-                    $proxDtIni = $dtFim->setDate($dtFim->format('Y'), $dtFim->format('m')-1, 16)->format('Y-m-d');
+                    $proxDtIni = $dtFim->setDate($dtFim->format('Y'), $dtFim->format('m') - 1, 16)->format('Y-m-d');
                 }
             }
         } else {

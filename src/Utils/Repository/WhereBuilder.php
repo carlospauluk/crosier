@@ -19,6 +19,7 @@ class WhereBuilder
         'IN' => 999,
         'NOT_IN' => 999,
         'LIKE' => 1,
+        'LIKE_ONLY' => 1,
         'NOT_LIKE' => 1,
         'BETWEEN' => 2
     );
@@ -105,7 +106,7 @@ class WhereBuilder
                     case 'NOT_IN':
                         // $exprs[] = $qb->expr()->isNotNull($field, $val);
                         break;
-                    case 'LIKE':
+                    case 'LIKE': case 'LIKE_ONLY':
                         $orX->add($qb->expr()
                             ->like($field, $fieldP));
                         break;
@@ -159,6 +160,9 @@ class WhereBuilder
                         break;
                     case 'LIKE':
                         $qb->setParameter($fieldP, '%' . $filter->val . '%');
+                        break;
+                    case 'LIKE_ONLY':
+                        $qb->setParameter($fieldP, $filter->val);
                         break;
                     default:
                         $qb->setParameter($fieldP, $filter->val);

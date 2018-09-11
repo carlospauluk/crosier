@@ -50,6 +50,12 @@ class MovimentacaoImportController extends Controller
      */
     public function import(Request $request)
     {
+        if ($request->request->get('tipoExtrato') and $request->request->get('linhasExtrato')) {
+            $tipoExtrato = $request->request->get('tipoExtrato');
+            $linhasExtrato = $request->request->get('linhasExtrato');
+        }
+
+
         return $this->render('Financeiro/movimentacaoImport.html.twig');
     }
 
