@@ -73,7 +73,7 @@ class UnimakeBusiness
         $finNFe = FinalidadeNF::get($notaFiscal->getFinalidadeNf())['codigo'];
         $nfe->infNFe->ide->finNFe = $finNFe;
 
-        if ($notaFiscal->getTipoNotaFiscal() == 55) {
+        if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
             $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:s\-03:00');
         } else {
             unset($nfe->infNFe->ide->dhSaiEnt);
@@ -99,7 +99,7 @@ class UnimakeBusiness
 
             $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
 
-            if ($notaFiscal->getTipoNotaFiscal() == 55 and $notaFiscal->getPessoaDestinatario()->getEndereco()) {
+            if ($notaFiscal->getTipoNotaFiscal() == 'NFE' and $notaFiscal->getPessoaDestinatario()->getEndereco()) {
                 $ufDestinatario = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getEstado();
