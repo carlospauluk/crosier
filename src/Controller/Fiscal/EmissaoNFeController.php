@@ -7,6 +7,7 @@ use App\Business\Fiscal\NotaFiscalBusiness;
 use App\Entity\Base\Pessoa;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\NotaFiscalItem;
+use App\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use App\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use App\Form\Fiscal\EmissaoFiscalType;
 use App\Form\Fiscal\NotaFiscalItemType;
@@ -25,13 +26,17 @@ class EmissaoNFeController extends Controller
 
     private $notaFiscalItemEntityHandler;
 
+    private $notaFiscalEntityHandler;
+
     public function __construct(NotaFiscalBusiness $notaFiscalBusiness,
                                 PessoaBusiness $pessoaBusiness,
+                                NotaFiscalEntityHandler $notaFiscalEntityHandler,
                                 NotaFiscalItemEntityHandler $notaFiscalItemEntityHandler)
     {
         $this->notaFiscalBusiness = $notaFiscalBusiness;
         $this->pessoaBusiness = $pessoaBusiness;
         $this->notaFiscalItemEntityHandler = $notaFiscalItemEntityHandler;
+        $this->notaFiscalEntityHandler = $notaFiscalEntityHandler;
     }
 
     /**
@@ -42,8 +47,7 @@ class EmissaoNFeController extends Controller
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
-    public
-    function form(Request $request, NotaFiscal $notaFiscal = null)
+    public function form(Request $request, NotaFiscal $notaFiscal = null)
     {
         if (!$notaFiscal) {
             $notaFiscal = new NotaFiscal();
@@ -119,8 +123,7 @@ class EmissaoNFeController extends Controller
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Exception
      */
-    public
-    function faturar(Request $request, NotaFiscal $notaFiscal = null)
+    public function faturar(Request $request, NotaFiscal $notaFiscal = null)
     {
         if (!$notaFiscal or !$notaFiscal->getId()) {
             $this->addFlash('erro', 'E a Nota Fiscal?');
@@ -139,8 +142,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public
-    function cancelarForm(Request $request, NotaFiscal $notaFiscal)
+    public function cancelarForm(Request $request, NotaFiscal $notaFiscal)
     {
         if (!$notaFiscal) {
             $this->addFlash('error', 'Nota Fiscal não encontrada!');
@@ -186,8 +188,7 @@ class EmissaoNFeController extends Controller
      *
      * @Route("/fis/emissaonfe/reimprimirCancelamento/{notaFiscal}", name="fis_emissaonfe_reimprimirCancelamento")
      */
-    public
-    function reimprimirCancelamento(Request $request, NotaFiscal $notaFiscal)
+    public function reimprimirCancelamento(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimirCancelamento($notaFiscal);
         return $this->redirectToRoute('fis_emissaonfe_form', array(
@@ -202,8 +203,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public
-    function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal)
+    public function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal)
     {
         if (!$notaFiscal) {
             $this->addFlash('error', 'Nota Fiscal não encontrada!');
@@ -252,8 +252,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public
-    function consultarStatus(Request $request, NotaFiscal $notaFiscal)
+    public function consultarStatus(Request $request, NotaFiscal $notaFiscal)
     {
         $notaFiscal = $this->notaFiscalBusiness->consultarStatus($notaFiscal);
         return $this->redirectToRoute('fis_emissaonfe_form', array(
@@ -268,8 +267,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public
-    function reimprimir(Request $request, NotaFiscal $notaFiscal)
+    public function reimprimir(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimir($notaFiscal);
         $this->addFlash('success', 'Nota Fiscal enviada para reimpressão!');
@@ -285,8 +283,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public
-    function reimprimirCartaCorrecao(Request $request, NotaFiscal $notaFiscal)
+    public function reimprimirCartaCorrecao(Request $request, NotaFiscal $notaFiscal)
     {
         $this->notaFiscalBusiness->imprimirCartaCorrecao($notaFiscal);
         $this->addFlash('success', 'Carta de Correção enviada para reimpressão!');
@@ -350,8 +347,7 @@ class EmissaoNFeController extends Controller
      * @param NotaFiscalItem|null $item
      * @return void
      */
-    public
-    function deleteItem(Request $request, NotaFiscalItem $item)
+    public function deleteItem(Request $request, NotaFiscalItem $item)
     {
         $notaFiscalId = $item->getNotaFiscal()->getId();
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
@@ -378,8 +374,7 @@ class EmissaoNFeController extends Controller
      * @param Request $request
      * @return void
      */
-    public
-    function list(Request $request)
+    public function list(Request $request)
     {
         $dados = null;
         $params = $request->query->all();
@@ -407,6 +402,21 @@ class EmissaoNFeController extends Controller
         return $this->render('Fiscal/emissaoNFe/list.html.twig', array(
             'dados' => $dados,
             'filter' => $params['filter']
+        ));
+    }
+
+    /**
+     * @Route("/fis/emissaonfe/clonar/{notaFiscal}", name="fis_emissaonfe_clonar")
+     * @param Request $request
+     * @param NotaFiscal $notaFiscal
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function clonar(Request $request, NotaFiscal $notaFiscal)
+    {
+        $novaNotaFiscal = $this->notaFiscalEntityHandler->doClone($notaFiscal);
+        $this->addFlash('success', 'Nota Fiscal clonada!');
+        return $this->redirectToRoute('fis_emissaonfe_form', array(
+            'notaFiscal' => $novaNotaFiscal->getId()
         ));
     }
 

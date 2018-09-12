@@ -86,6 +86,13 @@
                         </button>
                     {% endif %}
 
+                    {% if notaFiscal.id %}
+                        <button type="button" value="Clonar" class="btn btn-secondary"
+                                data-url="{{ url('fis_emissaonfe_clonar', {notaFiscal: notaFiscal.id}) }}"
+                                data-target="#confirmationModal" data-toggle="modal">
+                            <i class="fas fa-copy" aria-hidden="true"></i> Clonar
+                        </button>
+                    {% endif %}
 
                     {% if permiteCancelamento or permiteReimpressaoCancelamento %}
                         <button type="button" id="Cancelar" class="btn btn-warning"

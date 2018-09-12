@@ -516,15 +516,13 @@ class NotaFiscalBusiness
      */
     public function calcularTotais(NotaFiscal $notaFiscal)
     {
-//        $total = 0.0;
         $subTotal = 0.0;
         $descontos = 0.0;
         foreach ($notaFiscal->getItens() as $item) {
-//            $total += $item->getValorTotal();
+            $item->calculaTotais();
             $subTotal += $item->getSubTotal();
             $descontos += $item->getValorDesconto() ? $item->getValorDesconto() : 0.0;
         }
-
         $notaFiscal->setSubTotal($subTotal);
         $notaFiscal->setTotalDescontos($descontos);
         $notaFiscal->setValorTotal($subTotal - $descontos);
@@ -906,7 +904,7 @@ class NotaFiscalBusiness
 //        if (!$notaFiscal->getChaveAcesso()) {
         $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
 //        }
-
-
     }
+
+
 }

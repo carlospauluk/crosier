@@ -17,7 +17,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 abstract class EntityHandler
 {
-    private $entityManager;
+    protected $entityManager;
 
     private $entityIdBusiness;
 
@@ -56,6 +56,19 @@ abstract class EntityHandler
 
     public function afterDelete($entityId)
     {
+    }
+
+    public function beforeClone($entityId)
+    {
+    }
+
+    public function doClone($e) {
+        $newE = clone $e;
+        $newE->setId(null);
+        $this->beforeClone($newE);
+        $newE = $this->persist($newE);
+        $this->getEntityManager()->flush($newE);
+        return $newE;
     }
 
     abstract public function getEntityClass();
