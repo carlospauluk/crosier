@@ -72,7 +72,7 @@ class ClienteController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData('p.nome', 'LIKE', $params['filter']['p_nome'])
+            new FilterData(['p.nome','p.documento'], 'LIKE', $params['filter']['p_nome'])
         );
     }
 

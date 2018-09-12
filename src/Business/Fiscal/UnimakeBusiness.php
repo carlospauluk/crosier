@@ -94,7 +94,7 @@ class UnimakeBusiness
             if ($notaFiscal->getAmbiente() == 'HOM') {
                 $nfe->infNFe->dest->xNome = "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
             } else {
-                $nfe->infNFe->dest->xNome = $notaFiscal->getPessoaDestinatario()->getNome();
+                $nfe->infNFe->dest->xNome = trim($notaFiscal->getPessoaDestinatario()->getNome());
             }
 
             $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
@@ -258,7 +258,7 @@ class UnimakeBusiness
 
             if ($notaFiscal->getTranspFornecedor()) {
                 $nfe->infNFe->transp->transporta->CNPJ = $notaFiscal->getTranspFornecedor()->getPessoa()->getDocumento();
-                $nfe->infNFe->transp->transporta->xNome = $notaFiscal->getTranspFornecedor()->getPessoa()->getNome();
+                $nfe->infNFe->transp->transporta->xNome = trim($notaFiscal->getTranspFornecedor()->getPessoa()->getNome());
                 if ($notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual()) {
                     $nfe->infNFe->transp->transporta->IE = $notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual();
                 }
@@ -705,6 +705,54 @@ class UnimakeBusiness
         }
 
         return $notaFiscal;
+    }
+
+    public function consultarCNPJ($cnpj) {
+        $pastaXMLExemplos = getenv('PASTAARQUIVOSXMLEXEMPLO');
+
+        $exemplo = file_get_contents($pastaXMLExemplos . "/-cons-cad.xml");
+        $consCad = simplexml_load_string($exemplo);
+        $consCad->infCons->CNPJ = $cnpj;
+
+        $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
+        $rand = rand(100000000000000, 999999999999999);
+        file_put_contents($pastaUnimake . "/envio/" . $cnpj . "-" . $rand . "-consCad.xml", $consCad->asXML());
+
+
+        $count = 20;
+        $arqRetornoSucesso = $pastaUnimake . "/retorno/" . $cnpj . "-" . $rand . "-consCad.xml-ret-cons-cad.xml";
+        while (true) {
+            if (!file_exists($arqRetornoSucesso)) {
+                sleep(1);
+                $count--;
+                if ($count <= 0) {
+                    throw new \Exception('Erro ao consultar CNPJ (' . $cnpj . ')');
+                }
+            } else {
+                if (file_exists($arqRetornoSucesso)) {
+                    $retorno = simplexml_load_string(file_get_contents($arqRetornoSucesso));
+
+                    if ($retorno and isset($retorno->infCons)) {
+                        $dados['CNPJ'] = $retorno->infCons->CNPJ->__toString();
+                        $dados['IE'] = $retorno->infCons->infCad->IE ? $retorno->infCons->infCad->IE->__toString() : null;
+                        $dados['UF'] = $retorno->infCons->infCad->UF ? $retorno->infCons->infCad->UF->__toString() : null;
+                        $dados['razaoSocial'] = $retorno->infCons->infCad->xNome ? $retorno->infCons->infCad->xNome->__toString() : null;
+                        $dados['nomeFantasia'] = $retorno->infCons->infCad->xFant ? $retorno->infCons->infCad->xFant->__toString() : null;
+                        if (isset($retorno->infCons->infCad->ender)) {
+                            $dados['endereco']['logradouro'] = $retorno->infCons->infCad->ender->xLgr ? $retorno->infCons->infCad->ender->xLgr->__toString() : null;
+                            $dados['endereco']['numero'] = $retorno->infCons->infCad->ender->nro ? $retorno->infCons->infCad->ender->nro->__toString() : null;
+                            $dados['endereco']['bairro'] = $retorno->infCons->infCad->ender->xBairro ? $retorno->infCons->infCad->ender->xBairro->__toString() : null;
+                            $dados['endereco']['cidade'] = $retorno->infCons->infCad->ender->xMun ? $retorno->infCons->infCad->ender->xMun->__toString() : null;
+                            $dados['endereco']['cep'] = $retorno->infCons->infCad->ender->CEP ? $retorno->infCons->infCad->ender->CEP->__toString() : null;
+                        }
+                        return $dados;
+                    }
+
+
+                    break;
+                }
+            }
+        }
     }
 }
     

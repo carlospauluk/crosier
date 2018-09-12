@@ -325,6 +325,6 @@ class NotaFiscalItem extends EntityId
         
         $this->valorDesconto = $this->valorDesconto == null ? 0.0 : $this->valorDesconto;
         $this->subTotal = $this->getQtde() * $this->getValorUnit();
-        $this->valorTotal = $this->subTotal - $this->valorDesconto;
+        $this->valorTotal = $this->subTotal;// - $this->valorDesconto;
     }
 }

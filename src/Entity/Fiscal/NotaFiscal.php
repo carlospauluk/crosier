@@ -356,9 +356,6 @@ class NotaFiscal extends EntityId
 
     public function __construct()
     {
-        ORM\Annotation::class;
-        Assert\All::class;
-        
         $this->itens = new ArrayCollection();
         $this->historicos = new ArrayCollection();
     }

@@ -907,4 +907,9 @@ class NotaFiscalBusiness
     }
 
 
+    public function consultarCNPJ($cnpj) {
+        return $this->unimakeBusiness->consultarCNPJ($cnpj);
+    }
+
+
 }

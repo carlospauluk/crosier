@@ -103,6 +103,7 @@ $(document).ready(function () {
 
     function findPessoaByDocumento(documento) {
 
+        if (!documento) return;
         if (documento === documentoAtual) return;
         documentoAtual = documento;
 
@@ -116,9 +117,8 @@ $(document).ready(function () {
             success: function (data) {
                 $('input[id=emissao_fiscal_nome]').val(data.nome);
                 $('input[id=emissao_fiscal_pessoa_id]').val(data.id);
-                $('input[id=emissao_fiscal_razao_social]').val(data.nome);
-                $('input[id=emissao_fiscal_nome_fantasia]').val(data.nomeFantasia);
-                $('input[id=emissao_fiscal_razao_social]').val(data.razaoSocial);
+                $('input[id=emissao_fiscal_razaoSocial]').val(data.nome);
+                $('input[id=emissao_fiscal_nomeFantasia]').val(data.nomeFantasia);
                 $('input[id=emissao_fiscal_inscricao_estadual]').val(data.inscricaoEstadual);
 
                 $('input[id=emissao_fiscal_fone1]').val(data.fone1);
@@ -173,5 +173,45 @@ $(document).ready(function () {
             }
         });
     });
+
+
+
+
+    $('#consultarCNPJ').click(function () {
+        let cnpj = $('#emissao_fiscal_cnpj').val();
+        cnpj = cnpj.replace(/[^0-9]/g,'');
+        if (!cnpj) return;
+
+        $.ajax({
+            url: Routing.generate('fis_emissaofiscalpv_consultarCNPJ') + '/' + cnpj,
+            type: 'get',
+            dataType: 'json',
+            crossDomain: true,
+            success: function (res) {
+                $('input[id=emissao_fiscal_pessoa_id]').val(data.id);
+                $('input[id=emissao_fiscal_razaoSocial]').val(data.nome);
+                $('input[id=emissao_fiscal_nomeFantasia]').val(data.nomeFantasia);
+                $('input[id=emissao_fiscal_inscricao_estadual]').val(data.inscricaoEstadual);
+
+                if (data.endereco) {
+                    $('input[id=emissao_fiscal_cep]').val(data.endereco.cep);
+                    $('input[id=emissao_fiscal_logradouro]').val(data.endereco.logradouro);
+                    $('input[id=emissao_fiscal_numero]').val(data.endereco.numero);
+                    $('input[id=emissao_fiscal_complemento]').val(data.endereco.complemento);
+                    $('input[id=emissao_fiscal_bairro]').val(data.endereco.bairro);
+                    $('input[id=emissao_fiscal_cidade]').val(data.endereco.cidade);
+                    $('select[id=emissao_fiscal_estado]').val(data.endereco.estado).change();
+                }
+
+                if (data.id) {
+                    $('.DADOSPESSOA').prop('disabled', true);
+                    // Desabilito todos menos o pessoa_id, senão não passa pelo submit
+                    $('input[id=emissao_fiscal_pessoa_id]').prop('disabled', false);
+                }
+
+            }
+        });
+    });
+
 
 });
