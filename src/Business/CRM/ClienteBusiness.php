@@ -167,11 +167,17 @@ class ClienteBusiness
      */
     public function savePessoaClienteComEndereco(Pessoa $pessoa)
     {
+        if (!$pessoa) {
+            throw new \Exception("Pessoa null");
+        }
         $cliente = null;
         if (!$pessoa->getId() and $pessoa->getDocumento()) {
-            $pessoa = $this->doctrine->getRepository(Pessoa::class)->findByDocumento($pessoa->getDocumento());
+            $pPessoa = $this->doctrine->getRepository(Pessoa::class)->findByDocumento($pessoa->getDocumento());
+            if ($pPessoa) {
+                $pessoa = $pPessoa;
+            }
         }
-        if ($pessoa) {
+        if ($pessoa->getId()) {
             $cliente = $this->doctrine->getRepository(Cliente::class)->findByPessoa($pessoa);
         }
         if (!$cliente) {

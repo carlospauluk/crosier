@@ -12,7 +12,9 @@ use App\Entity\Vendas\Venda;
 use App\Form\Fiscal\EmissaoFiscalType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 class EmissaoFiscalPVController extends Controller
 {
@@ -229,5 +231,21 @@ class EmissaoFiscalPVController extends Controller
         return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
             'id' => $venda->getId()
         ));
+    }
+
+    /**
+     *
+     * @Route("/fis/emissaofiscalpv/consultarCNPJ/{cnpj}", name="fis_emissaofiscalpv_consultarCNPJ")
+     */
+    public function consultarCNPJ(Request $request, $cnpj)
+    {
+        $dados = $this->notaFiscalBusiness->consultarCNPJ($cnpj);
+        $normalizer = new ObjectNormalizer();
+        $encoder = new JsonEncoder();
+
+        $serializer = new Serializer(array($normalizer), array($encoder));
+        $json = $serializer->serialize($dados, 'json');
+
+        return new Response($json);
     }
 }

@@ -61,7 +61,7 @@ class EmissaoFiscalType extends AbstractType
                 'attr' => array(
                     'class' => 'TIPO_FISCAL'
                 ),
-                'disabled' => $disabled
+                'disabled' => $disabled or $data['nota_fiscal_id'] !== null
             ));
 
             $builder->add('tipoPessoa', ChoiceType::class, array(

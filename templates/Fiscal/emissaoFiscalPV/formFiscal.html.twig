@@ -29,7 +29,20 @@
 		{{ form_row(form.cpf) }}
 		{{ form_row(form.nome) }}
 
-		{{ form_row(form.cnpj) }}
+		<div class="form-group row">
+            {{ form_label(form.cnpj) }}
+			<div class="col-sm-5">
+                {{ form_errors(form.cnpj) }}
+                {{ form_widget(form.cnpj) }}
+                {{ form_help(form.cnpj) }}
+			</div>
+			<div class="col-sm-5">
+				<button type="button" value="Consultar" class="btn btn-warning" id="consultarCNPJ">
+					<i class="fas fa-undo" aria-hidden="true"></i> Consultar
+				</button>
+			</div>
+		</div>
+
 		{{ form_row(form.razaoSocial) }}
 		{{ form_row(form.nomeFantasia) }}
         {{ form_row(form.inscricaoEstadual) }}
