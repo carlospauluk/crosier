@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Fiscal;
 
 use App\Entity\Base\EntityId;
@@ -14,7 +15,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NotaFiscalRepository")
  * @ORM\Table(name="fis_nf")
- * @ORM\HasLifecycleCallbacks()
  *
  * @author Carlos Eduardo Pauluk
  */
@@ -358,7 +358,7 @@ class NotaFiscal extends EntityId
     {
         ORM\Annotation::class;
         Assert\All::class;
-        
+
         $this->itens = new ArrayCollection();
         $this->historicos = new ArrayCollection();
     }
@@ -790,7 +790,7 @@ class NotaFiscal extends EntityId
 
     public function addItem(NotaFiscalItem $item)
     {
-        if (! $this->itens->contains($item)) {
+        if (!$this->itens->contains($item)) {
             $this->itens->add($item);
         }
     }
@@ -806,7 +806,7 @@ class NotaFiscal extends EntityId
 
     public function addHistorico(NotaFiscalHistorico $historico)
     {
-        if (! $this->historicos->contains($historico)) {
+        if (!$this->historicos->contains($historico)) {
             $this->historicos->add($historico);
         }
     }
@@ -835,9 +835,9 @@ class NotaFiscal extends EntityId
     {
         $infoStatus = "NÃO PROCESSADA";
         if ($this->getSpartacusStatus() !== null) {
-            
+
             $infoStatus = $this->getSpartacusStatus() . " - " . $this->getSpartacusMensretornoReceita() . " (NNF/Série: " . $this->getNumero() . "/" . $this->getSerie() . ")";
-            
+
             if ($this->getDtEmissao()) {
                 $infoStatus .= " (Emissão: " . $this->getDtEmissao()->format('d/m/Y H:i:s') . ")";
             }

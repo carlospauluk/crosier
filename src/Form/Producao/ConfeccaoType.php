@@ -1,18 +1,19 @@
 <?php
+
 namespace App\Form\Producao;
 
 use App\Entity\Estoque\Grade;
 use App\Entity\Producao\Confeccao;
 use App\Entity\Producao\TipoArtigo;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Doctrine\ORM\EntityRepository;
 
 class ConfeccaoType extends AbstractType
 {
@@ -23,25 +24,25 @@ class ConfeccaoType extends AbstractType
             'label' => 'Código',
             'disabled' => true
         ));
-        
+
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
         ));
-        
+
         $builder->add('oculta', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,
                 'Não' => false
             )
         ));
-        
+
         $builder->add('bloqueada', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,
                 'Não' => false
             )
         ));
-        
+
         $builder->add('tipoArtigo', EntityType::class, array(
             // looks for choices from this entity
             'class' => TipoArtigo::class,
@@ -51,7 +52,7 @@ class ConfeccaoType extends AbstractType
             },
             'choice_label' => 'descricao'
         ));
-        
+
         $builder->add('modo_calculo', ChoiceType::class, array(
             'choices' => array(
                 'MODO_01' => 'MODO_01',
@@ -59,7 +60,7 @@ class ConfeccaoType extends AbstractType
                 'MODO_03' => 'MODO_03'
             )
         ));
-        
+
         $builder->add('grade', EntityType::class, array(
             // looks for choices from this entity
             'class' => Grade::class,
@@ -67,11 +68,11 @@ class ConfeccaoType extends AbstractType
                 return $grade->getCodigo() . " (" . $grade->getObs() . ")";
             }
         ));
-        
+
         $builder->add('prazoPadrao', IntegerType::class, array(
             'label' => 'Prazo'
         ));
-        
+
         $builder->add('margem_padrao', NumberType::class, array(
             'label' => 'Margem',
             'grouping' => 'true',
@@ -80,7 +81,7 @@ class ConfeccaoType extends AbstractType
                 'class' => 'crsr-dec2'
             )
         ));
-        
+
         $builder->add('custo_operacional_padrao', NumberType::class, array(
             'label' => 'Custo Operacional',
             'grouping' => 'true',
@@ -89,7 +90,7 @@ class ConfeccaoType extends AbstractType
                 'class' => 'crsr-dec2'
             )
         ));
-        
+
         $builder->add('custo_financeiro_padrao', NumberType::class, array(
             'label' => 'Custo Financeiro',
             'grouping' => 'true',

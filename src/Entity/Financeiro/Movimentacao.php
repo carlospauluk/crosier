@@ -3,16 +3,15 @@
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
+use App\Entity\Base\Pessoa;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\Base\Pessoa;
 
 /**
  * Entidade 'Movimentação'.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\MovimentacaoRepository")
  * @ORM\Table(name="fin_movimentacao")
- * @ORM\HasLifecycleCallbacks()
  */
 class Movimentacao extends EntityId
 {
@@ -110,7 +109,6 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="plano_pagto_cartao", type="string", nullable=true, length=50)
-     * @var $planoPagtoCartao PlanoPagtoCartao
      */
     private $planoPagtoCartao;
 
@@ -493,6 +491,7 @@ class Movimentacao extends EntityId
         return $this->planoPagtoCartao;
     }
 
+    // FIXME: depois criar uma subtabela
     public function setPlanoPagtoCartao($planoPagtoCartao)
     {
         $this->planoPagtoCartao = $planoPagtoCartao;
@@ -923,7 +922,8 @@ class Movimentacao extends EntityId
         // return str.toString();
     }
 
-    public function getStatusIcone() {
+    public function getStatusIcone()
+    {
         return Status::get($this->getStatus())['icone'];
     }
 }

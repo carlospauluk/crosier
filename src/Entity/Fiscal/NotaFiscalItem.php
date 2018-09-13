@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Fiscal;
 
 use App\Entity\Base\EntityId;
@@ -9,7 +10,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NotaFiscalItemRepository")
  * @ORM\Table(name="fis_nf_item")
- * @ORM\HasLifecycleCallbacks()
  */
 class NotaFiscalItem extends EntityId
 {
@@ -322,7 +322,7 @@ class NotaFiscalItem extends EntityId
         if ($this->getQtde() == null || $this->getValorUnit() == null) {
             return;
         }
-        
+
         $this->valorDesconto = $this->valorDesconto == null ? 0.0 : $this->valorDesconto;
         $this->subTotal = $this->getQtde() * $this->getValorUnit();
         $this->valorTotal = $this->subTotal - $this->valorDesconto;

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Business\Base;
 
 use App\Entity\Base\Endereco;
@@ -27,22 +28,22 @@ class PessoaBusiness
     {
         if (!$pessoa->getId()) return $pessoa;
         $pessoaRepo = $this->doctrine->getRepository(Pessoa::class);
-        
+
         $relacionamento = $pessoaRepo->findRelacionamento($pessoa);
-        
+
         if ($relacionamento) {
             $pessoa->setEmail($relacionamento->getEmail());
             $pessoa->setFone1($relacionamento->getFone1());
             $pessoa->setInscricaoEstadual($relacionamento->getInscricaoEstadual());
         }
-        
+
         $enderecoRepo = $this->doctrine->getRepository(Endereco::class);
         $endereco = $enderecoRepo->findPrimeiroByPessoa($pessoa);
-        
+
         if ($endereco) {
             $pessoa->setEndereco($endereco);
         }
-        
+
         return $pessoa;
     }
 

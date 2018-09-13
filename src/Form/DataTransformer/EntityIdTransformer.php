@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Form\DataTransformer;
 
+use App\Entity\Base\EntityId;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
-use App\Entity\Base\EntityId;
 
 class EntityIdTransformer implements DataTransformerInterface
 {
@@ -20,8 +21,9 @@ class EntityIdTransformer implements DataTransformerInterface
     {
         $this->repo = $repo;
     }
-    
-    public function __construct($repo) {
+
+    public function __construct($repo)
+    {
         $this->repo = $repo;
     }
 
@@ -36,7 +38,7 @@ class EntityIdTransformer implements DataTransformerInterface
         if (null === $entityId) {
             return '';
         }
-        
+
         return $entityId->getId();
     }
 
@@ -49,19 +51,19 @@ class EntityIdTransformer implements DataTransformerInterface
     public function reverseTransform($id)
     {
         // no issue number? It's optional, so that's ok
-        if (! $id) {
+        if (!$id) {
             return;
         }
-        
+
         $entity = $this->getRepo()->find($id);
-        
+
         if (null === $entity) {
             // causes a validation error
             // this message is not shown to the user
             // see the invalid_message option
             throw new TransformationFailedException(sprintf('An entity with id "%s" does not exist!', $id));
         }
-        
+
         return $entity;
     }
 }

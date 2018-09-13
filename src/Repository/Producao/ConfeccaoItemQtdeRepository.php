@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\ConfeccaoItemQtde;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade ConfeccaoItemQtde.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ConfeccaoItemQtdeRepository extends ServiceEntityRepository
 {
@@ -17,5 +18,5 @@ class ConfeccaoItemQtdeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, ConfeccaoItemQtde::class);
     }
-    
+
 }

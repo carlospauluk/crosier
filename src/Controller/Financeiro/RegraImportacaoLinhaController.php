@@ -46,7 +46,7 @@ class RegraImportacaoLinhaController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData('regraRegexJava', 'LIKE', $params['filter']['regraRegexJava'])
+            new FilterData('regraRegexJava', 'LIKE', isset($params['filter']['regraRegexJava']) ? $params['filter']['regraRegexJava'] : null)
         );
     }
 
@@ -87,6 +87,35 @@ class RegraImportacaoLinhaController extends FormListController
     public function list(Request $request)
     {
         return $this->doList($request);
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'regraRegexJava',
+                'tipoLancto',
+                'status',
+                'carteira' => ['descricaoMontada'],
+                'modo'
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/regraImportacaoLinha/datatablesJsList/", name="fin_regraImportacaoLinha_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
     }
 
     /**

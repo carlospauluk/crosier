@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\Produto;
@@ -10,7 +11,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade ProdutoPreco.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ProdutoPrecoRepository extends ServiceEntityRepository
 {
@@ -19,8 +20,9 @@ class ProdutoPrecoRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, ProdutoPreco::class);
     }
-    
-    public function findPrecoEmDataVenda(Produto $produto, $dtVenda) {
+
+    public function findPrecoEmDataVenda(Produto $produto, $dtVenda)
+    {
         $ql = "SELECT pp FROM App\Entity\Estoque\ProdutoPreco pp JOIN App\Entity\Estoque\Produto p WHERE pp.produto = p AND p = :produto AND pp.dtPrecoVenda <= :dtVenda ORDER BY pp.dtPrecoVenda DESC";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(

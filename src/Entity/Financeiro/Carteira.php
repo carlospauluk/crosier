@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -7,10 +8,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade 'Carteira'.
- * 
+ *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CarteiraRepository")
  * @ORM\Table(name="fin_carteira")
- * @ORM\HasLifecycleCallbacks()
  */
 class Carteira extends EntityId
 {
@@ -49,8 +49,8 @@ class Carteira extends EntityId
     /**
      * Uma Carteira concreta é aquela em que podem ser efetuados créditos e
      * débitos, como uma conta corrente ou um caixa.
-     * Um Grupo de Movimentação só pode estar vinculado à uma Carteira concreta. 
-     * Uma movimentação que contenha um grupo de movimentação, precisa ter sua 
+     * Um Grupo de Movimentação só pode estar vinculado à uma Carteira concreta.
+     * Uma movimentação que contenha um grupo de movimentação, precisa ter sua
      * carteira igual a carteira do grupo de movimentação.
      *
      *
@@ -122,10 +122,10 @@ class Carteira extends EntityId
         $this->id = $id;
     }
 
-    public function getCodigo($format=false)
+    public function getCodigo($format = false)
     {
         if ($format) {
-            return str_pad($this->codigo,3,"0",STR_PAD_LEFT);
+            return str_pad($this->codigo, 3, "0", STR_PAD_LEFT);
         } else {
             return $this->codigo;
         }
@@ -141,7 +141,8 @@ class Carteira extends EntityId
         return $this->descricao;
     }
 
-    public function getDescricaoMontada() {
+    public function getDescricaoMontada()
+    {
         return $this->getCodigo(true) . ' - ' . $this->getDescricao();
     }
 

@@ -67,7 +67,6 @@ final class TipoLancto
         "sigla" => "PAGTO");
 
 
-
     const ALL = array(
         TipoLancto::A_PAGAR_RECEBER,
         TipoLancto::CHEQUE_PROPRIO,
@@ -83,7 +82,8 @@ final class TipoLancto
     );
 
 
-    public static function getChoices() {
+    public static function getChoices()
+    {
         $arr = array();
         foreach (Status::ALL as $status) {
             $arr[$status['label']] = $status['sigla'];

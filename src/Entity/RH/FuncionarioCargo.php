@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\RH;
 
 use App\Entity\Base\EntityId;
@@ -9,7 +10,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\RH\FuncionarioCargoRepository")
  * @ORM\Table(name="rh_funcionario_cargo")
- * @ORM\HasLifecycleCallbacks()
  */
 class FuncionarioCargo extends EntityId
 {

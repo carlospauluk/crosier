@@ -2,11 +2,8 @@
 
 namespace App\Business\Financeiro;
 
-use App\Entity\Base\DiaUtil;
-use App\Entity\Base\Endereco;
-use App\Entity\Base\Pessoa;
-use App\Entity\CRM\Cliente;
 use App\Entity\Financeiro\BandeiraCartao;
+use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\GrupoItem;
@@ -14,13 +11,11 @@ use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\OperadoraCartao;
 use App\Entity\Financeiro\RegraImportacaoLinha;
-use App\EntityHandler\CRM\ClienteEntityHandler;
 use App\Repository\Financeiro\CategoriaRepository;
 use App\Utils\DateTimeUtils;
 use App\Utils\Repository\FilterData;
 use App\Utils\StringUtils;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Symfony\Component\Validator\Constraints\Date;
 
 const TXT_LINHA_NAO_IMPORTADA = "<<< LINHAS NÃO IMPORTADAS >>>";
 
@@ -38,7 +33,7 @@ class MovimentacaoImporter
      *
      * @var array
      */
-    private $linhasComplementares;
+    private $linhasComplementares = array();
 
     /**
      * Armazena as movimentações de categoria 1.01 que já foram importadas.
@@ -54,6 +49,18 @@ class MovimentacaoImporter
      */
     private $movsJaImportadas = array();
 
+    private $linhasExtrato;
+
+    private $tipoExtrato;
+
+    private $carteiraExtrato;
+
+    private $carteiraDestino;
+
+    private $grupoItem;
+
+    private $gerarSemRegras;
+
 
     public function __construct(RegistryInterface $doctrine)
     {
@@ -66,118 +73,127 @@ class MovimentacaoImporter
      * @param $carteiraExtrato
      * @param $carteiraDestino
      * @param $grupoItem
-     * @param $gerar
+     * @param $gerarSemRegras
      * @return mixed
      * @throws \Exception
      */
-    public function importar($tipoExtrato, $linhasExtrato, $carteiraExtrato, $carteiraDestino, $grupoItem, $gerar)
+    public function importar($tipoExtrato, $linhasExtrato, Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem, $gerarSemRegras)
     {
+        $this->tipoExtrato = $tipoExtrato;
+        $this->linhasExtrato = $linhasExtrato;
+        $this->carteiraExtrato = $carteiraExtrato;
+        $this->carteiraDestino = $carteiraDestino;
+        $this->grupoItem = $grupoItem;
+        $this->gerarSemRegras = $gerarSemRegras;
+
         switch ($tipoExtrato) {
             case 'EXTRATO_GRUPO_MOVIMENTACOES':
-                return $this->importGrupoMovimentacao($grupoItem);
+                return $this->importGrupoMovimentacao();
             default:
-                return $this->importarPadrao($linhasExtrato, $tipoExtrato, $carteiraExtrato, $carteiraDestino, $gerar);
+                return $this->importarPadrao();
         }
     }
 
     /**
-     * @param $linhasExtrato
-     * @param $tipoExtrato
-     * @param $carteiraExtrato
-     * @param $carteiraDestino
-     * @param $gerar
      * @return mixed
      * @throws \Exception
      */
-    private function importarPadrao($linhasExtrato, $tipoExtrato, $carteiraExtrato, $carteiraDestino, $gerar)
+    private function importarPadrao()
     {
-
         $movsImportadas = array();
 
         $linhasNaoImportadas = array();
         $linhasImportadas = array();
 
-        $this->linhas = explode("\n", $linhasExtrato);
+        $this->linhas = explode("\n", $this->linhasExtrato);
 
-        foreach ($this->linhas as $linha) {
-            if (!$linha or $linha === TXT_LINHA_NAO_IMPORTADA or $linha === TXT_LINHA_IMPORTADA) {
-                continue;
-            }
+        for ($i = 0; $i < count($this->linhas); $i++) {
+            $linha = $this->linhas[$i];
 
-            if (in_array($linha, $this->linhasComplementares)) {
+            // Verifica se é uma linha (de descrição) complementar já importada
+            if (in_array($i, $this->linhasComplementares)) {
                 $linhasImportadas[] = $linha;
                 continue;
             }
 
-            $movimentacao = $this->importarLinha($linha, $tipoExtrato, $carteiraExtrato, $carteiraDestino, $gerar);
+            if (!$linha or trim($linha) == TXT_LINHA_IMPORTADA or trim($linha) == TXT_LINHA_NAO_IMPORTADA) {
+                continue;
+            }
+
+            if (!$this->ehLinhaExtratoSimplesOuSaldo($linha)) {
+                $linhasNaoImportadas[] = $linha;
+                continue;
+            }
+
+
+            $linha = trim($linha);
+
+            $movimentacao = $this->importarLinha($i);
 
             if ($movimentacao) {
                 $movsImportadas[] = $movimentacao;
+                $linhasImportadas[] = $linha;
             } else {
                 $linhasNaoImportadas[] = $linha;
             }
         }
 
-        $r['LINHAS_RESULT'] = TXT_LINHA_NAO_IMPORTADA . "\n" .
-            implode("\n", $linhasNaoImportadas) . "\n" .
-            TXT_LINHA_IMPORTADA . "\n\n" .
+        $r['LINHAS_RESULT'] = "";
+        if (count($linhasNaoImportadas) > 0) {
+            $r['LINHAS_RESULT'] .= TXT_LINHA_NAO_IMPORTADA . "\n" .
+                implode("\n", $linhasNaoImportadas) . "\n\n";
+        }
+        $r['LINHAS_RESULT'] .= TXT_LINHA_IMPORTADA . "\n" .
             implode("\n", $linhasImportadas);
+
         $r['movs'] = $movsImportadas;
 
-        return $r;
         return $r;
     }
 
     /**
-     * @param $linha
-     * @param $tipoExtrato
-     * @param $carteiraExtrato
-     * @param $carteiraDestino
-     * @param $gerar
+     * @param $numLinha
      * @return mixed
      * @throws \Exception
      */
-    private function importarLinha($linha, $tipoExtrato, $carteiraExtrato, $carteiraDestino, $gerar)
+    private function importarLinha($numLinha)
     {
-        switch ($tipoExtrato) {
+        switch ($this->tipoExtrato) {
             case "EXTRATO_SIMPLES":
-                $camposLinha = $this->importLinhaExtratoSimples($linha);
+                $camposLinha = $this->importLinhaExtratoSimples($numLinha);
                 break;
             case "EXTRATO_MODERNINHA_DEBITO":
-                $camposLinha = $this->importLinhaExtratoModerninhaDebito($linha);
+                $camposLinha = $this->importLinhaExtratoModerninhaDebito($numLinha);
                 break;
             case "EXTRATO_CIELO_DEBITO":
-                $camposLinha = $this->importLinhaExtratoCieloDebito($linha);
+                $camposLinha = $this->importLinhaExtratoCieloDebitoNovo($numLinha);
                 break;
             case "EXTRATO_CIELO_CREDITO":
-                $camposLinha = $this->importLinhaExtratoCieloCredito($linha);
+                $camposLinha = $this->importLinhaExtratoCieloCreditoNovo($numLinha);
                 break;
             case "EXTRATO_STONE_DEBITO":
-                $camposLinha = $this->importLinhaExtratoStoneDebito($linha);
+                $camposLinha = $this->importLinhaExtratoStoneDebito($numLinha);
                 break;
             case "EXTRATO_STONE_CREDITO":
-                $camposLinha = $this->importLinhaExtratoStoneCredito($linha);
+                $camposLinha = $this->importLinhaExtratoStoneCredito($numLinha);
                 break;
             default:
                 throw new \Exception("Tipo de extrato inválido.");
         }
 
-        if (strpos($tipoExtrato, "DEBITO") !== FALSE) {
-            return $this->handleLinhaImportadaDebito($tipoExtrato, $carteiraExtrato, $carteiraDestino, $camposLinha);
+        if (strpos($this->tipoExtrato, "DEBITO") !== FALSE) {
+            return $this->handleLinhaImportadaDebito($camposLinha);
         } else {
-            return $this->handleLinhaImportadaPadrao($linha, $tipoExtrato, $carteiraExtrato, $carteiraDestino, $camposLinha);
+            return $this->handleLinhaImportadaPadrao($camposLinha);
         }
     }
 
     /**
-     * @param $tipoExtrato
-     * @param $carteiraExtrato
-     * @param $carteiraDestino
      * @param $camposLinha
      * @return \App\Entity\Financeiro\Carteira|Movimentacao|OperadoraCartao
      * @throws \Exception
      */
-    private function handleLinhaImportadaDebito($tipoExtrato, $carteiraExtrato, $carteiraDestino, $camposLinha)
+    private function handleLinhaImportadaDebito($camposLinha)
     {
         $descricao = $camposLinha["descricao"];
         $dtMoviment = $camposLinha["dtMoviment"];
@@ -192,7 +208,7 @@ class MovimentacaoImporter
         $categ299 = $this->doctrine->getRepository(CategoriaRepository::class)->find(299);
 
 
-        $modo = "RECEB. CARTÃO DÉBITO";
+        $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DÉBITO";
 
         // carteiraDestino aqui tem que ser sempre o Caixa a Vista (que é o caixa que primeiro recebeu o valor da compra).
 
@@ -203,7 +219,7 @@ class MovimentacaoImporter
             ->findBy([
                 'dtMoviment' => $dtMoviment,
                 'valorTotal' => $valorTotal,
-                'carteira' => $carteiraDestino,
+                'carteira' => $this->carteiraDestino,
                 'bandeiraCartao' => $bandeiraCartao,
                 'categoria' => $categ101
             ]);
@@ -235,8 +251,8 @@ class MovimentacaoImporter
             ->findBy([
                 'dtMoviment' => $dtMoviment,
                 'valorTotal' => $valorTotal,
-                'carteira' => $carteiraExtrato,
-                'carteiraDestino' => $carteiraDestino,
+                'carteira' => $this->carteiraExtrato,
+                'carteiraDestino' => $this->carteiraDestino,
                 'bandeiraCartao' => $bandeiraCartao,
                 'categoria' => $categ299
             ]);
@@ -263,8 +279,8 @@ class MovimentacaoImporter
 
         $mov299 = new Movimentacao();
         // aqui se inverte as carteiras, pois para salvar uma transferência entre carteiras se deve sempre começar pela 299 (ver como funciona o MovimentacaoDataMapperImpl.processSave)
-        $mov299->setCarteira($carteiraDestino); // vai debitar no 'CAIXA A VISTA'
-        $mov299->setCarteiraDestino($carteiraExtrato); // vai creditar na carteira do cartão (199)
+        $mov299->setCarteira($this->carteiraDestino); // vai debitar no 'CAIXA A VISTA'
+        $mov299->setCarteiraDestino($this->carteiraExtrato); // vai creditar na carteira do cartão (199)
         $mov299->setCategoria($categ299);
         $mov299->setValor($valor);
         $mov299->setDescontos($desconto);
@@ -284,14 +300,19 @@ class MovimentacaoImporter
         $mov299->setBandeiraCartao($bandeiraCartao);
 
 
-        $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findBy(['carteira' => $carteiraExtrato]);
+        $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $this->carteiraExtrato]);
 
         $mov299->setOperadoraCartao($operadoraCartao);
 
         return $mov299;
     }
 
-    private function handleLinhaImportadaPadrao($linha, $tipoExtrato, $carteiraExtrato, $carteiraDestino, $gerarSemRegras, $camposLinha)
+    /**
+     * @param $camposLinha
+     * @return Movimentacao|null|object
+     * @throws \Exception
+     */
+    private function handleLinhaImportadaPadrao($camposLinha)
     {
         $descricao = $camposLinha["descricao"];
         $dtMoviment = $camposLinha["dtMoviment"];
@@ -299,7 +320,7 @@ class MovimentacaoImporter
         $valor = $camposLinha["valor"];
         $desconto = $camposLinha["desconto"];
         $valorTotal = $camposLinha["valorTotal"];
-        $entradaOuSaida = $camposLinha["entradaOuSaida"];
+        // $entradaOuSaida = $camposLinha["entradaOuSaida"];
         $modo = $camposLinha["modo"];
         $categoriaCodigo = $camposLinha["categoriaCodigo"];
         $planoPagtoCartao = $camposLinha["planoPagtoCartao"];
@@ -309,11 +330,11 @@ class MovimentacaoImporter
         $valorNegativo = $valor < 0.0;
         $valor = abs($valor);
 
-        $regras = $this->doctrine->getRepository(RegraImportacaoLinha::class)->findAllBy($carteiraExtrato);
+        $regras = $this->doctrine->getRepository(RegraImportacaoLinha::class)->findAllBy($this->carteiraExtrato);
         $regra = null;
         foreach ($regras as $r) {
             if ($r->getRegraRegexJava()) {
-                if (preg_match($r->getRegraRegexJava(), $descricao)) {
+                if (preg_match('@' . $r->getRegraRegexJava() . '@', $descricao)) {
                     if ($r->getSinalValor() === 0 or
                         ($r->getSinalValor() === -1 and $valorNegativo) or
                         ($r->getSinalValor() === 1 and !$valorNegativo)) {
@@ -325,52 +346,40 @@ class MovimentacaoImporter
         }
 
         if ($regra) {
-//            numCheque = StringUtils.getGroupFromRegex(linha, $regra->getRegraRegexJava(), "NUMCHEQUE");
-//            if (numCheque != null) {
-//                numCheque = numCheque.replaceAll("[^\\d]", "");
-//                // convertendo para integer para remover zeros a esquerda
-//                Integer numChequeInt = Integer.parseInt(numCheque);
-//				numCheque = numChequeInt.toString();
-//			}
+            preg_match('@' . $regra->getRegraRegexJava() . '@', $descricao, $matches);
+            if (isset($matches['NUMCHEQUE'])) {
+                $numCheque = preg_replace("[^\\d]", "", $matches['NUMCHEQUE']);
+            }
         }
 
-        if ($numCheque and valorNegativo) {
+        if ($numCheque and $valorNegativo) {
             $modo = $this->doctrine->getRepository(Modo::class)->find(3); // CHEQUE PRÓPRIO
-        } else if (numCheque != null && !valorNegativo) {
+        } else if ($numCheque != null && !$valorNegativo) {
             $modo = $this->doctrine->getRepository(Modo::class)->find(4); // CHEQUE TERCEIROS
         }
 
         // Primeiro tenta encontrar movimentações em aberto de qualquer carteira, com o mesmo valor e dtVencto
         // Depois tenta encontrar movimentações de qualquer status somente da carteira do extrato
         // Junto os dois resultados
-        $fdMovsAbertas = array();
-        $fd_dtVenctoEfetiva = new FilterData('dtVenctoEfetiva', 'EQ', $dtVenctoEfetiva);
+        $fd_dtVenctoEfetiva = new FilterData('dtVenctoEfetiva', 'EQ', $dtVenctoEfetiva->format('Y-m-d'));
         $fd_valor = new FilterData('valor', 'EQ', $valor);
-        $fd_categ_codigoSuper = new FilterData('categ.codigoSuper', 'EQ', $entradaOuSaida);
-        $fd_modo = new FilterData('modo', 'EQ', $modo);
+        // $fd_categ_codigoSuper = new FilterData('categ.codigoSuper', 'EQ', $entradaOuSaida);
+        // $fd_modo = new FilterData('modo', 'EQ', $modo);
         $fd_status = new FilterData('status', 'IN', ['A_COMPENSAR', 'ABERTA']);
-        $fd_carteira = new FilterData('carteira', 'EQ', $carteiraExtrato);
-        $fd_cheque = new FilterData('numCheque', 'LIKE_ONLY', '%' . $numCheque);
+        $fd_carteira = new FilterData('carteira', 'EQ', $this->carteiraExtrato);
+        $fd_cheque = new FilterData('chequeNumCheque', 'LIKE_ONLY', '%' . $numCheque);
 
-        $movsAbertas = $this->doctrine->getRepository(Movimentacao::class)
-            ->findByFilters([
-                $fd_dtVenctoEfetiva,
-                $fd_valor,
-                $fd_categ_codigoSuper,
-                $fd_modo,
-                $fd_status,
-                $fd_cheque
-            ], null, 0, 0);
+        $fdsMovsAbertas = array($fd_dtVenctoEfetiva, $fd_valor, $fd_status);
+        if ($numCheque) {
+            $fdsMovsAbertas[] = $fd_cheque;
+        }
+        $movsAbertas = $this->doctrine->getRepository(Movimentacao::class)->findByFilters($fdsMovsAbertas, null, 0, 0);
 
-        $movsTodas = $this->doctrine->getRepository(Movimentacao::class)
-            ->findByFilters([
-                $fd_dtVenctoEfetiva,
-                $fd_valor,
-                $fd_categ_codigoSuper,
-                $fd_modo,
-                $fd_carteira,
-                $fd_cheque
-            ], null, 0, 0);
+        $fdsMovsTodas = array($fd_dtVenctoEfetiva, $fd_valor, $fd_carteira);
+        if ($numCheque) {
+            $fdsMovsTodas[] = $fd_cheque;
+        }
+        $movsTodas = $this->doctrine->getRepository(Movimentacao::class)->findByFilters($fdsMovsTodas, null, 0, 0);
 
         // array para atribuir a união dos outros dois
         $movs = array();
@@ -391,16 +400,19 @@ class MovimentacaoImporter
             $movimentacao = $this->doctrine->getRepository(Movimentacao::class)->find($movs[0]);
             $movimentacao->setDtPagto($dtVenctoEfetiva);
             $movimentacao->setStatus('REALIZADA');
-            $movimentacao->setCarteira($carteiraExtrato);
+            $movimentacao->setCarteira($this->carteiraExtrato);
             return $movimentacao;
         } else {
             if ($regra) {
                 $movimentacao = new Movimentacao();
 
-//                $movimentacao->setUnqControle(com.ocabit.utils.strings.StringUtils.generateRandomString(15));
+                $movimentacao->setUnqControle(md5(uniqid(rand(), true)));
 
-                $carteiraOrigem = $regra->getCarteira() ? $regra->getCarteira() : $carteiraExtrato;
-                $carteiraDestino = $regra->getCarteiraDestino() ? $regra->getCarteiraDestino() : $carteiraDestino;
+                $carteiraOrigem = $regra->getCarteira() ? $regra->getCarteira() : $this->carteiraExtrato;
+                $carteiraDestino = $regra->getCarteiraDestino() ? $regra->getCarteiraDestino() : $this->carteiraDestino;
+
+                $movimentacao->setCarteira($carteiraOrigem);
+                $movimentacao->setCarteiraDestino($carteiraDestino);
 
                 if ($regra->getTipoLancto() == 'TRANSF_PROPRIA') {
                     // Nas transferências entre contas próprias, a regra informa a carteira de origem.
@@ -411,11 +423,11 @@ class MovimentacaoImporter
                     }
 
                     // Se a regra informar a carteira da 299, prevalesce
-                    $cart299 = $regra->getCarteira() ? $regra->getCarteira() : $carteiraExtrato;
+                    $cart299 = $regra->getCarteira() ? $regra->getCarteira() : $this->carteiraExtrato;
 
                     $cart199 = $regra->getCarteiraDestino();
                     if ((!$cart199) or $cart199->getCodigo() == '99') {
-                        $cart199 = $carteiraExtrato;
+                        $cart199 = $this->carteiraExtrato;
                     }
 
                     $movimentacao->setCarteira($cart299);
@@ -426,48 +438,48 @@ class MovimentacaoImporter
                     if ($regra->getTipoLancto() == 'CHEQUE_PROPRIO') {
 
                         $movimentacao = $this->doctrine->getRepository(Movimentacao::class)
-                            ->findBy([
+                            ->findOneBy([
                                 'valor' => $valorTotal,
-                                'carteira' => $carteiraExtrato,
-                                'numCheque' => $numCheque
+                                'carteira' => $this->carteiraExtrato,
+                                'chequeNumCheque' => $numCheque
                             ]);
 
 
-                        if (in_array($movimentacao->getId(), $this->movsJaImportadas)) {
+                        if ($movimentacao and in_array($movimentacao->getId(), $this->movsJaImportadas)) {
                             $movimentacao = null;
                         }
 
                         // Se achou a movimentação deste cheque, só seta a dtPagto
-                        if (!$movimentacao) {
+                        if ($movimentacao) {
                             $movimentacao->setDtPagto($dtVenctoEfetiva);
                             return $movimentacao;
                         } else {
                             $movimentacao = new Movimentacao();
-//                            $movimentacao->setUnqControle(com.ocabit.utils.strings.StringUtils.generateRandomString(15));
-                            $movimentacao->setNumCheque($numCheque);
-                            $movimentacao->setBanco($regra->getCarteira()->getBanco());
-                            $movimentacao->setAgencia($regra->getCarteira()->getAgencia());
-                            $movimentacao->setConta($regra->getCarteira()->getConta());
+                            $movimentacao->setUnqControle(md5(uniqid(rand(), true)));
+                            $movimentacao->setChequeNumCheque($numCheque);
+                            $movimentacao->setChequeBanco($regra->getCarteira()->getBanco());
+                            $movimentacao->setChequeAgencia($regra->getCarteira()->getAgencia());
+                            $movimentacao->setChequeConta($regra->getCarteira()->getConta());
                         }
 
                     } else if ($regra->getTipoLancto() == 'CHEQUE_TERCEIROS') {
                         $movimentacao->setChequeNumCheque($numCheque);
 
-                        if ($regra->getCheque()) {
-                            $movimentacao->setAgencia($regra->getCheque()->getAgencia());
-                            $movimentacao->setConta($regra->getCheque()->getConta());
-                            $movimentacao->setBanco($regra->getCheque()->getBanco());
+                        if ($regra->getChequeConta()) {
+                            $movimentacao->setChequeAgencia($regra->getChequeAgencia());
+                            $movimentacao->setChequeConta($regra->getChequeConta());
+                            $movimentacao->setChequeBanco($regra->getChequeBanco());
                         } else {
-                            $movimentacao->setAgencia('9999');
-                            $movimentacao->setConta('99999-9');
-                            $movimentacao->setBanco(null);
+                            $movimentacao->setChequeAgencia('9999');
+                            $movimentacao->setChequeConta('99999-9');
+                            $movimentacao->setChequeBanco(null);
                         }
                     }
                 }
 
                 $movimentacao->setTipoLancto($regra->getTipoLancto());
 
-                $movimentacao->setCarteira($carteiraOrigem);
+
                 if ($movimentacao->getTipoLancto() == 'TRANSF_PROPRIA') {
                     $movimentacao->setCarteiraDestino($carteiraDestino);
                 }
@@ -486,22 +498,20 @@ class MovimentacaoImporter
                 $movimentacao->setValor($valor);
                 $movimentacao->setValorTotal($valor);
 
-                if ($regra->getStatus() . equals('REALIZADA')) {
+                if ($regra->getStatus() == 'REALIZADA') {
                     $movimentacao->setDtPagto($dtVenctoEfetiva);
                 }
 
                 $movimentacao->setPlanoPagtoCartao($planoPagtoCartao);
 
-                $movimentacao->setNumCheque($numCheque);
-
                 return $movimentacao;
-            } else if ($gerarSemRegras) {
+            } else if ($this->gerarSemRegras) {
 
 
                 // se for pra gerar movimentações que não se encaixem nas regras...
                 $movimentacao = new Movimentacao();
-                // $movimentacao->setUnqControle(com.ocabit.utils.strings.StringUtils.generateRandomString(15));
-                $movimentacao->setCarteira($carteiraExtrato);
+                $movimentacao->setUnqControle(md5(uniqid(rand(), true)));
+                $movimentacao->setCarteira($this->carteiraExtrato);
                 $movimentacao->setValor($valor);
                 $movimentacao->setDescontos($desconto);
                 $movimentacao->setValorTotal($valorTotal);
@@ -517,21 +527,21 @@ class MovimentacaoImporter
                 $movimentacao->setPlanoPagtoCartao($planoPagtoCartao);
 
                 if ($categoriaCodigo) {
-                    $categoria = $this->doctrine->getRepository(Categoria::class)->findBy(['codigo' => $categoriaCodigo]);
+                    $categoria = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => $categoriaCodigo]);
                 } else {
-                    if (valorNegativo) {
-                        $categoria = $this->doctrine->getRepository(Categoria::class)->findBy(['codigo' => 2]);
+                    if ($valorNegativo) {
+                        $categoria = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 2]);
                     } else {
-                        $categoria = $this->doctrine->getRepository(Categoria::class)->findBy(['codigo' => 1]);
+                        $categoria = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 1]);
                     }
                 }
                 $movimentacao->setCategoria($categoria);
 
-                return movimentacao;
+                return $movimentacao;
             }
         }
 
-
+        return null;
     }
 
 
@@ -542,58 +552,34 @@ class MovimentacaoImporter
      */
     private function ehLinhaExtratoSimplesOuSaldo($linha)
     {
-        if (strpos(str_replace(" ", "", $linha) . replace(" ", ""), 'SALDO' === FALSE)) {
+        if (strpos(str_replace(" ", "", $linha), 'SALDO') !== FALSE) {
             return true;
         }
-        if (preg_match(StringUtils::PATTERN_DATA, $linha, $matches)) {
+        if (preg_match(StringUtils::PATTERN_DATA, $linha, $matches) and preg_match(StringUtils::PATTERN_MONEY, $linha, $matches)) {
             return true;
         }
 
-        if (preg_match(StringUtils::PATTERN_MONEY, $linha, $matches)) {
-            return true;
-        }
+        return false;
     }
 
 
+    /**
+     * @param $numLinha
+     * @return mixed
+     * @throws \Exception
+     */
     private function importLinhaExtratoSimples($numLinha)
     {
-        $linha = $this->linhas[$numLinha];
+        $linha = trim($this->linhas[$numLinha]);
         preg_match(StringUtils::PATTERN_DATA, $linha, $matches);
         $dataStr = $matches['data'];
 
         preg_match(StringUtils::PATTERN_MONEY, $linha, $matches);
         $valorStr = $matches['money'];
 
-        $dataIncompleta = false;
-        $dataPequena = true;
+        $dtVenctoEfetiva = DateTimeUtils::parseDateStr($dataStr);
 
-        $ano = date('Y');
-        if (strlen($dataStr) == 5) {
-            $dataStr .= "/" . $ano;
-            $dataIncompleta = true;
-        } else if (strlen($dataStr) == 8) {
-            $dataPequena = true;
-        } else if (strlen($dataStr) != 10) {
-            throw new \Exception("Erro ao ler a data na linha: [" . $linha . "]");
-        }
-
-        $dateFormat = $dataPequena ? "d/m/y" : "d/m/Y";
-
-        $dtVenctoEfetiva = \DateTime::createFromFormat($dateFormat, $dataStr);
-
-        if ($dataIncompleta and DateTimeUtils::monthDiff(new \DateTime('now'), $dtVenctoEfetiva) > 2) {
-            $dtVenctoEfetiva->setDate($dtVenctoEfetiva->format('Y'), $dtVenctoEfetiva->format('m') - 12, $dtVenctoEfetiva->format('d'));
-        }
-
-        $valorComSufixo = preg_replace("@[^0-9,-.D]@", "", substr($linha, strpos($linha, $valorStr)));
-        $sufixo = $valorComSufixo[strlen($valorComSufixo) - 1];
-
-        if (($sufixo == 'D') or ($sufixo == '-')) {
-            $valorStr = "-" . $valorStr;
-        }
-
-        $valorStr = preg_replace("@[^0-9\\.\\,-]@", "", $valorStr);
-        $valor = StringUtils::parseFloat($valorStr);
+        $valor = StringUtils::parseFloat($valorStr, true);
 
         $entradaOuSaida = $valor < 0 ? 2 : 1;
 
@@ -604,7 +590,7 @@ class MovimentacaoImporter
             // ...verifica se a próxima linha é uma linha completa (DATA DESCRIÇÃO VALOR), ou se é uma linha de complemento da linha anterior
             $linhaComplementar = $this->linhas[$numLinha + 1];
             if (!$this->ehLinhaExtratoSimplesOuSaldo($linhaComplementar)) {
-                $linhasComplementares[] = $numLinha + 1;
+                $this->linhasComplementares[] = $numLinha + 1;
                 $descricao .= " (" . trim($linhaComplementar) . ")";
             }
         }
@@ -618,11 +604,18 @@ class MovimentacaoImporter
         $camposLinha["valorTotal"] = $valor;
         $camposLinha["entradaOuSaida"] = $entradaOuSaida;
         $camposLinha["modo"] = null;
+        $camposLinha["categoriaCodigo"] = null;
+        $camposLinha["planoPagtoCartao"] = null;
+        $camposLinha["bandeiraCartao"] = null;
 
         return $camposLinha;
     }
 
-    private function importGrupoMovimentacao(GrupoItem $grupoItem)
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    private function importGrupoMovimentacao()
     {
         $movimentacoes = array();
 
@@ -646,7 +639,7 @@ class MovimentacaoImporter
                 ->findBy([
                     'dtMoviment' => $dtMoviment,
                     'valor' => $valor,
-                    'grupoItem' => $grupoItem
+                    'grupoItem' => $this->grupoItem
                 ]);
 
             $importada = null;
@@ -660,11 +653,11 @@ class MovimentacaoImporter
             } else {
 
                 $importada = new Movimentacao();
-//                $importada->setUnqControle(com.ocabit.utils.strings.StringUtils.generateRandomString(15));
+                $importada->setUnqControle(md5(uniqid(rand(), true)));
 
-                $importada->setGrupoItem($grupoItem);
+                $importada->setGrupoItem($this->grupoItem);
 
-                $categ101 = $this->doctrine->getRepository(Categoria::class)->findBy(['codigo' => '202001']);  // 2.02.001 - CUSTOS DE MERCADORIAS
+                $categ101 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => '202001']);  // 2.02.001 - CUSTOS DE MERCADORIAS
                 $importada->setCategoria($categ101);
 
 
@@ -879,7 +872,7 @@ class MovimentacaoImporter
         $tipo = trim($campos[3]);
         $bandeira = trim($campos[6]);
 
-        $descricao = trim($campos[0]) + " - " + $tipo + " - " + $bandeira + " (" + trim($campos[4]) + "/" + trim($campos[5]) + ") " + trim($campos[8]);
+        $descricao = trim($campos[0]) . " - " . $tipo . " - " . $bandeira . " (" . trim($campos[4]) . "/" . trim($campos[5]) . ") " . trim($campos[8]);
 
         $valor = abs(StringUtils::parseFloat($campos[9], true));
         $entradaOuSaida = $valor < 0 ? 2 : 1;
@@ -890,8 +883,6 @@ class MovimentacaoImporter
         if (!$bandeiraCartao) {
             throw new \Exception("Bandeira Cartão não encontrada");
         }
-
-        $planoPagtoCartao = 'DEBITO';
 
         $planoPagtoCartao = (stripos($descricao, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
 

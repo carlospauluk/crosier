@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Security;
 
 use App\Entity\Security\Group;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Group.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class GroupRepository extends ServiceEntityRepository
 {

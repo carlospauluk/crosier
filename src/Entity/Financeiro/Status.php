@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 /**
  * Constantes para movimentacao.status.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 final class Status
 {
@@ -44,9 +45,10 @@ final class Status
         Status::PREVISTA,
         Status::REALIZADA
     );
-    
-    
-    public static function getChoices() {
+
+
+    public static function getChoices()
+    {
         $arr = array();
         foreach (Status::ALL as $status) {
             $arr[$status['label']] = $status['sigla'];
@@ -54,7 +56,8 @@ final class Status
         return $arr;
     }
 
-    public static function get($sigla) {
+    public static function get($sigla)
+    {
         foreach (Status::ALL as $st) {
             if ($st['sigla'] === $sigla) {
                 return $st;
@@ -63,6 +66,6 @@ final class Status
         return null;
     }
 
-    
+
 }
 

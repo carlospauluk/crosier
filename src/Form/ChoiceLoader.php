@@ -1,19 +1,18 @@
 <?php
+
 namespace App\Form;
 
-use Symfony\Component\Form\FormBuilder;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
 use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
+use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
 
 /**
  * ChoiceLoader para trabalhar com autocomplete no componente select2.js.
  *
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ChoiceLoader implements ChoiceLoaderInterface
 {
@@ -36,17 +35,17 @@ class ChoiceLoader implements ChoiceLoaderInterface
     public function __construct($builder, $repo, $getObjFunc, $choiceGetLabelFunc)
     {
         if (is_object($builder) && ($builder instanceof FormBuilderInterface)) {
-            
+
             // $builder->addEventListener(FormEvents::POST_SET_DATA, [
             // $this,
             // 'onFormPostSetData'
             // ]);
-            
+
             // $builder->addEventListener(FormEvents::POST_SUBMIT, [
             // $this,
             // 'onFormPostSetData'
             // ]);
-            
+
             $this->builder = $builder;
             $this->repo = $repo;
             $this->getObjFunc = $getObjFunc;
@@ -67,19 +66,19 @@ class ChoiceLoader implements ChoiceLoaderInterface
     // public function onFormPostSetData(FormEvent $event)
     // {
     // $this->selected = [];
-    
+
     // $entityId = $event->getData();
     // if (! is_object($entityId)) {
     // return;
     // }
-    
+
     // // Retorna o objeto
     // $this->selected = call_user_func(array(
     // $entityId,
     // $this->getObjFunc
     // ));
     // }
-    
+
     /**
      * Aqui irá retornar apenas o objeto já setado, para que o select2 possa deixa-lo selecionado.
      *
@@ -90,16 +89,16 @@ class ChoiceLoader implements ChoiceLoaderInterface
     {
         //
         $data = $this->getBuilder()->getData();
-        
+
         $choices = array();
-        
+
         if ($data) {
-            
+
             $entity = call_user_func(array(
                 $data,
                 $this->getObjFunc
             ));
-            
+
             if (is_object($entity)) {
                 $choiceGetLabelFunc = $this->choiceGetLabelFunc;
                 $label = $choiceGetLabelFunc($entity);
@@ -118,12 +117,12 @@ class ChoiceLoader implements ChoiceLoaderInterface
     public function loadChoicesForValues(array $values, $value = null)
     {
         $result = [];
-        
+
         foreach ($values as $id) {
             $entityId = $this->repo->find($id);
             $result[] = $entityId;
         }
-        
+
         return $result;
     }
 
@@ -137,10 +136,10 @@ class ChoiceLoader implements ChoiceLoaderInterface
     {
         $result = [];
         if ($choices and count($choices) > 0) {
-            
+
             foreach ($choices as $entityId) {
                 if (is_object($entityId)) {
-                    $result[] = (string) $entityId->getId();
+                    $result[] = (string)$entityId->getId();
                 }
             }
         }

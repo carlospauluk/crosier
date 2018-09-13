@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Utils\Repository;
 
 class FilterData
@@ -9,10 +10,10 @@ class FilterData
     public $compar;
 
     public $val;
-    
+
     public $fieldType;
 
-    public function __construct($field, $compar, $val, $fieldType=null)
+    public function __construct($field, $compar, $val, $fieldType = null)
     {
         $this->field = $field;
         $this->compar = $compar;

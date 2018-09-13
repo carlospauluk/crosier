@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\RH;
 
 use App\Entity\Base\Endereco;
@@ -16,7 +17,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\RH\FuncionarioRepository")
  * @ORM\Table(name="rh_funcionario")
- * @ORM\HasLifecycleCallbacks()
  */
 class Funcionario extends EntityId
 {
@@ -414,7 +414,7 @@ class Funcionario extends EntityId
 
     public function addEndereco(?Endereco $e): void
     {
-        if (! $this->enderecos->contains($e)) {
+        if (!$this->enderecos->contains($e)) {
             $this->enderecos->add($e);
         }
     }

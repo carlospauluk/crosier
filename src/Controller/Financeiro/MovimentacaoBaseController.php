@@ -8,7 +8,6 @@ use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
-use App\Entity\Financeiro\Parcelamento;
 use App\Entity\Financeiro\Status;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
@@ -30,7 +29,8 @@ class MovimentacaoBaseController extends FormListController
 
     private $business;
 
-    public function __construct(MovimentacaoEntityHandler $entityHandler, MovimentacaoBusiness $business) {
+    public function __construct(MovimentacaoEntityHandler $entityHandler, MovimentacaoBusiness $business)
+    {
         $this->entityHandler = $entityHandler;
         $this->business = $business;
     }
@@ -168,7 +168,6 @@ class MovimentacaoBaseController extends FormListController
 
         return $filterChoices;
     }
-
 
 
 }

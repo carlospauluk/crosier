@@ -14,11 +14,17 @@ class DateTimeUtils
     public static function parseDateStr($dateStr)
     {
         if (strlen($dateStr) == 5) { // dd/mm
-            return \DateTime::createFromFormat('d/m', $dateStr);
+            $dt = \DateTime::createFromFormat('d/m', $dateStr);
+            $dt->setTime(12, 0, 0, 0);
+            return $dt;
         } else if (strlen($dateStr) == 8) { // dd/mm/yy
-            return \DateTime::createFromFormat('d/m/y', $dateStr);
+            $dt = \DateTime::createFromFormat('d/m/y', $dateStr);
+            $dt->setTime(12, 0, 0, 0);
+            return $dt;
         } else if (strlen($dateStr) == 10) { // dd/mm/YYYY
-            return \DateTime::createFromFormat('d/m/Y', $dateStr);
+            $dt = \DateTime::createFromFormat('d/m/Y', $dateStr);
+            $dt->setTime(12, 0, 0, 0);
+            return $dt;
         } else if (strlen($dateStr) == 16) { // dd/mm/YYYY 12:34
             return \DateTime::createFromFormat('d/m/Y H:i', $dateStr);
         } else if (strlen($dateStr) == 19) { // dd/mm/YYYY 12:34:00

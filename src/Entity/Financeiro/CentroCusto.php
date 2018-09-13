@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -10,7 +11,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CentroCustoRepository")
  * @ORM\Table(name="fin_centrocusto")
- * @ORM\HasLifecycleCallbacks()
  */
 class CentroCusto extends EntityId
 {

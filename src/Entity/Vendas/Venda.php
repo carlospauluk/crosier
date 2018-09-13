@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Vendas;
 
 use App\Entity\Base\EntityId;
@@ -13,7 +14,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Vendas\VendaRepository")
  * @ORM\Table(name="ven_venda")
- * @ORM\HasLifecycleCallbacks()
  */
 class Venda extends EntityId
 {
@@ -332,7 +332,7 @@ class Venda extends EntityId
 
     public function addItem(?VendaItem $i): void
     {
-        if (! $this->itens->contains($i)) {
+        if (!$this->itens->contains($i)) {
             $this->itens->add($i);
         }
     }

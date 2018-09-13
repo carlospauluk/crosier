@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\TipoInsumo;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade TipoInsumo.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class TipoInsumoRepository extends ServiceEntityRepository
 {

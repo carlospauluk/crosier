@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Form\Financeiro;
 
 use App\Entity\Financeiro\Modo;
@@ -17,11 +18,11 @@ class ModoType extends AbstractType
         $builder->add('codigo', IntegerType::class, array(
             'label' => 'Código'
         ));
-        
+
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
         ));
-        
+
         $builder->add('modoDeTransfPropria', ChoiceType::class, array(
             'label' => 'Transf Própria',
             'choices' => array(

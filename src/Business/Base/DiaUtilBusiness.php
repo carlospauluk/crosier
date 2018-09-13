@@ -3,8 +3,6 @@
 namespace App\Business\Base;
 
 use App\Entity\Base\DiaUtil;
-use App\Entity\Base\Endereco;
-use App\Entity\Base\Pessoa;
 use App\Utils\DateTimeUtils;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -29,8 +27,8 @@ class DiaUtilBusiness
     public function incPeriodo($proFuturo, $ini, $fim)
     {
         try {
-            $dtIni = \DateTime::createFromFormat('Y-m-d', $ini)->setTime(0,0,0,0);
-            $dtFim = \DateTime::createFromFormat('Y-m-d', $fim)->setTime(23,59,59,999999);
+            $dtIni = \DateTime::createFromFormat('Y-m-d', $ini)->setTime(0, 0, 0, 0);
+            $dtFim = \DateTime::createFromFormat('Y-m-d', $fim)->setTime(23, 59, 59, 999999);
             $difDias = $dtFim->diff($dtIni)->days;// Se na tela foi informado um período relatorial...
 
             if (DateTimeUtils::isPeriodoRelatorial($dtIni, $dtFim)) {
@@ -46,11 +44,11 @@ class DiaUtilBusiness
                     $dtFim = clone $dtIni;
                 } else {
                     if (!$proFuturo) {
-                        $dtIni = $dtIni->sub(new \DateInterval('P' . ($difDias+1) . 'D'));
-                        $dtFim = $dtFim->sub(new \DateInterval('P' . ($difDias+1) . 'D'));
+                        $dtIni = $dtIni->sub(new \DateInterval('P' . ($difDias + 1) . 'D'));
+                        $dtFim = $dtFim->sub(new \DateInterval('P' . ($difDias + 1) . 'D'));
                     } else {
-                        $dtIni = $dtIni->add(new \DateInterval('P' . ($difDias+1) . 'D'));
-                        $dtFim = $dtFim->add(new \DateInterval('P' . ($difDias+1) . 'D'));
+                        $dtIni = $dtIni->add(new \DateInterval('P' . ($difDias + 1) . 'D'));
+                        $dtFim = $dtFim->add(new \DateInterval('P' . ($difDias + 1) . 'D'));
                     }
 
                 }

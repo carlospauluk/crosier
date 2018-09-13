@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -6,14 +7,13 @@ use App\Utils\StringUtils;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\CategoriaRepository")
  * @ORM\Table(name="fin_categoria")
- * @ORM\HasLifecycleCallbacks()
  */
 class Categoria extends EntityId
 {
@@ -269,7 +269,7 @@ class Categoria extends EntityId
     public function getCodigoSufixo()
     {
         if ($this->getCodigo()) {
-            if (! $this->getPai()) {
+            if (!$this->getPai()) {
                 return $this->getCodigo();
             } else {
                 // Se tem pai, é o restante do código, removendo a parte do pai:

@@ -1,16 +1,16 @@
 <?php
+
 namespace App\Entity\Cortinas;
 
 use App\Entity\Base\EntityId;
+use App\Entity\Estoque\Produto;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\Estoque\Produto;
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Cortinas\ArtigoCortinaRepository")
  * @ORM\Table(name="crtn_artigo_cortina")
- * @ORM\HasLifecycleCallbacks()
  */
 class ArtigoCortina extends EntityId
 {

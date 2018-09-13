@@ -1,7 +1,5 @@
 'use strict';
 
-import Moment from "moment";
-import Numeral from "numeral";
 
 let listId = "#centroCustoList";
 

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -11,7 +12,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\OperadoraCartaoRepository")
  * @ORM\Table(name="fin_operadora_cartao")
- * @ORM\HasLifecycleCallbacks()
  *
  * @author Carlos Eduardo Pauluk
  */
@@ -38,12 +38,12 @@ class OperadoraCartao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=true)
-     * 
+     *
      * @var $carteira Carteira
      */
     private $carteira;
-    
-    
+
+
     public function getId()
     {
         return $this->id;
@@ -75,5 +75,4 @@ class OperadoraCartao extends EntityId
     }
 
 
-    
 }

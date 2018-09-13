@@ -1,16 +1,16 @@
 <?php
+
 namespace App\Entity\Producao;
 
 use App\Entity\Base\EntityId;
+use App\Entity\Estoque\UnidadeProduto;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\Estoque\UnidadeProduto;
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\TipoInsumoRepository")
  * @ORM\Table(name="prod_tipo_insumo")
- * @ORM\HasLifecycleCallbacks()
  */
 class TipoInsumo extends EntityId
 {

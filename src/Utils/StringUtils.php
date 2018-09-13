@@ -2,26 +2,30 @@
 
 namespace App\Utils;
 
+use NumberFormatter;
+
 class StringUtils
 {
 
     const PATTERN_DATA = "@(?<data>\\d{2}/\\d{2}/\\d{4}|\\d{2}/\\d{2}/\\d{2}|\\d{2}/\\d{2}){1}@";
 
     const PATTERN_MONEY = "@" .
-    "(?<money>(?:(?:\\+|\\-)?(?:\\s)?)(?:" .
-    "(?:(?:[1-9]{1}(?:[0-9]{0,2})?(?:\\.{1}[0-9]{3})+[,]{1}[0-9]{2})){1}" .
-    "|" .
-    "(?:(?:[1-9]{1}[0-9]*[,]{1}[0-9]{2}))" .
-    "|" .
-    "(?:(?:[0]{1},[0-9]{2}))){1})@";
+    "(?<money>(?:(?:\\+|\\-)?(?:[\w]?)(?:[\$]?)(?:\\s)?)(?:(?:(?:[1-9]{1}(?:[0-9]{0,2})?(?:\\.{1}[0-9]{3})+[,]{1}[0-9]{2})){1}|(?:(?:[1-9]{1}[0-9]*[,]{1}[0-9]{2}))|(?:(?:[0]{1},[0-9]{2}))){1}[\w]{0,1})@";
 
-    public static function parseFloat($formattedFloat, $clear=false)
+    public static function parseFloat($formattedFloat, $clear = false)
     {
+        $formattedFloat = str_replace(" ", "", $formattedFloat);
+        $negativo = null;
+        if ($formattedFloat[strlen($formattedFloat) - 1] == 'D') {
+            $negativo = true;
+        }
+        // Se pedir pra remover caracteres estranhos...
         if ($clear) {
-            $formattedFloat = preg_replace("@[^0-9\\.\\,]@","", $formattedFloat);
+            $formattedFloat = preg_replace("@[^0-9\\.\\,]@", "", $formattedFloat);
         }
         $fmt = new NumberFormatter('pt_BR', NumberFormatter::DECIMAL);
         $float = $fmt->parse($formattedFloat);
+        $float = $negativo ? -(abs($float)) : $float;
         return $float;
     }
 

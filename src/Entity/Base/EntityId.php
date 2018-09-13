@@ -2,9 +2,8 @@
 
 namespace App\Entity\Base;
 
-use ReflectionClass;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class EntityId
 {
@@ -25,27 +24,27 @@ class EntityId
 
     /**
      *
-     * @ORM\Column(name="estabelecimento_id", type="bigint", nullable=false)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Config\Estabelecimento", fetch="EAGER", cascade={"persist"})
+     * @ORM\JoinColumn(name="estabelecimento_id", nullable=false)
+     *
      */
     public $estabelecimento;
 
     /**
      *
-     * @ORM\Column(name="user_inserted_id", type="bigint", nullable=false)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Security\User", fetch="EAGER", cascade={"persist"})
+     * @ORM\JoinColumn(name="user_inserted_id", nullable=false)
+     *
      */
     public $userInserted;
 
     /**
      *
-     * @ORM\Column(name="user_updated_id", type="bigint", nullable=false)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Security\User", fetch="EAGER", cascade={"persist"})
+     * @ORM\JoinColumn(name="user_updated_id", nullable=false)
+     *
      */
     public $userUpdated;
-
-    public function __construct()
-    {
-        ORM\Annotation::class;
-        Assert\All::class;
-    }
 
     public function getInserted(): ?\DateTime
     {
@@ -97,40 +96,4 @@ class EntityId
         $this->userUpdated = $userUpdated;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist()
-    {
-        $this->handleUppercaseFields();
-        $this->setInserted(new \DateTime('now'));
-        $this->setEstabelecimento(1);
-        $this->setUserInserted(1);
-        $this->setUpdated(new \DateTime('now'));
-        $this->setUserUpdated(1);
-    }
-
-    /**
-     * @ORM\PreUpdate()
-     */
-    public function preUpdate()
-    {
-        $this->handleUppercaseFields();
-        $this->setUpdated(new \DateTime());
-        $this->setUserUpdated(1);
-    }
-
-
-    private function handleUppercaseFields() {
-        $uppercaseFieldsJson = file_get_contents('../src/Entity/uppercaseFields.json');
-        $uppercaseFields = json_decode($uppercaseFieldsJson);
-        $class = str_replace('\\', '_', get_class($this));
-        $reflectionClass = new ReflectionClass(get_class($this));
-        $campos = isset($uppercaseFields->$class) ? $uppercaseFields->$class : array()  ;
-        foreach ($campos as $field) {
-            $property = $reflectionClass->getProperty($field);
-            $property->setAccessible(true);
-            $property->setValue($this, mb_strtoupper($property->getValue($this)));
-        }
-    }
 }

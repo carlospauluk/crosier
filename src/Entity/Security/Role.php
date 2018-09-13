@@ -1,15 +1,15 @@
 <?php
+
 namespace App\Entity\Security;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Base\EntityId;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Entidade 'Role'.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Security\RoleRepository")
  * @ORM\Table(name="sec_role")
- * @ORM\HasLifecycleCallbacks()
  */
 class Role extends EntityId
 {
@@ -63,7 +63,7 @@ class Role extends EntityId
     {
         $this->descricao = $descricao;
     }
-    
-    
+
+
 }
 

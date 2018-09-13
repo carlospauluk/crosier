@@ -4,10 +4,7 @@ namespace App\Repository\CRM;
 
 use App\Entity\CRM\Cliente;
 use App\Repository\FilterRepository;
-use App\Utils\Repository\WhereBuilder;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Cliente.
@@ -60,10 +57,11 @@ class ClienteRepository extends FilterRepository
     public function handleFrombyFilters(QueryBuilder &$qb)
     {
         return $qb->from($this->getEntityClass(), 'e')
-            ->join('App\Entity\Base\Pessoa','p','WITH','e.pessoa = p');
+            ->join('App\Entity\Base\Pessoa', 'p', 'WITH', 'e.pessoa = p');
     }
 
-    public function findProximoCodigo() {
+    public function findProximoCodigo()
+    {
         $ql = "SELECT c FROM App\Entity\CRM\Cliente c ORDER BY c.codigo DESC";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setMaxResults(1);

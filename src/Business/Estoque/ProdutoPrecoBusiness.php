@@ -2,7 +2,8 @@
 
 namespace App\Business\Estoque;
 
-class ProdutoPrecoBusiness {
-    
-    
+class ProdutoPrecoBusiness
+{
+
+
 }

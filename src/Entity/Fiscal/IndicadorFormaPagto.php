@@ -10,17 +10,17 @@ namespace App\Entity\Fiscal;
  */
 final class IndicadorFormaPagto
 {
-    
+
     const VISTA = array(
         'codigo' => 0,
         'label' => 'A Vista'
     );
-    
+
     const PRAZO = array(
         'codigo' => 1,
         'label' => 'A Prazo'
     );
-    
+
     const OUTROS = array(
         'codigo' => 2,
         'label' => 'Outros'

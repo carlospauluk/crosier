@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\RH;
 
 use App\Entity\RH\Funcionario;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Funcionario.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class FuncionarioRepository extends ServiceEntityRepository
 {
@@ -18,7 +19,7 @@ class FuncionarioRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Funcionario::class);
     }
-    
+
     public function findByCodigo($codigo)
     {
         $ql = "SELECT f FROM App\Entity\RH\Funcionario f JOIN App\Entity\RH\FuncionarioCargo fc WHERE fc.funcionario = f AND f.codigo = :codigo AND fc.atual = TRUE";
@@ -26,16 +27,16 @@ class FuncionarioRepository extends ServiceEntityRepository
         $query->setParameters(array(
             'codigo' => $codigo
         ));
-        
+
         $results = $query->getResult();
-        
+
         if (count($results) > 1) {
             throw new \Exception('Mais de um funcionario encontrado para [' . $codigo . '] com atual = true');
         }
-        
+
         return count($results) == 1 ? $results[0] : null;
     }
-    
+
     public function findByPessoa($pessoa)
     {
         $ql = "SELECT f FROM App\Entity\RH\Funcionario f JOIN App\Entity\Base\Pessoa p WHERE f.pessoa = p AND p = :pessoa";
@@ -43,13 +44,13 @@ class FuncionarioRepository extends ServiceEntityRepository
         $query->setParameters(array(
             'pessoa' => $pessoa
         ));
-        
+
         $results = $query->getResult();
-        
+
         if (count($results) > 1) {
             throw new \Exception('Mais de um funcionário encontrado para [' . $pessoa . ']');
         }
-        
+
         return count($results) == 1 ? $results[0] : null;
     }
 }

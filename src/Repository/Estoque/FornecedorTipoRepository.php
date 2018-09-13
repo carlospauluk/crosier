@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\FornecedorTipo;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade FornecedorTipo.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class FornecedorTipoRepository extends ServiceEntityRepository
 {

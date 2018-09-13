@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -7,10 +8,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade 'Banco'.
- * 
+ *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\BancoRepository")
  * @ORM\Table(name="fin_banco")
- * @ORM\HasLifecycleCallbacks()
  */
 class Banco extends EntityId
 {
@@ -40,7 +40,7 @@ class Banco extends EntityId
 
     /**
      * Para poder filtrar exibição na view.
-     * 
+     *
      * @ORM\Column(name="utilizado", type="boolean", nullable=false)
      * @Assert\NotNull()
      */

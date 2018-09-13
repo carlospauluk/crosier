@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\Instituicao;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Instituicao.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class InstituicaoRepository extends ServiceEntityRepository
 {
@@ -31,10 +32,10 @@ class InstituicaoRepository extends ServiceEntityRepository
                     cp.nomeFantasia LIKE :str OR 
                     fp.nome LIKE :str OR 
                     fp.nomeFantasia LIKE :str)";
-        
+
         $qry = $this->getEntityManager()->createQuery($ql);
         $qry->setParameter('str', '%' . $str . '%');
-        
+
         return $qry->getResult();
     }
 }

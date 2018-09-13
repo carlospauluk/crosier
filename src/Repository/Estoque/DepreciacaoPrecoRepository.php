@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\DepreciacaoPreco;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade ConfeccaoItem.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class DepreciacaoPrecoRepository extends ServiceEntityRepository
 {

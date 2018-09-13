@@ -1,10 +1,10 @@
 <?php
+
 namespace App\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 
 class TesteCommand extends Command
 {
@@ -15,13 +15,13 @@ class TesteCommand extends Command
         // the name of the command (the part after "bin/console")
         setName('app:teste')
             ->
-        // the short description shown while running "php bin/console list"
-        setDescription('Comando de teste.')
+            // the short description shown while running "php bin/console list"
+            setDescription('Comando de teste.')
             ->
-        // the full command description shown when running the command with
-        // the "--help" option
-        setHelp('??? ...');
-        
+            // the full command description shown when running the command with
+            // the "--help" option
+            setHelp('??? ...');
+
 //         $this->addArgument('password', $this->requirePassword ? InputArgument::OPTIONAL : InputArgument::REQUIRED, 'User password');
     }
 
@@ -32,12 +32,13 @@ class TesteCommand extends Command
         $output->writeln($this->someMethod());
         $output->writeln('');
         $output->writeln('');
-        
+
     }
-    
-    public function someMethod() {
-       
-        
+
+    public function someMethod()
+    {
+
+
         $hts = "#sucesso
         #segredo
         #todomundo
@@ -122,23 +123,18 @@ class TesteCommand extends Command
         #workshop
         #líder
         #gestão";
-        
-        $htArr = explode("\n",$hts);
-        $htArr = array_map(function ($a) { return trim($a); }, $htArr);
+
+        $htArr = explode("\n", $hts);
+        $htArr = array_map(function ($a) {
+            return trim($a);
+        }, $htArr);
         $htArr = array_unique($htArr);
         sort($htArr);
         shuffle($htArr);
-        $htArr = array_slice($htArr,0,28);
-        
-        return implode(" " , $htArr);
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        $htArr = array_slice($htArr, 0, 28);
+
+        return implode(" ", $htArr);
+
+
     }
 }

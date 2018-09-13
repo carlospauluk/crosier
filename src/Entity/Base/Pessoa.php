@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Base;
 
 use App\Entity\Financeiro\TipoPessoa;
@@ -10,7 +11,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\PessoaRepository")
  * @ORM\Table(name="bon_pessoa")
- * @ORM\HasLifecycleCallbacks()
  */
 class Pessoa extends EntityId
 {
@@ -56,9 +56,9 @@ class Pessoa extends EntityId
     private $nomeFantasia;
 
     // Abaixo os atributos 'calculados': Somente afins de agilidade para setar e recuperar um endereço principal da pessoa em determinada situação.
-    
+
     // Mais tarde isso deveria estar na tabela 'relacionamento' como campos reais.
-    
+
     /**
      *
      * @var Endereco

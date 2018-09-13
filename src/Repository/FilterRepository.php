@@ -28,8 +28,9 @@ abstract class FilterRepository extends ServiceEntityRepository
         $qb->from($this->getEntityClass(), 'e');
     }
 
-    public function findAll($orderBy=null) {
-        return $this->findByFilters(null,$orderBy, $start = 0, $limit = null);
+    public function findAll($orderBy = null)
+    {
+        return $this->findByFilters(null, $orderBy, $start = 0, $limit = null);
     }
 
     public function getDefaultOrders()

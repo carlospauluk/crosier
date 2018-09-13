@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Fiscal;
 
 use App\Entity\Base\EntityId;
@@ -9,7 +10,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NCMRepository")
  * @ORM\Table(name="fis_ncm")
- * @ORM\HasLifecycleCallbacks()
  */
 class NCM extends EntityId
 {

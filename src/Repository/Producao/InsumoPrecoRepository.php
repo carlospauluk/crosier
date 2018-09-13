@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\InsumoPreco;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade InsumoPreco.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class InsumoPrecoRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,5 @@ class InsumoPrecoRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, InsumoPreco::class);
     }
-    
+
 }

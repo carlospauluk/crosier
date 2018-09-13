@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Form\Financeiro;
 
 use App\Entity\Financeiro\Banco;
@@ -17,11 +18,11 @@ class BancoType extends AbstractType
         $builder->add('codigoBanco', IntegerType::class, array(
             'label' => 'Código'
         ));
-        
+
         $builder->add('descricao', TextType::class, array(
             'label' => 'Descrição'
         ));
-        
+
         $builder->add('utilizado', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,

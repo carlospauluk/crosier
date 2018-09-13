@@ -1,17 +1,17 @@
 <?php
+
 namespace App\Entity\Security;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Base\EntityId;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Entidade 'Group'.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Security\GroupRepository")
  * @ORM\Table(name="sec_group")
- * @ORM\HasLifecycleCallbacks()
  */
 class Group extends EntityId
 {
@@ -29,7 +29,7 @@ class Group extends EntityId
      * @ORM\Column(name="groupname", type="string", length=90, unique=true)
      */
     private $username;
-    
+
     /**
      *
      * @ORM\ManyToMany(targetEntity="Role")
@@ -40,10 +40,11 @@ class Group extends EntityId
      */
     private $roles;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->roles = new ArrayCollection();
     }
-    
+
     public function getId()
     {
         return $this->id;
@@ -63,7 +64,7 @@ class Group extends EntityId
     {
         $this->username = $username;
     }
-    
+
     /**
      *
      * @return Collection|Role[]
@@ -72,13 +73,12 @@ class Group extends EntityId
     {
         return $this->roles;
     }
-    
+
     public function setRoles($roles)
     {
         $this->roles = $roles;
     }
-    
 
-   
+
 }
 

@@ -106,7 +106,8 @@ class WhereBuilder
                     case 'NOT_IN':
                         // $exprs[] = $qb->expr()->isNotNull($field, $val);
                         break;
-                    case 'LIKE': case 'LIKE_ONLY':
+                    case 'LIKE':
+                    case 'LIKE_ONLY':
                         $orX->add($qb->expr()
                             ->like($field, $fieldP));
                         break;
@@ -237,5 +238,29 @@ class WhereBuilder
             }
         }
         return false;
+    }
+
+    public static function buildOrderBy($ordersStrs)
+    {
+        $ordersBy = array();
+        if (!is_array($ordersStrs)) {
+            $ordersStrs = array($ordersStrs);
+        }
+        foreach ($ordersStrs as $orderStr) {
+            if (strpos($orderStr, " ") !== FALSE) {
+                $o = explode(" ", $orderStr);
+                $field = $o[0];
+                if (strpos($field, '.') === FALSE) {
+                    $field = 'e.' . $field;
+                }
+                $ordersBy[] = ['column' => $field, 'dir' => $o[1]];
+            } else {
+                if (strpos($orderStr, '.') === FALSE) {
+                    $orderStr = 'e.' . $orderStr;
+                }
+                $ordersBy[] = ['column' => $orderStr, 'dir' => 'asc'];
+            }
+        }
+        return $ordersBy;
     }
 }

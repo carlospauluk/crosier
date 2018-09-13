@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\RH;
 
 use App\Entity\RH\Cargo;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Cargo.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class CargoRepository extends ServiceEntityRepository
 {

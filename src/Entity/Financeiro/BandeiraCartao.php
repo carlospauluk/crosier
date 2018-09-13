@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -11,7 +12,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\BandeiraCartaoRepository")
  * @ORM\Table(name="fin_bandeira_cartao")
- * @ORM\HasLifecycleCallbacks()
  *
  * @author Carlos Eduardo Pauluk
  */
@@ -43,7 +43,7 @@ class BandeiraCartao extends EntityId
 
     /**
      * Para marcar diferentes nomes que podem ser utilizados para definir uma bandeira (ex.: MAESTRO ou MASTER MAESTRO ou M MAESTRO).
-     * 
+     *
      * @ORM\Column(name="labels", type="string", nullable=false, length=2000)
      * @Assert\NotBlank()
      */

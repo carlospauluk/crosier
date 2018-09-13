@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -10,10 +11,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Configura uma regra para setar corretamente a Movimentação ao importar uma linha de extrato.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\RegraImportacaoLinhaRepository")
  * @ORM\Table(name="fin_regra_import_linha")
- * @ORM\HasLifecycleCallbacks()
  */
 class RegraImportacaoLinha extends EntityId
 {
@@ -101,7 +101,7 @@ class RegraImportacaoLinha extends EntityId
 
     // ---------------------------------------------------------------------------------------
     // ---------- CAMPOS PARA "CHEQUE"
-    
+
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Banco")
@@ -129,7 +129,7 @@ class RegraImportacaoLinha extends EntityId
      * @ORM\Column(name="cheque_num_cheque", type="string", nullable=true, length=30)
      */
     private $chequeNumCheque;
-    
+
     // ---------------------------------------------------------------------------------------
 
     public function getId()
@@ -281,15 +281,20 @@ class RegraImportacaoLinha extends EntityId
     {
         $this->chequeNumCheque = $chequeNumCheque;
     }
-    
-    public function getSinalValorLabel() {
+
+    public function getSinalValorLabel()
+    {
         switch ($this->sinalValor) {
-            case 0: return "Ambos";
-            case 1: return "Positivo";
-            case -1: return "Negativo";
-            default: return null;
+            case 0:
+                return "Ambos";
+            case 1:
+                return "Positivo";
+            case -1:
+                return "Negativo";
+            default:
+                return null;
         }
     }
-    
-    
+
+
 }

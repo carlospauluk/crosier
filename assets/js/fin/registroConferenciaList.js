@@ -25,7 +25,10 @@ function getDatatablesColumns() {
         {
             name: 'c.descricao',
             data: 'carteira',
-            title: 'Carteira'
+            title: 'Carteira',
+            render: function (data, type, row) {
+                return data ? data.descricaoMontada : null;
+            }
         },
         {
             name: 'e.valor',

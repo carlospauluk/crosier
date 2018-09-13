@@ -1,20 +1,20 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade 'Parcelamento'.
  *
  * @author Carlos Eduardo Pauluk
- * 
+ *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\ParcelamentoRepository")
  * @ORM\Table(name="fin_parcelamento")
- * @ORM\HasLifecycleCallbacks()
  */
 class Parcelamento extends EntityId
 {
@@ -85,7 +85,7 @@ class Parcelamento extends EntityId
     public function addParcela(?Movimentacao $movimentacao): void
     {
         $movimentacao->setCadeia($this);
-        if (! $this->parcelas->contains($movimentacao)) {
+        if (!$this->parcelas->contains($movimentacao)) {
             $this->parcelas->add($movimentacao);
         }
     }
@@ -98,7 +98,7 @@ class Parcelamento extends EntityId
 
     /**
      * Método auxiliar.
-     * 
+     *
      * @return number
      */
     public function getQtdeParcelas()
@@ -108,7 +108,7 @@ class Parcelamento extends EntityId
 
     /**
      * Método auxiliar.
-     * 
+     *
      * @return number
      */
     public function recalcularParcelas()

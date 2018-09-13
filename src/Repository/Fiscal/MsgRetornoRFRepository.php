@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Fiscal;
 
 use App\Entity\Fiscal\MsgRetornoRF;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade MsgRetornoRF.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class MsgRetornoRFRepository extends ServiceEntityRepository
 {

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Base;
 
 use App\Entity\Base\DiaUtil;
@@ -10,7 +11,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade DiaUtil.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class  DiaUtilRepository extends ServiceEntityRepository
 {
@@ -25,15 +26,15 @@ class  DiaUtilRepository extends ServiceEntityRepository
 
     public function findDiasUteisBy(\DateTime $ini, \DateTime $fim, $comercial = null, $financeiro = null)
     {
-        $ini->setTime(0,0,0,0);
-        $fim->setTime(23,59,59,999999);
+        $ini->setTime(0, 0, 0, 0);
+        $fim->setTime(23, 59, 59, 999999);
         $params = array();
-        
+
         $dql = "SELECT d FROM App\Entity\Base\DiaUtil d WHERE d.dia BETWEEN :ini AND :fim ";
-        
+
         $params['ini'] = $ini;
         $params['fim'] = $fim;
-        
+
         if ($comercial !== null) {
             $dql .= " AND d.comercial = :comercial";
             $params['comercial'] = $comercial ? true : false;
@@ -43,16 +44,16 @@ class  DiaUtilRepository extends ServiceEntityRepository
             $params['financeiro'] = $financeiro ? true : false;
         }
         $dql .= " ORDER BY d.dia";
-        
+
         $em = $this->getEntityManager();
-        
+
         $query = $em->createQuery($dql);
         $query->setParameters($params);
-        
+
         // qry.setParameter("ini", CalendarUtil.zeroDate(ini));
         // qry.setParameter("fim", CalendarUtil.to235959(fim));
         $results = $query->getResult();
-        
+
         return $results;
     }
 
@@ -93,15 +94,15 @@ class  DiaUtilRepository extends ServiceEntityRepository
     public function doFindBy(\DateTime $dia): ?DiaUtil
     {
         $dql = "SELECT d FROM DiaUtil d WHERE d.dia = :dia";
-        
+
         $em = $this->getEntityManager();
         $query = $em->createQuery($dql);
         $query->setParameters(array(
             $dia
         ));
-        
+
         $results = $query->getResult();
-        
+
         return $results;
     }
 
@@ -112,9 +113,9 @@ class  DiaUtilRepository extends ServiceEntityRepository
     {
         $fim = clone $dia;
         $fim->add(new \DateInterval('P20D'));
-        
+
         $lista = $this->findDiasUteisFinanceirosBy($dia, $fim);
-        
+
         return isset($lista[0]) ? $lista[0] : null;
     }
 
@@ -125,9 +126,9 @@ class  DiaUtilRepository extends ServiceEntityRepository
     {
         $ini = clone $dia;
         $ini->sub(new \DateInterval('P20D'));
-        
+
         $lista = $this->findDiasUteisFinanceirosBy($ini, $dia);
-        
+
         return isset($lista[count($lista) - 1]) ? $lista[count($lista) - 1] : null;
     }
 
@@ -136,12 +137,12 @@ class  DiaUtilRepository extends ServiceEntityRepository
      */
     public function findProximoDiaUtilComercial(\DateTime $dia): ?DiaUtil
     {
-        $dia->setTime(0,0,0,0);
+        $dia->setTime(0, 0, 0, 0);
         $fim = clone $dia;
         $fim->add(new \DateInterval('P20D'));
-        
+
         $lista = $this->findDiasUteisComerciaisBy($dia, $fim);
-        
+
         return isset($lista[0]) ? $lista[0] : null;
     }
 
@@ -151,11 +152,11 @@ class  DiaUtilRepository extends ServiceEntityRepository
     public function findAnteriorDiaUtilComercial(\DateTime $dia): ?DiaUtil
     {
         $ini = clone $dia;
-        $ini->setTime(23,59,59,999999);
+        $ini->setTime(23, 59, 59, 999999);
         $ini->sub(new \DateInterval('P20D'));
-        
+
         $lista = $this->findDiasUteisComerciaisBy($ini, $dia);
-        
+
         return isset($lista[count($lista) - 1]) ? $lista[count($lista) - 1] : null;
     }
 

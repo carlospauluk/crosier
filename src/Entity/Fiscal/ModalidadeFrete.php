@@ -37,7 +37,8 @@ final class ModalidadeFrete
         'TERCEIROS' => ModalidadeFrete::TERCEIROS
     );
 
-    public static function getChoices() {
+    public static function getChoices()
+    {
         $arr = array();
         foreach (ModalidadeFrete::ALL as $e) {
             $arr[$e['label']] = $e['codigo'];
@@ -45,7 +46,8 @@ final class ModalidadeFrete
         return $arr;
     }
 
-    public static function get($key) {
+    public static function get($key)
+    {
         $all = ModalidadeFrete::ALL;
         return $all[$key];
     }

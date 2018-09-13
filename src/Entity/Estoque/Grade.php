@@ -1,18 +1,18 @@
 <?php
+
 namespace App\Entity\Estoque;
 
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Estoque\GradeRepository")
  * @ORM\Table(name="est_grade")
- * @ORM\HasLifecycleCallbacks()
  */
 class Grade extends EntityId
 {
@@ -47,7 +47,7 @@ class Grade extends EntityId
      * @var $unidadeProduto UnidadeProduto
      */
     private $unidadeProduto;
-    
+
     /**
      *
      * @var GradeTamanho[]|ArrayCollection
@@ -106,7 +106,7 @@ class Grade extends EntityId
     {
         $this->unidadeProduto = $unidadeProduto;
     }
-    
+
     /**
      *
      * @return Collection|GradeTamanho[]

@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 /**
  * Constantes para movimentacao.planoPagtoCartao.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 final class PlanoPagtoCartao
 {

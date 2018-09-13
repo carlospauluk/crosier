@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -12,7 +13,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\ModoRepository")
  * @ORM\Table(name="fin_modo")
- * @ORM\HasLifecycleCallbacks()
  *
  * @author Carlos Eduardo Pauluk
  */
@@ -103,9 +103,13 @@ class Modo extends EntityId
         $this->id = $id;
     }
 
-    public function getCodigo()
+    public function getCodigo($format = false)
     {
-        return $this->codigo;
+        if ($format) {
+            return str_pad($this->codigo, 2, "0", STR_PAD_LEFT);
+        } else {
+            return $this->codigo;
+        }
     }
 
     public function setCodigo($codigo)
@@ -121,6 +125,11 @@ class Modo extends EntityId
     public function setDescricao($descricao)
     {
         $this->descricao = $descricao;
+    }
+
+    public function getDescricaoMontada()
+    {
+        return $this->getCodigo(true) . ' - ' . $this->getDescricao();
     }
 
     public function getModoDeTransfPropria()

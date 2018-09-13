@@ -2,7 +2,7 @@
 
 namespace App\Controller\Fiscal;
 
-use App\Business\CRM\ClienteBusiness;
+use App\Business\Fiscal\NotaFiscalBusiness;
 use App\Business\Vendas\VendaBusiness;
 use App\Entity\Base\Pessoa;
 use App\Entity\Fiscal\FinalidadeNF;
@@ -13,7 +13,6 @@ use App\Form\Fiscal\EmissaoFiscalType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Business\Fiscal\NotaFiscalBusiness;
 
 class EmissaoFiscalPVController extends Controller
 {

@@ -1,22 +1,22 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 /**
  * Entidade 'Cadeia de Movimentações'.
  *
  * Movimentações podem ser dependentes umas das outras, formando uma cadeia de entradas e saídas entre carteiras.
- *        
+ *
  * @ORM\Entity()
  * @ORM\Table(name="fin_cadeia")
- * @ORM\HasLifecycleCallbacks()
- * 
+ *
  * @author Carlos Eduardo Pauluk
  */
 class Cadeia extends EntityId
@@ -88,7 +88,7 @@ class Cadeia extends EntityId
     public function addMovimentacao(?Movimentacao $movimentacao): void
     {
         $movimentacao->setCadeia($this);
-        if (! $this->movimentacoes->contains($movimentacao)) {
+        if (!$this->movimentacoes->contains($movimentacao)) {
             $this->movimentacoes->add($movimentacao);
         }
     }

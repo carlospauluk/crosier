@@ -3,7 +3,6 @@
 namespace App\Form\Financeiro;
 
 use App\Entity\Financeiro\OperadoraCartao;
-use App\Entity\Financeiro\Modo;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;

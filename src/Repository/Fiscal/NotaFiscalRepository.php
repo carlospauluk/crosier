@@ -5,12 +5,8 @@ namespace App\Repository\Fiscal;
 use App\Entity\Base\Config;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Repository\FilterRepository;
-use App\Utils\Repository\WhereBuilder;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\QueryBuilder;
-use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade NotaFiscal.
@@ -110,8 +106,6 @@ class NotaFiscalRepository extends FilterRepository
             ['column' => 'e.dtEmissao', 'dir' => 'desc']
         );
     }
-
-
 
 
 }

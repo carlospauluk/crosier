@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller\Producao;
 
 use App\Entity\Estoque\Grade;
@@ -34,16 +35,16 @@ class FichaTecnicaController extends Controller
     public function inicial(Request $request, Confeccao $confeccao = null)
     {
         $params = array();
-        
+
         // Se mandou o id da confecção na URL...
         if ($confeccao instanceof Confeccao) {
             $params['instituicao']['id'] = $confeccao->getInstituicao()->getId();
             $params['instituicao']['nome'] = $confeccao->getInstituicao()->getNome();
-            
+
             // Já pré-carrega todos os tipos de artigos para o select2
             $repo = $this->getDoctrine()->getRepository(TipoArtigo::class);
             $tiposArtigos = $repo->findAllByInstituicao($confeccao->getInstituicao());
-            
+
             $params['tiposArtigos'] = array();
             foreach ($tiposArtigos as $t) {
                 $pTipoArtigo = array();
@@ -54,13 +55,13 @@ class FichaTecnicaController extends Controller
                 $pTipoArtigo['text'] = $t->getDescricao();
                 $params['tiposArtigos'][] = $pTipoArtigo;
             }
-            
+
             $params['tiposArtigos'] = json_encode($params['tiposArtigos']);
-            
+
             // Já pré-carrega todas as confecções para o select2
             $repo = $this->getDoctrine()->getRepository(Confeccao::class);
             $confeccoes = $repo->findAllByTipoArtigoInstituicao($confeccao->getInstituicao(), $confeccao->getTipoArtigo());
-            
+
             $params['confeccoes'] = array();
             foreach ($confeccoes as $c) {
                 $pConfeccao = array();
@@ -71,10 +72,10 @@ class FichaTecnicaController extends Controller
                 $pConfeccao['text'] = $c->getDescricao();
                 $params['confeccoes'][] = $pConfeccao;
             }
-            
+
             $params['confeccoes'] = json_encode($params['confeccoes']);
         }
-        
+
         return $this->render('Producao/FichaTecnica/inicial.html.twig', $params);
     }
 
@@ -86,21 +87,21 @@ class FichaTecnicaController extends Controller
     public function form(Request $request, Confeccao $confeccao = null)
     {
         $params = array();
-        
+
         $params['confeccao'] = $confeccao;
-        
+
         // Carrega a tabela
         $repoConfeccaoItem = $this->getDoctrine()->getRepository(ConfeccaoItem::class);
         $itens = $repoConfeccaoItem->findAllByConfeccao($confeccao);
-        
+
         $tabela = array();
-        
+
         $repoInsumo = $this->getDoctrine()->getRepository(Insumo::class);
-        
+
         $repoGrade = $this->getDoctrine()->getRepository(Grade::class);
-        
+
         $tabela['grade'] = $repoGrade->findGradeArray($confeccao->getGrade());
-        
+
         $totalPorTipoInsumo = array();
         foreach ($itens as $ci) {
             $tipoInsumo = $ci->getInsumo()
@@ -112,19 +113,19 @@ class FichaTecnicaController extends Controller
             $insumo['unidadeProduto'] = $ci->getInsumo()->getUnidadeProduto()->getLabel();
             $precoAtual = $repoInsumo->findPrecoAtual($ci->getInsumo());
             $insumo['preco'] = $precoAtual->getPrecoCusto();
-            
+
             $insumo['grade'] = $repoConfeccaoItem->findGradeMontada($ci);
             foreach ($insumo['grade'] as $gOrdem => $gQtde) {
                 $totalPorTipoInsumo[$tipoInsumo][$gOrdem] = isset($totalPorTipoInsumo[$tipoInsumo][$gOrdem]) ? $totalPorTipoInsumo[$tipoInsumo][$gOrdem] + $gQtde : $gQtde;
             }
-            
+
             $tabela['tiposInsumos'][$tipoInsumo]['insumos'][] = $insumo;
         }
         $tabela['totalPorTipoInsumo'] = $totalPorTipoInsumo;
         $params['tabela'] = $tabela;
-        
+
         return $this->render('Producao/FichaTecnica/form.html.twig', $params);
     }
-    
-    
+
+
 }

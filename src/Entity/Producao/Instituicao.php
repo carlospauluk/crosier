@@ -1,18 +1,18 @@
 <?php
+
 namespace App\Entity\Producao;
 
 use App\Entity\Base\EntityId;
+use App\Entity\CRM\Cliente;
+use App\Entity\Estoque\Fornecedor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\Estoque\Fornecedor;
-use App\Entity\CRM\Cliente;
 
 /**
  * Entidade 'Instituição'.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\InstituicaoRepository")
  * @ORM\Table(name="prod_instituicao")
- * @ORM\HasLifecycleCallbacks()
  */
 class Instituicao extends EntityId
 {
@@ -64,7 +64,7 @@ class Instituicao extends EntityId
      * @var $fornecedor Fornecedor
      */
     private $fornecedor;
-    
+
     public function __construct()
     {
         ORM\Annotation::class;
@@ -113,7 +113,7 @@ class Instituicao extends EntityId
         $this->obs = $obs;
     }
 
-    public function getCliente():? Cliente
+    public function getCliente(): ?Cliente
     {
         return $this->cliente;
     }

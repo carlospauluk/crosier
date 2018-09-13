@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\UnidadeProduto;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade UnidadeProduto.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class UnidadeProdutoRepository extends ServiceEntityRepository
 {

@@ -14,7 +14,8 @@ class EnderecoEntityHandler extends EntityHandler
         return Endereco::class;
     }
 
-    public function persistWith(Endereco $endereco, EntityId $entityId) {
+    public function persistWith(Endereco $endereco, EntityId $entityId)
+    {
 
     }
 }

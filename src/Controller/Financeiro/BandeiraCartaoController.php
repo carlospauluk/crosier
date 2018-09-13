@@ -46,7 +46,7 @@ class BandeiraCartaoController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData(array('descricao','labels'), 'LIKE', $params['filter']['descricao'])
+            new FilterData(array('descricao', 'labels'), 'LIKE', $params['filter']['descricao'])
         );
     }
 

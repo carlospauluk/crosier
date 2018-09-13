@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller\Producao;
 
 use App\Entity\Producao\Instituicao;
@@ -13,7 +14,7 @@ class TipoArtigoController extends Controller
 {
 
     private $eSerializer;
-    
+
     public function __construct(EntityIdSerializerService $eSerializer)
     {
         Route::class;
@@ -28,19 +29,19 @@ class TipoArtigoController extends Controller
     {
         $repo = $this->getDoctrine()->getRepository(TipoArtigo::class);
         $rs = $repo->findAllByInstituicao($instituicao);
-        
+
         $results = array(
             'results' => $rs
         );
-        
+
         $json = $this->eSerializer->serializeIncluding($results, array(
             'id',
             'descricao'
         ));
-        
+
         return new Response($json);
     }
-    
+
     /**
      *
      * @Route("/prod/tipoartigo/findAll/{str}", name="prod_tipoArtigo_findAll", defaults={"str"=null})
@@ -49,16 +50,16 @@ class TipoArtigoController extends Controller
     {
         $repo = $this->getDoctrine()->getRepository(TipoArtigo::class);
         $rs = $repo->findAll($str);
-        
+
         $results = array(
             'results' => $rs
         );
-        
+
         $json = $this->eSerializer->serializeIncluding($results, array(
             'id',
             'descricao'
         ));
-        
+
         return new Response($json);
     }
 }

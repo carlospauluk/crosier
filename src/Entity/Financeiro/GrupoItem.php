@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entidade que representa um 'item de um Grupo de Movimentações' (como a fatura
@@ -13,7 +14,6 @@ use Doctrine\Common\Collections\Collection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoItemRepository")
  * @ORM\Table(name="fin_grupo_item")
- * @ORM\HasLifecycleCallbacks()
  *
  * @author Carlos Eduardo Pauluk
  */
@@ -94,7 +94,7 @@ class GrupoItem extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_pagante_id", nullable=true)
-     * 
+     *
      * @var $carteiraPagante Carteira
      */
     private $carteiraPagante;
@@ -123,7 +123,7 @@ class GrupoItem extends EntityId
         $this->id = $id;
     }
 
-    public function getPai() : ?Grupo
+    public function getPai(): ?Grupo
     {
         return $this->pai;
     }
@@ -153,7 +153,7 @@ class GrupoItem extends EntityId
         $this->dtVencto = $dtVencto;
     }
 
-    public function getAnterior() : ?GrupoItem
+    public function getAnterior(): ?GrupoItem
     {
         return $this->anterior;
     }
@@ -163,7 +163,7 @@ class GrupoItem extends EntityId
         $this->anterior = $anterior;
     }
 
-    public function getProximo() : ?GrupoItem
+    public function getProximo(): ?GrupoItem
     {
         return $this->proximo;
     }
@@ -214,7 +214,7 @@ class GrupoItem extends EntityId
 
     /**
      * Método auxiliar para cálculo.
-     * 
+     *
      * @return number
      */
     public function getValorLanctos()
@@ -229,13 +229,13 @@ class GrupoItem extends EntityId
                 }
             }
         }
-        
+
         return abs($bdValor);
     }
 
     /**
      * Método auxiliar para view.
-     * 
+     *
      * @return number
      */
     public function getDiferenca()

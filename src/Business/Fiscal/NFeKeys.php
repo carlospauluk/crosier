@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Business\Fiscal;
 
 /**
@@ -58,7 +59,7 @@ class NFeKeys
         if (strlen($key) != 44) {
             return false;
         }
-        $cDV = substr($key, - 1);
+        $cDV = substr($key, -1);
         $calcDV = self::verifyingDigit(substr($key, 0, 43));
         if ($cDV === $calcDV) {
             return true;
@@ -90,16 +91,16 @@ class NFeKeys
         $iCount = 42;
         $weightedSum = 0;
         while ($iCount >= 0) {
-            for ($mCount = 0; $mCount < 8 && $iCount >= 0; $mCount ++) {
+            for ($mCount = 0; $mCount < 8 && $iCount >= 0; $mCount++) {
                 $weightedSum += (substr($key, $iCount, 1) * $multipliers[$mCount]);
-                $iCount --;
+                $iCount--;
             }
         }
         $vdigit = 11 - ($weightedSum % 11);
         if ($vdigit > 9) {
             $vdigit = 0;
         }
-        return (string) $vdigit;
+        return (string)$vdigit;
     }
 
     /**

@@ -1,16 +1,16 @@
 <?php
+
 namespace App\Entity\Producao;
 
 use App\Entity\Base\EntityId;
+use App\Entity\Estoque\Grade;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\Estoque\Grade;
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\ConfeccaoRepository")
  * @ORM\Table(name="prod_confeccao")
- * @ORM\HasLifecycleCallbacks()
  */
 class Confeccao extends EntityId
 {

@@ -6,10 +6,8 @@ use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Movimentacao;
 use App\Repository\FilterRepository;
 use App\Utils\Repository\FilterData;
-use App\Utils\Repository\WhereBuilder;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Movimentacao.
@@ -30,17 +28,18 @@ class MovimentacaoRepository extends FilterRepository
             ->join('App\Entity\Financeiro\Modo', 'modo', 'WITH', 'e.modo = modo');
     }
 
-    public function findAbertasAnteriores(\DateTime $dtVenctoEfetiva, Carteira $carteira) {
+    public function findAbertasAnteriores(\DateTime $dtVenctoEfetiva, Carteira $carteira)
+    {
         $filterDatas = array(
-            new FilterData('dtVenctoEfetiva', 'LT', $dtVenctoEfetiva->setTime(0,0,0,0)),
+            new FilterData('dtVenctoEfetiva', 'LT', $dtVenctoEfetiva->setTime(0, 0, 0, 0)),
             new FilterData('carteira', 'EQ', $carteira),
-            new FilterData('status', 'IN', ['ABERTA','A_COMPENSAR'])
+            new FilterData('status', 'IN', ['ABERTA', 'A_COMPENSAR'])
         );
         $orders = array(
             ['column' => 'e.dtVenctoEfetiva', 'dir' => 'asc'],
             ['column' => 'e.valorTotal', 'dir' => 'asc']
         );
-        return $this->findByFilters($filterDatas, $orders,0,0);
+        return $this->findByFilters($filterDatas, $orders, 0, 0);
     }
 
     /**
@@ -49,14 +48,15 @@ class MovimentacaoRepository extends FilterRepository
      * @param $tipoSaldo
      * @return mixed
      */
-    public function findSaldo(\DateTime $dtPagto, $carteirasIds, $tipoSaldo) {
+    public function findSaldo(\DateTime $dtPagto, $carteirasIds, $tipoSaldo)
+    {
         $ql = "SELECT sum(valor_total) as valor_total FROM vw_fin_movimentacao m " .
-                  "WHERE m.cart_id IN (:carteirasIds) AND " .
-                  "( (m.status = 'REALIZADA' AND m.dt_pagto <= :dtPagto) ";
+            "WHERE m.cart_id IN (:carteirasIds) AND " .
+            "( (m.status = 'REALIZADA' AND m.dt_pagto <= :dtPagto) ";
 
         if (in_array($tipoSaldo, ['SALDO_POSTERIOR_COM_CHEQUES', 'SALDO_ANTERIOR_COM_CHEQUES'])) {
             $ql .= "OR (m.status = 'REALIZADA' AND modo_descricao LIKE 'CHEQUE%' AND m.dt_vencto_efetiva <= :dtPagto AND m.dt_pagto > :dtPagto)" .
-					" OR (m.status = 'A_COMPENSAR' AND m.dt_vencto_efetiva <= :dtPagto)";
+                " OR (m.status = 'A_COMPENSAR' AND m.dt_vencto_efetiva <= :dtPagto)";
         }
         $ql .= ")";
 

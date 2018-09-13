@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\Insumo;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Insumo.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class InsumoRepository extends ServiceEntityRepository
 {
@@ -18,7 +19,7 @@ class InsumoRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Insumo::class);
     }
-    
+
     public function findPrecoAtual(Insumo $insumo)
     {
         $ql = "SELECT ip FROM App\Entity\Producao\InsumoPreco ip JOIN ip.insumo i WHERE i.id = :insumo_id ORDER BY ip.dtCusto DESC";
@@ -29,5 +30,5 @@ class InsumoRepository extends ServiceEntityRepository
         $query->setMaxResults(1);
         return $query->getSingleResult();
     }
-    
+
 }

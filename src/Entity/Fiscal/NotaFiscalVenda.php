@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Fiscal;
 
 use App\Entity\Base\EntityId;
@@ -10,7 +11,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Fiscal\NotaFiscalVendaRepository")
  * @ORM\Table(name="fis_nf_venda")
- * @ORM\HasLifecycleCallbacks()
  */
 class NotaFiscalVenda extends EntityId
 {

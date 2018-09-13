@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Base;
 
 use App\Entity\Base\Endereco;
@@ -12,7 +13,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Config.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class EnderecoRepository extends ServiceEntityRepository
 {

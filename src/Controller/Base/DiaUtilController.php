@@ -105,7 +105,6 @@ class DiaUtilController extends Controller
             }
 
 
-
         }
 
         return new Response($r);

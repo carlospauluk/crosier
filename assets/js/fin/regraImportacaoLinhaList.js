@@ -1,21 +1,26 @@
 'use strict';
 
-import Moment from "moment";
-import Numeral from "numeral";
-
 let listId = "#regraImportacaoLinhaList";
+
+import Utils from '../crosier/Utils';
 
 function getDatatablesColumns() {
     return [
         {
             name: 'e.regraRegexJava',
             data: 'regraRegexJava',
-            title: 'Regex'
+            title: 'Regex',
+            render: function (data, type, row) {
+                return Utils.escapeHtml(data);
+            }
         },
         {
-            name: 'c.descricao',
+            name: 'carteira.descricaoMontada',
             data: 'carteira',
-            title: 'Carteira'
+            title: 'Carteira',
+            render: function (data, type, row) {
+                return data ? data.descricaoMontada : '';
+            }
         },
         {
             name: 'e.tipoLancto',
@@ -26,6 +31,14 @@ function getDatatablesColumns() {
             name: 'e.status',
             data: 'status',
             title: 'Status'
+        },
+        {
+            name: 'e.modo',
+            data: 'modo',
+            title: 'Modo',
+            render: function (data, type, row) {
+                return data ? data.descricaoMontada : '';
+            }
         },
         {
             name: 'e.id',

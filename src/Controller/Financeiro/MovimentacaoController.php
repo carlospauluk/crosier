@@ -2,17 +2,8 @@
 
 namespace App\Controller\Financeiro;
 
-use App\Business\Financeiro\MovimentacaoBusiness;
-use App\Controller\FormListController;
-use App\Entity\Financeiro\Carteira;
-use App\Entity\Financeiro\Categoria;
-use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Parcelamento;
-use App\Entity\Financeiro\Status;
-use App\EntityHandler\EntityHandler;
-use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
-use App\Form\Financeiro\MovimentacaoType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -17,7 +17,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\CRM\ClienteRepository")
  * @ORM\Table(name="crm_cliente")
- * @ORM\HasLifecycleCallbacks()
  */
 class Cliente extends EntityId
 {

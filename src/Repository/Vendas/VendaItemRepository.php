@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Vendas;
 
 use App\Entity\Vendas\VendaItem;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade VendaItem.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class VendaItemRepository extends ServiceEntityRepository
 {

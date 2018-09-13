@@ -1,26 +1,26 @@
 <?php
+
 namespace App\Form\Fiscal;
 
 use App\Entity\Fiscal\NotaFiscalItem;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 /**
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class NotaFiscalItemType extends AbstractType
 {
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        
+
         $builder->add('codigo', TextType::class, array(
             'label' => 'Código',
             'required' => true

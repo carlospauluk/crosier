@@ -1,18 +1,18 @@
 <?php
+
 namespace App\Entity\Producao;
 
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Producao\ConfeccaoItemRepository")
  * @ORM\Table(name="prod_confeccao_item")
- * @ORM\HasLifecycleCallbacks()
  */
 class ConfeccaoItem extends EntityId
 {
@@ -42,7 +42,7 @@ class ConfeccaoItem extends EntityId
      * @var $insumo Insumo
      */
     private $insumo;
-    
+
     /**
      *
      * @var ConfeccaoItemQtde[]|ArrayCollection
@@ -54,7 +54,7 @@ class ConfeccaoItem extends EntityId
      * )
      */
     private $qtdesGrade;
-    
+
 
     public function __construct()
     {
@@ -92,7 +92,7 @@ class ConfeccaoItem extends EntityId
     {
         $this->insumo = $insumo;
     }
-    
+
     /**
      *
      * @return Collection|ConfeccaoItemQtde[]

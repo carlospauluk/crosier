@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\Instituicao;
@@ -10,7 +11,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade TipoArtigo .
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class TipoArtigoRepository extends ServiceEntityRepository
 {
@@ -27,9 +28,9 @@ class TipoArtigoRepository extends ServiceEntityRepository
         $query->setParameters(array(
             'instituicao_id' => $instituicao->getId()
         ));
-        
+
         $results = $query->getResult();
-        
+
         return $results;
     }
 

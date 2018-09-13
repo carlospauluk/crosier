@@ -142,7 +142,7 @@ class CarteiraController extends FormListController
      */
     public function carteiraSelect2json(Request $request)
     {
-        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy(['concreta' => true],['codigo' => 'ASC']);
+        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy(['concreta' => true], ['codigo' => 'ASC']);
 
         $rs = array();
         foreach ($itens as $item) {

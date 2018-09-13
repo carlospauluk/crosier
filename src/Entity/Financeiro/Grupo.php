@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Entidade 'Grupo de Movimentações'.
@@ -13,7 +14,6 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\GrupoRepository")
  * @ORM\Table(name="fin_grupo")
- * @ORM\HasLifecycleCallbacks()
  */
 class Grupo extends EntityId
 {

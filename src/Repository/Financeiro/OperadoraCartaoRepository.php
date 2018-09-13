@@ -23,7 +23,7 @@ class OperadoraCartaoRepository extends FilterRepository
     public function handleFrombyFilters(QueryBuilder &$qb)
     {
         return $qb->from($this->getEntityClass(), 'e')
-            ->join('App\Entity\Financeiro\Carteira','c','WITH','e.carteira = c');
+            ->join('App\Entity\Financeiro\Carteira', 'c', 'WITH', 'e.carteira = c');
     }
 }
     

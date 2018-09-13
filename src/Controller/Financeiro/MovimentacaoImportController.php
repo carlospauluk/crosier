@@ -3,12 +3,17 @@
 namespace App\Controller\Financeiro;
 
 use App\Business\Financeiro\MovimentacaoBusiness;
+use App\Business\Financeiro\MovimentacaoImporter;
+use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\GrupoItem;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
+use App\Form\Financeiro\MovimentacaoType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -26,10 +31,15 @@ class MovimentacaoImportController extends Controller
 
     private $business;
 
-    public function __construct(MovimentacaoEntityHandler $entityHandler, MovimentacaoBusiness $business)
+    private $movimentacaoImporter;
+
+    public function __construct(MovimentacaoEntityHandler $entityHandler,
+                                MovimentacaoBusiness $business,
+                                MovimentacaoImporter $movimentacaoImporter)
     {
         $this->entityHandler = $entityHandler;
         $this->business = $business;
+        $this->movimentacaoImporter = $movimentacaoImporter;
     }
 
     public function getEntityHandler(): ?EntityHandler
@@ -47,16 +57,74 @@ class MovimentacaoImportController extends Controller
      * @Route("/fin/movimentacao/import", name="fin_movimentacao_import", options = { "expose" = true })
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function import(Request $request)
     {
+        $session = new Session();
+        if ($session->get('vParams')) {
+            $vParams = $session->get('vParams');
+        } else {
+            // Valores padrão
+            $vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
+            $vParams['linhasExtrato'] = null;
+            $vParams['carteiraExtrato'] = null;
+            $vParams['carteiraDestino'] = null;
+            $vParams['grupo'] = null;
+            $vParams['grupoItem'] = null;
+            $vParams['gerarSemRegras'] = null;
+        }
+
+        // Se foi mandado importar
         if ($request->request->get('tipoExtrato') and $request->request->get('linhasExtrato')) {
-            $tipoExtrato = $request->request->get('tipoExtrato');
-            $linhasExtrato = $request->request->get('linhasExtrato');
+            $vParams['tipoExtrato'] = $request->request->get('tipoExtrato');
+            $vParams['linhasExtrato'] = $request->request->get('linhasExtrato');
+
+            $carteiraExtrato = null;
+            $carteiraExtratoId = $request->request->get('carteiraExtrato');
+            $vParams['carteiraExtrato'] = $carteiraExtratoId;
+            if ($carteiraExtratoId) {
+                $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraExtratoId);
+            }
+
+            $carteiraDestino = null;
+            $carteiraDestinoId = $request->request->get('carteiraDestino');
+            $vParams['carteiraDestino'] = $carteiraDestinoId;
+            if ($carteiraDestinoId) {
+                $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraDestinoId);
+            }
+
+            $vParams['grupoItem'] = $request->request->get('grupoItem');
+            if ($vParams['grupoItem']) {
+                $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($vParams['grupoItem']);
+                $vParams['grupo'] = $grupoItem->getId();
+            }
+            $vParams['gerarSemRegras'] = $request->request->get('gerarSemRegras');
+
+            // Importa
+            $r = $this->movimentacaoImporter->importar(
+                $vParams['tipoExtrato'],
+                $vParams['linhasExtrato'],
+                $carteiraExtrato,
+                $carteiraDestino,
+                $vParams['grupoItem'],
+                $vParams['gerarSemRegras']);
+
+            $vParams['movsImportadas'] = $r['movs'];
+
+            $sessionMovs = array();
+            foreach ($r['movs'] as $mov) {
+                $sessionMovs[$mov->getUnqControle()] = $mov;
+            }
+            $vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
+            $vParams['total'] = $this->getBusiness()->somarMovimentacoes($r['movs']);
+
+            $session->set('movs', $sessionMovs);
+            $session->set('vParams', $vParams);
         }
 
 
-        return $this->render('Financeiro/movimentacaoImport.html.twig');
+        return $this->render('Financeiro/movimentacaoImport.html.twig', $vParams);
     }
 
     /**
@@ -92,6 +160,49 @@ class MovimentacaoImportController extends Controller
 
         return new Response($json);
 
+    }
+
+    /**
+     *
+     * @Route("/fin/movimentacao/import/form/{unqControle}", name="fin_movimentacao_import_form")
+     * @param Request $request
+     * @param $unqControle
+     * @param Movimentacao|null $movimentacao
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function form(Request $request, $unqControle)
+    {
+        if (!$unqControle) {
+            throw new Exception("unqControle não informado");
+        }
+        $session = new Session();
+        $sessionMovs = $session->get('movs');
+
+        $movimentacao = $sessionMovs[$unqControle];
+
+        // Dá um merge nos atributos manyToOne pra não dar erro no createForm
+        $this->getBusiness()->mergeAll($movimentacao);
+
+        $formData = null;
+        $form = $this->createForm(MovimentacaoType::class, $movimentacao);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $movimentacao = $form->getData();
+                $sessionMovs[$unqControle] = $movimentacao;
+                $this->addFlash('success', 'Registro salvo com sucesso!');
+                return $this->redirectToRoute('fin_movimentacao_import');
+            } else {
+                $form->getErrors(true, false);
+            }
+        }
+
+        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
+        $parameters['form'] = $form->createView();
+
+        return $this->render('Financeiro/movimentacaoImportForm.html.twig', $parameters);
     }
 
 

@@ -1,18 +1,18 @@
 <?php
+
 namespace App\Entity\Security;
 
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
 use App\Entity\Base\EntityId;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Entidade 'User'.
  *
  * @ORM\Entity(repositoryClass="App\Repository\Security\UserRepository")
  * @ORM\Table(name="sec_user")
- * @ORM\HasLifecycleCallbacks()
  */
 class User extends EntityId implements UserInterface, \Serializable
 {
@@ -73,8 +73,9 @@ class User extends EntityId implements UserInterface, \Serializable
      *      )
      */
     private $roles;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->roles = new ArrayCollection();
     }
 
@@ -149,26 +150,27 @@ class User extends EntityId implements UserInterface, \Serializable
     }
 
     /**
-//      *
-//      * @return Collection|Role[]
-//      */
+     * //      *
+     * //      * @return Collection|Role[]
+     * //      */
 //     public function getRoles(): Collection
 //     {
 //         return $this->roles;
 //     }
 
-    
-    public function getRoles() {
-        
+
+    public function getRoles()
+    {
+
         $roles = array();
-        
+
         foreach ($this->roles as $role) {
             $roles[] = $role->getRole();
         }
-        
+
         return $roles;
     }
-    
+
     public function setRoles($roles)
     {
         $this->roles = $roles;
@@ -191,7 +193,8 @@ class User extends EntityId implements UserInterface, \Serializable
     }
 
     public function eraseCredentials()
-    {}
+    {
+    }
 
     public function getSalt()
     {

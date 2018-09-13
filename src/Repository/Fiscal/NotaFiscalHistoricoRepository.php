@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Fiscal;
 
 use App\Entity\Fiscal\NotaFiscal;
@@ -10,7 +11,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade NotaFiscalHistorico.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class NotaFiscalHistoricoRepository extends ServiceEntityRepository
 {

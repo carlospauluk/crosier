@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\GrupoItem;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade GrupoItem.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class GrupoItemRepository extends ServiceEntityRepository
 {

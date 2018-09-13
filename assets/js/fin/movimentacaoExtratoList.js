@@ -2,7 +2,6 @@
 
 import Moment from 'moment';
 
-import Numeral from 'numeral';
 import $ from "jquery";
 
 $(document).ready(function () {

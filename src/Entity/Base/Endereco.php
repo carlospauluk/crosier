@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Base;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -8,7 +9,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Base\EnderecoRepository")
  * @ORM\Table(name="bon_endereco")
- * @ORM\HasLifecycleCallbacks()
  */
 class Endereco extends EntityId
 {
@@ -18,7 +18,7 @@ class Endereco extends EntityId
         ORM\Annotation::class;
         Assert\All::class;
     }
-    
+
     /**
      *
      * @ORM\Id()
@@ -167,7 +167,8 @@ class Endereco extends EntityId
         $this->tipoEndereco = $tipoEndereco;
     }
 
-    public function getEnderecoCompleto() {
+    public function getEnderecoCompleto()
+    {
         $enderecoCompleto = "";
         $enderecoCompleto .= $this->getLogradouro() . ", " . $this->getNumero();
         if ($this->getComplemento()) {

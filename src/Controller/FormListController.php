@@ -82,7 +82,7 @@ abstract class FormListController extends Controller
             $params['filter'] = null;
         }
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono o 'filter' aqui e foi-se.
-        $parameters['filter'] =  $params['filter'];
+        $parameters['filter'] = $params['filter'];
 
         return $this->render($this->getListView(), $parameters);
     }
@@ -92,7 +92,8 @@ abstract class FormListController extends Controller
      *
      * @return mixed
      */
-    public function getNormalizeAttributes() {
+    public function getNormalizeAttributes()
+    {
         return null;
     }
 
@@ -113,7 +114,7 @@ abstract class FormListController extends Controller
 
         $orders = array();
         foreach ($rParams['order'] as $pOrder) {
-            $order['column'] =  $rParams['columns'][$pOrder['column']]['name'];
+            $order['column'] = $rParams['columns'][$pOrder['column']]['name'];
             $order['dir'] = $pOrder['dir'];
             $orders[] = $order;
         }

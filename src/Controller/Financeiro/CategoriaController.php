@@ -1,12 +1,13 @@
 <?php
+
 namespace App\Controller\Financeiro;
 
 use App\Entity\Financeiro\Categoria;
+use App\Utils\Repository\FilterData;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Utils\Repository\FilterData;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -22,20 +23,20 @@ class CategoriaController extends Controller
     {
 //         if (! $categoria) {
 //             $categoria = new Categoria();
-            
+
 //             $categoria->setInserted(new \DateTime('now'));
 //             $categoria->setUpdated(new \DateTime('now'));
 //         }
-        
+
 //         $form = $this->createForm(CategoriaType::class, $categoria);
-        
+
 //         $form->handleRequest($request);
-        
+
 //         if ($form->isSubmitted() && $form->isValid()) {
 //             // $form->getData() holds the submitted values
 //             // but, the original `$task` variable has also been updated
 //             $categoria = $form->getData();
-            
+
 //             // ... perform some action, such as saving the task to the database
 //             // for example, if Task is a Doctrine entity, save it!
 //             $entityManager = $this->getDoctrine()->getManager();
@@ -46,7 +47,7 @@ class CategoriaController extends Controller
 //         } else {
 //             $form->getErrors(true, false);
 //         }
-        
+
 //         return $this->render('Financeiro/categoriaForm.html.twig', array(
 //             'form' => $form->createView()
 //         ));
@@ -60,30 +61,30 @@ class CategoriaController extends Controller
     {
         $dados = null;
         $params = $request->query->all();
-        
-        if (! array_key_exists('filter', $params)) {
+
+        if (!array_key_exists('filter', $params)) {
             $params['filter'] = null;
         }
-        
+
         try {
-            
+
             $repo = $this->getDoctrine()->getRepository(Categoria::class);
-            
-            if (! $params['filter'] or count($params['filter']) == 0) {
+
+            if (!$params['filter'] or count($params['filter']) == 0) {
                 $dados = $repo->findAll();
             } else {
-                
+
                 $filters = array(
                     new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
                     new FilterData('dtConsolidado', 'BETWEEN', $params['filter']['dtConsolidado'])
                 );
-                
+
                 $dados = $repo->findByFilters($filters);
             }
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
         }
-        
+
         return $this->render('Financeiro/categoriaList.html.twig', array(
             'dados' => $dados,
             'filter' => $params['filter']
@@ -97,7 +98,7 @@ class CategoriaController extends Controller
      */
     public function delete(Request $request, Categoria $categoria)
     {
-        if (! $this->isCsrfTokenValid('delete', $request->request->get('token'))) {
+        if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
@@ -109,27 +110,28 @@ class CategoriaController extends Controller
                 $this->addFlash('error', 'Erro ao deletar categoria.');
             }
         }
-        
+
         return $this->redirectToRoute('categoria_list');
     }
-    
+
     /**
      *
      * @Route("/fin/categoria/treelist/", name="categoria_treelist")
      *
      */
-    public function getTreeList() {
-        
+    public function getTreeList()
+    {
+
         $repo = $this->getDoctrine()->getRepository(Categoria::class);
         $categorias = $repo->buildTreeList();
-       
+
         $normalizer = new ObjectNormalizer();
         $normalizer->setIgnoredAttributes(array('pai', 'subCategs'));
         $encoder = new JsonEncoder();
-        
+
         $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($categorias, 'json'); 
-        
+        $json = $serializer->serialize($categorias, 'json');
+
         return new Response($json);
     }
 

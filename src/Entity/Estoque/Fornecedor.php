@@ -1,22 +1,22 @@
 <?php
+
 namespace App\Entity\Estoque;
 
-use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Base\Endereco;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Base\EntityId;
 use App\Entity\Base\Pessoa;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Estoque\FornecedorRepository")
  * @ORM\Table(name="est_fornecedor")
- * @ORM\HasLifecycleCallbacks()
  */
 class Fornecedor extends EntityId
 {
@@ -452,7 +452,7 @@ class Fornecedor extends EntityId
         $this->website = $website;
     }
 
-    public function getTipo():? FornecedorTipo
+    public function getTipo(): ?FornecedorTipo
     {
         return $this->tipo;
     }
@@ -503,7 +503,7 @@ class Fornecedor extends EntityId
 
     public function addEndereco(?Endereco $e): void
     {
-        if (! $this->enderecos->contains($e)) {
+        if (!$this->enderecos->contains($e)) {
             $this->enderecos->add($e);
         }
     }

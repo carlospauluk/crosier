@@ -6,6 +6,7 @@ namespace App\EntityHandler;
 use App\Business\Base\EntityIdBusiness;
 use App\Entity\Base\EntityId;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * Class EntityHandler
@@ -21,9 +22,12 @@ abstract class EntityHandler
 
     private $entityIdBusiness;
 
-    public function __construct(RegistryInterface $doctrine)
+    private $security;
+
+    public function __construct(RegistryInterface $doctrine, Security $security)
     {
         $this->entityManager = $doctrine->getEntityManager();
+        $this->security = $security;
     }
 
     public function beforePersist($entityId)
@@ -32,12 +36,14 @@ abstract class EntityHandler
 
     public function persist(EntityId $entityId)
     {
+
         $this->beforePersist($entityId);
         $this->entityManager->persist($entityId);
         $this->entityManager->flush();
         $this->afterPersist($entityId);
         return $entityId;
     }
+
     public function afterPersist($entityId)
     {
     }
@@ -91,7 +97,6 @@ abstract class EntityHandler
     {
         $this->entityIdBusiness = $entityIdBusiness;
     }
-
 
 
 }

@@ -1,17 +1,17 @@
 <?php
+
 namespace App\Entity\Vendas;
 
 use App\Entity\Base\EntityId;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Estoque\GradeTamanho;
 use App\Entity\Estoque\Produto;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
  * @ORM\Entity(repositoryClass="App\Repository\Vendas\VendaItemRepository")
  * @ORM\Table(name="ven_venda_item")
- * @ORM\HasLifecycleCallbacks()
  */
 class VendaItem extends EntityId
 {

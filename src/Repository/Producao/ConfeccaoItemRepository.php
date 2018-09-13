@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\Confeccao;
@@ -10,7 +11,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade ConfeccaoItem.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ConfeccaoItemRepository extends ServiceEntityRepository
 {
@@ -27,21 +28,21 @@ class ConfeccaoItemRepository extends ServiceEntityRepository
         $query->setParameters(array(
             'confeccao_id' => $confeccao->getId()
         ));
-        
+
         $results = $query->getResult();
-        
+
         return $results;
     }
 
     public function findGradeMontada(ConfeccaoItem $ci)
     {
-        if (! $ci->getConfeccao()->getGrade())
+        if (!$ci->getConfeccao()->getGrade())
             return;
-        
+
         // grade[ordem] = qtde
-        
+
         $mGrade = array();
-        
+
         foreach ($ci->getConfeccao()->getGrade()->getTamanhos() as $gt) {
             $qtde = null;
             foreach ($ci->getQtdesGrade() as $qtdeGrade) {
@@ -52,11 +53,12 @@ class ConfeccaoItemRepository extends ServiceEntityRepository
             }
             $mGrade[$gt->getOrdem()] = $qtde;
         }
-        
+
         return $mGrade;
     }
-    
-    public function deleteAllQtdes(ConfeccaoItem $ci) {
+
+    public function deleteAllQtdes(ConfeccaoItem $ci)
+    {
         $ql = "DELETE FROM App\Entity\Producao\ConfeccaoItemQtde ciq WHERE ciq.confeccaoItem = :confeccaoItem";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(

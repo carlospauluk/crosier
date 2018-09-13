@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Producao;
 
 use App\Entity\Producao\Confeccao;
@@ -11,7 +12,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Confeccao.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ConfeccaoRepository extends ServiceEntityRepository
 {
@@ -20,7 +21,7 @@ class ConfeccaoRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Confeccao::class);
     }
-    
+
     public function findAllByTipoArtigoInstituicao(Instituicao $instituicao, TipoArtigo $tipoArtigo)
     {
         $ql = "SELECT c FROM App\Entity\Producao\Confeccao c JOIN c.tipoArtigo ta JOIN c.instituicao i WHERE i.id = :instituicao_id AND ta.id = :tipo_artigo_id";
@@ -28,10 +29,10 @@ class ConfeccaoRepository extends ServiceEntityRepository
         $query->setParameters(array('instituicao_id' => $instituicao->getId(),
             'tipo_artigo_id' => $tipoArtigo->getId()
         ));
-        
+
         $results = $query->getResult();
-        
+
         return $results;
     }
-    
+
 }

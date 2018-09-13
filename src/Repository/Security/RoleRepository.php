@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Security;
 
 use App\Entity\Security\Role;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Role.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class RoleRepository extends ServiceEntityRepository
 {

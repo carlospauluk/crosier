@@ -1,7 +1,7 @@
 <?php
+
 namespace App\Form\Financeiro;
 
-use App\Entity\Financeiro\Grupo;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -28,7 +28,7 @@ class GrupoType extends AbstractType
             'label' => 'Dia de Início (aprox)',
             'required' => false
         ));
-        
+
         $builder->add('ativo', ChoiceType::class, array(
             'choices' => array(
                 'Sim' => true,

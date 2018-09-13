@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Vendas;
 
 use App\Entity\Base\EntityId;
@@ -9,7 +10,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity(repositoryClass="App\Repository\Vendas\PlanoPagtoRepository")
  * @ORM\Table(name="ven_plano_pagto")
- * @ORM\HasLifecycleCallbacks()
  */
 class PlanoPagto extends EntityId
 {

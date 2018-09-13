@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -10,9 +11,9 @@ class EntityIdAutoCompleteType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefined(array('repo'));
-        
+
     }
-    
+
     public function getParent()
     {
         return ChoiceType::class;

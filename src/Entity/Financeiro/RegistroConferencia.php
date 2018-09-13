@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
@@ -9,10 +10,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Entidade para manter registros de conferências mensais.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  * @ORM\Entity(repositoryClass="App\Repository\Financeiro\RegistroConferenciaRepository")
  * @ORM\Table(name="fin_reg_conf")
- * @ORM\HasLifecycleCallbacks()
  */
 class RegistroConferencia extends EntityId
 {

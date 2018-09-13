@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Cortinas;
 
 use App\Entity\Cortinas\ArtigoCortina;
@@ -9,7 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade ArtigoCortina.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ArtigoCortinaRepository extends ServiceEntityRepository
 {

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository\Base;
 
 use App\Entity\Base\DiaUtil;
@@ -10,7 +11,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * Repository para a entidade Config.
  *
  * @author Carlos Eduardo Pauluk
- *        
+ *
  */
 class ConfigRepository extends ServiceEntityRepository
 {
@@ -23,21 +24,22 @@ class ConfigRepository extends ServiceEntityRepository
         $this->logger = $logger;
     }
 
-    public function findByChave($chave) {
-        
+    public function findByChave($chave)
+    {
+
         // TODO: parametrizar o estabelecimento conforme o login
         $ql = "SELECT c FROM App\Entity\Base\Config c WHERE c.chave = :chave AND c.estabelecimento = 1";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(
             'chave' => $chave
         ));
-        
+
         $results = $query->getResult();
-        
+
         if (count($results) > 1) {
             throw new \Exception('Mais de um Config encontrado para [' . $chave . ']');
         }
-        
+
         return count($results) == 1 ? $results[0] : null;
     }
 }
