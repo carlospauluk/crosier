@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Entity\Base;
+namespace App\Entity\Config;
 
+use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *
- * @ORM\Entity(repositoryClass="App\Repository\Base\ConfigRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\Config\ConfigRepository")
  * @ORM\Table(name="cfg_config")
  */
 class Config extends EntityId

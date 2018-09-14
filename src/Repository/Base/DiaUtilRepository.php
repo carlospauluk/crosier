@@ -3,6 +3,7 @@
 namespace App\Repository\Base;
 
 use App\Entity\Base\DiaUtil;
+use App\Repository\FilterRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -13,15 +14,12 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class  DiaUtilRepository extends ServiceEntityRepository
+class  DiaUtilRepository extends FilterRepository
 {
 
-    private $logger;
-
-    public function __construct(RegistryInterface $registry, LoggerInterface $logger)
+    public function getEntityClass()
     {
-        parent::__construct($registry, DiaUtil::class);
-        $this->logger = $logger;
+        return DiaUtil::class;
     }
 
     public function findDiasUteisBy(\DateTime $ini, \DateTime $fim, $comercial = null, $financeiro = null)
@@ -172,4 +170,6 @@ class  DiaUtilRepository extends ServiceEntityRepository
         $diasUteisNoMesAno = $this->findDiasUteisFinanceiroBy($mesAno);
         return isset($diasUteisNoMesAno[$ordinal]) ? $diasUteisNoMesAno[$ordinal] : null;
     }
+
+
 }

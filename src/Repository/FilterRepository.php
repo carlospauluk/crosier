@@ -40,7 +40,7 @@ abstract class FilterRepository extends ServiceEntityRepository
         );
     }
 
-    public function countByFilters($filters)
+    public function doCountByFilters($filters)
     {
         $em = $this->getEntityManager();
         $qb = $em->createQueryBuilder();

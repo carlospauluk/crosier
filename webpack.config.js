@@ -29,6 +29,8 @@ Encore
     .createSharedEntry('bse_layout', './assets/js/bse/layout.js')
     .addEntry('bse/enderecoForm', './assets/js/bse/enderecoForm.js')
 
+    .addEntry('cfg/configList', './assets/js/cfg/configList.js')
+
     .addEntry('fis/emissaoNFe/form', './assets/js/fis/emissaoNFe/form.js')
 
     .addEntry('est/fornecedorList', './assets/js/est/fornecedorList.js')

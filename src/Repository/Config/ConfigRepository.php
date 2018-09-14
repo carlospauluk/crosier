@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Repository\Base;
+namespace App\Repository\Config;
 
-use App\Entity\Base\DiaUtil;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Entity\Config\Config;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade Config.
@@ -13,15 +11,12 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class ConfigRepository extends ServiceEntityRepository
+class ConfigRepository extends FilterRepository
 {
 
-    private $logger;
-
-    public function __construct(RegistryInterface $registry, LoggerInterface $logger)
+    public function getEntityClass()
     {
-        parent::__construct($registry, DiaUtil::class);
-        $this->logger = $logger;
+        return Config::class;
     }
 
     public function findByChave($chave)
@@ -42,4 +37,5 @@ class ConfigRepository extends ServiceEntityRepository
 
         return count($results) == 1 ? $results[0] : null;
     }
+
 }

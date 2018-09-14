@@ -1,5 +1,7 @@
 'use strict';
 
+import DatatablesJs from "../crosier/DatatablesJs";
+
 let listId = "#grupoList";
 
 function getDatatablesColumns() {
@@ -43,33 +45,5 @@ function getDatatablesColumns() {
     ];
 }
 
-function getDatatablesColumnDefs() {
-    return [
-
-    ]
-}
-
-
-$(document).ready(function () {
-
-    $(listId).DataTable({
-        paging: true,
-        serverSide: true,
-        ajax: {
-            'url': $(listId).data('listajaxurl'),
-            'type': 'POST',
-            'data': function (data) {
-                data.formPesquisar = $('#formPesquisar').serialize()
-            }
-
-        },
-        searching: false,
-        columns: getDatatablesColumns(),
-        columnDefs: getDatatablesColumnDefs(),
-        "language": {
-            "url": "/build/static/datatables-Portuguese-Brasil.json"
-        }
-    });
-
-});
+DatatablesJs.makeDatatableJs(listId, getDatatablesColumns());
 

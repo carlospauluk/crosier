@@ -156,31 +156,36 @@ abstract class FormListController extends Controller
 
         $rParams = $request->request->all();
 
-        $start = $rParams['start'];
-        $limit = $rParams['length'];
+        // Inicializadores
+        $filterDatas = null;
+        $start = 0;
+        $limit = 10;
+        $orders = null;
+        $draw = 1;
 
-        parse_str(urldecode($rParams['formPesquisar']), $formPesquisar);
-
-        $orders = array();
-        foreach ($rParams['order'] as $pOrder) {
-            $order['column'] = $rParams['columns'][$pOrder['column']]['name'];
-            $order['dir'] = $pOrder['dir'];
-            $orders[] = $order;
+        if ($rParams) {
+            $start = $rParams['start'];
+            $limit = $rParams['length'];
+            $orders = array();
+            foreach ($rParams['order'] as $pOrder) {
+                $order['column'] = $rParams['columns'][$pOrder['column']]['name'];
+                $order['dir'] = $pOrder['dir'];
+                $orders[] = $order;
+            }
+            $draw = (int)$rParams['draw'];
+            parse_str(urldecode($rParams['formPesquisar']), $formPesquisar);
+            $filterDatas = $this->doGetFilterDatas($formPesquisar);
         }
 
-        $filterDatas = $this->doGetFilterDatas($formPesquisar);
-
-        $countByFilter = $repo->countByFilters($filterDatas);
+        $countByFilter = $repo->doCountByFilters($filterDatas);
         $dados = $repo->findByFilters($filterDatas, $orders, $start, $limit);
 
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
-
         $serializer = new Serializer(array($normalizer), array($encoder));
-
         $data = $serializer->normalize($dados, 'json', $this->getNormalizeAttributes());
 
-        $draw = (int)$rParams['draw'];
+
         $recordsTotal = $repo->count(array());
 
         $results = array(

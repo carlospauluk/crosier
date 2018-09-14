@@ -4,6 +4,8 @@ let listId = "#clienteList";
 
 import Moment from 'moment';
 
+import DatatablesJs from '../crosier/DatatablesJs';
+
 function getDatatablesColumns() {
     return [
         {
@@ -43,27 +45,5 @@ function getDatatablesColumns() {
     ];
 }
 
-
-$(document).ready(function () {
-
-    $(listId).DataTable({
-        paging: true,
-        serverSide: true,
-        stateSave: true,
-        ajax: {
-            'url': $(listId).data('listajaxurl'),
-            'type': 'POST',
-            'data': function (data) {
-                data.formPesquisar = $('#formPesquisar').serialize()
-            }
-
-        },
-        searching: false,
-        columns: getDatatablesColumns(),
-        "language": {
-            "url": "/build/static/datatables-Portuguese-Brasil.json"
-        }
-    });
-
-});
+DatatablesJs.makeDatatableJs(listId, getDatatablesColumns());
 
