@@ -47,7 +47,7 @@ abstract class FormListController extends Controller
      * @param EntityId|null $entityId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function doForm(Request $request, EntityId $entityId = null, $parameters = array())
+    public function doForm(Request $request, EntityId $entityId = null)
     {
         if (!$entityId) {
             $entityName = $this->getEntityHandler()->getEntityClass();
@@ -77,6 +77,31 @@ abstract class FormListController extends Controller
 
     abstract public function getFilterDatas($params);
 
+    public function doGetFilterDatas($params)
+    {
+        $filterDatas = $this->getFilterDatas($params);
+        $clearedFilterDatas = array();
+        if ($filterDatas and count($filterDatas) > 0) {
+            foreach ($filterDatas as $filterData) {
+                $notEmpty = false;
+                if (is_array($filterData->val)) {
+                    foreach ($filterData->val as $val) {
+                        if ($val) {
+                            $notEmpty = true;
+                            break;
+                        }
+                    }
+                } else if ($filterData->val) {
+                    $notEmpty = true;
+                }
+                if ($notEmpty) {
+                    $clearedFilterDatas[] = $filterData;
+                }
+            }
+        }
+        return $clearedFilterDatas;
+    }
+
     abstract public function getListView();
 
     abstract public function getListRoute();
@@ -85,18 +110,30 @@ abstract class FormListController extends Controller
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function doList(Request $request, $parameters = array())
+    public function doList(Request $request)
     {
-        $storedViewInfo = $this->storedViewInfoBusiness->retrieve($this->getListRoute());
         $params = $request->query->all();
         if (!array_key_exists('filter', $params)) {
             // inicializa para evitar o erro
             $params['filter'] = null;
-        }
-        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono o 'filter' aqui e foi-se.
-        $parameters['filter'] = $params['filter'];
 
-        return $this->render($this->getListView(), $parameters);
+            if (isset($params['r']) and $params['r']) {
+                $this->storedViewInfoBusiness->clear($this->getListRoute());
+            } else {
+                $storedViewInfo = $this->storedViewInfoBusiness->retrieve($this->getListRoute());
+                if ($storedViewInfo) {
+                    $blob = stream_get_contents($storedViewInfo->getViewInfo());
+                    $unserialized = unserialize($blob);
+                    $formPesquisar = isset($unserialized['formPesquisar']) ? $unserialized['formPesquisar'] : null;
+                    if ($formPesquisar and $formPesquisar != $params) {
+                        return $this->redirectToRoute($this->getListRoute(), $formPesquisar);
+                    }
+                }
+            }
+        }
+
+
+        return $this->render($this->getListView(), $params);
     }
 
     /**
@@ -131,10 +168,10 @@ abstract class FormListController extends Controller
             $orders[] = $order;
         }
 
-        $params = $this->getFilterDatas($formPesquisar);
+        $filterDatas = $this->doGetFilterDatas($formPesquisar);
 
-        $countByFilter = $repo->countByFilters($params);
-        $dados = $repo->findByFilters($params, $orders, $start, $limit);
+        $countByFilter = $repo->countByFilters($filterDatas);
+        $dados = $repo->findByFilters($filterDatas, $orders, $start, $limit);
 
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
@@ -155,13 +192,11 @@ abstract class FormListController extends Controller
 
         $json = $serializer->serialize($results, 'json');
 
-        $viewInfo = array();
-        $viewInfo['start'] = $start;
-        $viewInfo['limit'] = $limit;
-        $viewInfo['orders'] = $orders;
-        $viewInfo['$formPesquisar'] = $formPesquisar;
-
-        $this->storedViewInfoBusiness->store($this->getListRoute(), $viewInfo);
+        if ($filterDatas and count($filterDatas) > 0) {
+            $viewInfo = array();
+            $viewInfo['formPesquisar'] = $formPesquisar;
+            $this->storedViewInfoBusiness->store($this->getListRoute(), $viewInfo);
+        }
 
         return new Response($json);
     }

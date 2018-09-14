@@ -11,7 +11,6 @@ namespace App\Business\Config;
 
 use App\Entity\Config\StoredViewInfo;
 use App\EntityHandler\Config\StoredViewInfoEntityHandler;
-use App\Repository\Config\StoredViewInfoRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -50,11 +49,23 @@ class StoredViewInfoBusiness
         $this->entityHandler->persist($storedViewInfo);
     }
 
-    public function retrieve($viewRoute) {
+    public function retrieve($viewRoute)
+    {
         $params['viewName'] = $viewRoute;
         $params['user'] = $this->security->getUser();
 
         return $this->doctrine->getRepository(StoredViewInfo::class)->findOneBy($params);
+    }
+
+    public function clear($viewRoute)
+    {
+        $params['viewName'] = $viewRoute;
+        $params['user'] = $this->security->getUser();
+
+        $storedViewInfo = $this->doctrine->getRepository(StoredViewInfo::class)->findOneBy($params);
+        if ($storedViewInfo) {
+            $this->entityHandler->delete($storedViewInfo);
+        }
     }
 
 }

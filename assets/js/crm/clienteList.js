@@ -49,6 +49,7 @@ $(document).ready(function () {
     $(listId).DataTable({
         paging: true,
         serverSide: true,
+        stateSave: true,
         ajax: {
             'url': $(listId).data('listajaxurl'),
             'type': 'POST',
