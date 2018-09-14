@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 
+use App\Business\Config\StoredViewInfoBusiness;
 use App\Entity\Base\EntityId;
 use App\EntityHandler\EntityHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -28,6 +29,16 @@ abstract class FormListController extends Controller
 
     abstract public function getFormView();
 
+    private $storedViewInfoBusiness;
+
+    /**
+     * @required
+     * @param StoredViewInfoBusiness $storedViewInfoBusiness
+     */
+    public function setStoredViewInfoBusiness(StoredViewInfoBusiness $storedViewInfoBusiness)
+    {
+        $this->storedViewInfoBusiness = $storedViewInfoBusiness;
+    }
 
     /**
      * Monta o formulário, faz as validações, manda salvar, trata erros, etc.
@@ -76,6 +87,7 @@ abstract class FormListController extends Controller
      */
     public function doList(Request $request, $parameters = array())
     {
+        $storedViewInfo = $this->storedViewInfoBusiness->retrieve($this->getListRoute());
         $params = $request->query->all();
         if (!array_key_exists('filter', $params)) {
             // inicializa para evitar o erro
@@ -142,6 +154,14 @@ abstract class FormListController extends Controller
         );
 
         $json = $serializer->serialize($results, 'json');
+
+        $viewInfo = array();
+        $viewInfo['start'] = $start;
+        $viewInfo['limit'] = $limit;
+        $viewInfo['orders'] = $orders;
+        $viewInfo['$formPesquisar'] = $formPesquisar;
+
+        $this->storedViewInfoBusiness->store($this->getListRoute(), $viewInfo);
 
         return new Response($json);
     }
