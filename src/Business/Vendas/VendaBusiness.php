@@ -239,6 +239,7 @@ class VendaBusiness
      *
      * @param Venda $venda
      * @return boolean
+     * @throws \Exception
      */
     public
     function permiteReimpressao(Venda $venda)
