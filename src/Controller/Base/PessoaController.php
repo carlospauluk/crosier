@@ -62,8 +62,12 @@ class PessoaController extends Controller
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
 
+        $attributes = ['id', 'nome', 'nomeFantasia', 'documento', 'fone1', 'fone2',
+                'endereco' => ['id', 'bairro', 'cep', 'cidade', 'estado', 'complemento', 'logradouro', 'numero']
+            ];
+
         $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($pessoa, 'json');
+        $json = $serializer->serialize($pessoa, 'json', ['attributes' => $attributes]);
 
         return new Response($json);
     }

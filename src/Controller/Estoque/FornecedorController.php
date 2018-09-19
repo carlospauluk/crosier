@@ -2,6 +2,7 @@
 
 namespace App\Controller\Estoque;
 
+use App\Business\Base\PessoaBusiness;
 use App\Business\Estoque\FornecedorBusiness;
 use App\Controller\Base\EnderecoController;
 use App\Controller\FormListController;
@@ -31,16 +32,20 @@ class FornecedorController extends FormListController
 
     private $fornecedorBusiness;
 
+    private $pessoaBusiness;
+
     private $enderecoController;
 
     public function __construct(FornecedorEntityHandler $entityHandler,
                                 EnderecoEntityHandler $enderecoEntityHandler,
                                 FornecedorBusiness $fornecedorBusiness,
+                                PessoaBusiness $pessoaBusiness,
                                 EnderecoController $enderecoController)
     {
         $this->entityHandler = $entityHandler;
         $this->enderecoEntityHandler = $enderecoEntityHandler;
         $this->fornecedorBusiness = $fornecedorBusiness;
+        $this->pessoaBusiness = $pessoaBusiness;
         $this->enderecoController = $enderecoController;
         $this->enderecoController->setRouteToRedirect('est_fornecedor_form');
     }
@@ -240,11 +245,31 @@ class FornecedorController extends FormListController
         $repo = $this->getDoctrine()->getRepository(Fornecedor::class);
         $fornecedor = $repo->findByDocumento(preg_replace('/\D/', '', $documento));
 
+        if (!$fornecedor) {
+            return null;
+        }
+
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
 
+        if ($fornecedor->getPessoa()) {
+            $this->pessoaBusiness->fillTransients($fornecedor->getPessoa());
+        }
+
+        $attributes = [
+            'id',
+            'codigo',
+            'fone1',
+            'fone2',
+            'fone3',
+            'fone4',
+            'inscricao_estadual',
+            'pessoa' => ['id', 'nome', 'nomeFantasia', 'documento',
+            'endereco' => ['id', 'bairro', 'cep', 'cidade', 'estado', 'complemento', 'logradouro', 'numero']
+        ]];
+
         $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($fornecedor, 'json');
+        $json = $serializer->serialize($fornecedor, 'json', ['attributes' => $attributes]);
 
         return new Response($json);
     }
