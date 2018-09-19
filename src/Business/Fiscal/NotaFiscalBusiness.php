@@ -319,7 +319,7 @@ class NotaFiscalBusiness
     public function saveNotaFiscalVenda(Venda $venda, NotaFiscal $notaFiscal)
     {
         try {
-            $this->doctrine->getManager()->beginTransaction();
+            $this->doctrine->getEntityManager()->beginTransaction();
 
             if (!$notaFiscal->getPessoaDestinatario()->getDocumento()) {
                 $notaFiscal->setPessoaDestinatario(null);
@@ -364,7 +364,7 @@ class NotaFiscalBusiness
                 ->getCodigo() == '1.00' ? IndicadorFormaPagto::VISTA['codigo'] : IndicadorFormaPagto::PRAZO['codigo']);
 
             $notaFiscal->getItens()->clear();
-            $this->doctrine->getManager()->flush();
+            $this->doctrine->getEntityManager()->flush();
 
             // Atenção, aqui tem que verificar a questão do arredondamento
             if ($venda->getSubTotal() > 0.0) {
@@ -440,7 +440,7 @@ class NotaFiscalBusiness
 
 
             $notaFiscal = $this->notaFiscalEntityHandler->persist($notaFiscal);
-            $this->doctrine->getManager()->flush();
+            $this->doctrine->getEntityManager()->flush();
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
@@ -449,10 +449,10 @@ class NotaFiscalBusiness
                 $this->notaFiscalVendaEntityHandler->persist($notaFiscalVenda);
             }
 
-            $this->doctrine->getManager()->commit();
+            $this->doctrine->getEntityManager()->commit();
             return $notaFiscal;
         } catch (\Exception $e) {
-            $this->doctrine->getManager()->rollback();
+            $this->doctrine->getEntityManager()->rollback();
             $erro = "Erro ao gerar registro da Nota Fiscal";
             throw new \Exception($erro, null, $e);
         }
@@ -469,7 +469,7 @@ class NotaFiscalBusiness
     public function saveNotaFiscal(NotaFiscal $notaFiscal)
     {
         try {
-            $this->doctrine->getManager()->beginTransaction();
+            $this->doctrine->getEntityManager()->beginTransaction();
 
             if (!$notaFiscal->getPessoaEmitente()) {
                 $emitente = $this->doctrine->getRepository(Pessoa::class)->findByDocumento('77498442000134');
@@ -497,12 +497,12 @@ class NotaFiscalBusiness
             $this->calcularTotais($notaFiscal);
 
             $this->notaFiscalEntityHandler->persist($notaFiscal);
-            $this->doctrine->getManager()->flush();
+            $this->doctrine->getEntityManager()->flush();
 
-            $this->doctrine->getManager()->commit();
+            $this->doctrine->getEntityManager()->commit();
             return $notaFiscal;
         } catch (\Exception $e) {
-            $this->doctrine->getManager()->rollback();
+            $this->doctrine->getEntityManager()->rollback();
             $erro = "Erro ao salvar Nota Fiscal";
             throw new \Exception($erro, null, $e);
         }
@@ -566,7 +566,7 @@ class NotaFiscalBusiness
             }
         }
 
-        $entityManager = $this->doctrine->getManager();
+        $entityManager = $this->doctrine->getEntityManager();
         $entityManager->persist($nf);
         $entityManager->flush();
 
@@ -817,7 +817,7 @@ class NotaFiscalBusiness
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
 
             $notaFiscal = $this->notaFiscalEntityHandler->persist($notaFiscal);
-            $this->doctrine->getManager()->flush();
+            $this->doctrine->getEntityManager()->flush();
         }
         return $notaFiscal;
     }
@@ -857,7 +857,7 @@ class NotaFiscalBusiness
         $historico->setObs($obs);
         $historico->setNotaFiscal($notaFiscal);
         $this->notaFiscalHistoricoEntityHandler->persist($historico);
-        $this->doctrine->getManager()->flush();
+        $this->doctrine->getEntityManager()->flush();
     }
 
     /**

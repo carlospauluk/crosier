@@ -354,7 +354,7 @@ class EmissaoNFeController extends Controller
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
-                $em = $this->getDoctrine()->getManager();
+                $em = $this->getDoctrine()->getEntityManager();
                 $em->remove($item);
                 $em->flush();
                 $this->addFlash('success', 'Item deletado com sucesso.');

@@ -191,7 +191,7 @@ class VendaBusiness
 
             $venda->setStatus('PREVENDA');
 
-            $entityManager = $this->doctrine->getManager();
+            $entityManager = $this->doctrine->getEntityManager();
             $this->vendaEntityHandler->persist($venda);
             $entityManager->flush();
 
@@ -208,8 +208,8 @@ class VendaBusiness
     function finalizarVenda(Venda $venda)
     {
         $venda->setStatus('FINALIZADA');
-        $this->doctrine->getManager()->persist($venda);
-        $this->doctrine->getManager()->flush();
+        $this->doctrine->getEntityManager()->persist($venda);
+        $this->doctrine->getEntityManager()->flush();
         return $venda;
     }
 
@@ -230,8 +230,8 @@ class VendaBusiness
         $venda->setSubTotal($bdTotalItens);
         $venda->setValorTotal($totalVenda);
 
-        $this->doctrine->getManager()->persist($venda);
-        $this->doctrine->getManager()->flush();
+        $this->doctrine->getEntityManager()->persist($venda);
+        $this->doctrine->getEntityManager()->flush();
         return $venda;
     }
 

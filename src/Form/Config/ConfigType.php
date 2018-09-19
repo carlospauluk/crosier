@@ -20,7 +20,8 @@ class ConfigType extends AbstractType
         ));
 
         $builder->add('valor', TextType::class, array(
-            'label' => 'Valor'
+            'label' => 'Valor',
+            'attr' => ['style' => 'text-transform: none;']
         ));
 
         $builder->add('obs', TextareaType::class, array(

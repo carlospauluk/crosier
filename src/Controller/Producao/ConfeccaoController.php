@@ -73,7 +73,7 @@ class ConfeccaoController extends Controller
 
             // ... perform some action, such as saving the task to the database
             // for example, if Task is a Doctrine entity, save it!
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->getDoctrine()->getEntityManager();
             $entityManager->persist($confeccao);
             $entityManager->flush();
             $this->addFlash('success', 'Registro salvo com sucesso!');
@@ -139,7 +139,7 @@ class ConfeccaoController extends Controller
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
-                $em = $this->getDoctrine()->getManager();
+                $em = $this->getDoctrine()->getEntityManager();
                 $em->remove($item);
                 $em->flush();
                 $this->addFlash('success', 'post.deleted_successfully');
@@ -200,7 +200,7 @@ class ConfeccaoController extends Controller
 
     public function persistConfeccaoItem($itemArr)
     {
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->getDoctrine()->getEntityManager();
 
         // deleta todos os prod_confeccao_item_qtde
         $r = $this->getDoctrine()->getRepository(ConfeccaoItem::class);

@@ -65,14 +65,6 @@ class Instituicao extends EntityId
      */
     private $fornecedor;
 
-    public function __construct()
-    {
-        ORM\Annotation::class;
-        Assert\All::class;
-        Fornecedor::class;
-        Cliente::class;
-    }
-
     public function getId()
     {
         return $this->id;

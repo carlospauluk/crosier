@@ -29,7 +29,7 @@ class MovimentacaoBusiness
      */
     public function mergeAll(Movimentacao $movimentacao)
     {
-        $em = $this->doctrine->getManager();
+        $em = $this->doctrine->getEntityManager();
         if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getId()) {
             $movimentacao->setCategoria($em->merge($movimentacao->getCategoria()));
         }

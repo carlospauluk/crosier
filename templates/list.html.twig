@@ -35,7 +35,7 @@
 
                 <table class="table table-striped table-hover crsr-datatable display compact" id="{{ list_id }}"
                        data-listajaxurl="{{ url(route_list_ajax) }}"
-                       data-routeedit="{{ url(route_form) }}">
+                       data-routeedit="{{ url(route_form) }}" data-crsf-token-delete="{{ csrf_token('delete') }}">
                 </table>
 
             </div>

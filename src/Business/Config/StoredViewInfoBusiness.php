@@ -17,7 +17,6 @@ use Symfony\Component\Security\Core\Security;
 class StoredViewInfoBusiness
 {
 
-
     private $doctrine;
 
     private $security;

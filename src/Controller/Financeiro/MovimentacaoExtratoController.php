@@ -4,6 +4,7 @@ namespace App\Controller\Financeiro;
 
 use App\Business\Base\DiaUtilBusiness;
 use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\GrupoItem;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use Symfony\Component\HttpFoundation\Request;
@@ -138,6 +139,49 @@ class MovimentacaoExtratoController extends MovimentacaoBaseController
             $str .= "<option value=\"" . $carteira->getId() . "\"" . $selected . ">" . $carteira->getCodigo(true) . " - " . $carteira->getDescricao() . "</option>";
         }
         return $str;
+    }
+
+
+    /**
+     *
+     * @Route("/fin/movimentacao/grupo", name="fin_movimentacao_grupo")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
+     */
+    public function grupo(Request $request)
+    {
+        $parameters = $request->query->all();
+        if (!array_key_exists('filter', $parameters)) {
+            // inicializa para evitar o erro
+            $parameters['filter'] = array();
+            $parameters['filter']['mesano'] = date('Y-m-d');
+            $parameters['filter']['grupoItem'] = 1;
+        } else {
+
+        }
+
+        $filterDatas = $this->getFilterDatas($parameters);
+
+        $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($parameters['filter']['grupoItem']);
+
+        $repo = $this->getDoctrine()->getRepository(Movimentacao::class);
+        $orders[] = ['column' => 'e.dtUtil', 'dir' => 'asc'];
+        $dados = $repo->findByFilters($filterDatas, $orders, 0, null);
+
+        $parameters['carteira']['options'] = $this->getFilterCarteiraOptions($filterDatas);
+
+
+        $prox = $this->diaUtilBusiness->incPeriodo(true, $dtIni, $dtFim);
+        $ante = $this->diaUtilBusiness->incPeriodo(false, $dtIni, $dtFim);
+        $parameters['antePeriodoI'] = $ante['dtIni'];
+        $parameters['antePeriodoF'] = $ante['dtFim'];
+        $parameters['proxPeriodoI'] = $prox['dtIni'];
+        $parameters['proxPeriodoF'] = $prox['dtFim'];
+
+
+        return $this->render('Financeiro/movimentacaoExtratoList.html.twig', $parameters);
+
     }
 
 

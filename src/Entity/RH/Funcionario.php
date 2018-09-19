@@ -195,11 +195,6 @@ class Funcionario extends EntityId
     public function __construct()
     {
         $this->enderecos = new ArrayCollection();
-        ORM\Annotation::class;
-        Assert\All::class;
-        ManyToMany::class;
-        JoinTable::class;
-        JoinColumn::class;
         $this->cargos = new ArrayCollection();
     }
 

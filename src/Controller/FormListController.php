@@ -29,6 +29,17 @@ abstract class FormListController extends Controller
 
     abstract public function getFormView();
 
+
+    /**
+     * Utilizado para setar na <title>.
+     */
+    public function getFormPageTitle()
+    {
+        // Por padrão, retorno o nome da entidade. Se preciso, sobreescrever.
+        // Por padrão, retorno o nome da entidade no plural. Se preciso, sobreescrever.
+        return (new \ReflectionClass($this->getEntityHandler()->getEntityClass()))->getShortName();
+    }
+
     private $storedViewInfoBusiness;
 
     /**
@@ -41,14 +52,39 @@ abstract class FormListController extends Controller
     }
 
     /**
+     * Role padrão para poder acessar os controllers.
+     *
+     * @return string
+     * @throws \ReflectionException
+     */
+    public function getDefaultRole()
+    {
+        // Por padrão, pego o nome da entidade em uppercase.
+        $entityName = strtoupper((new \ReflectionClass($this->getEntityHandler()->getEntityClass()))->getShortName());
+        return ["ROLE_ADMIN", "ROLE_" . $entityName];
+    }
+
+    /**
+     *
+     * @throws \ReflectionException
+     */
+    public function checkAccess()
+    {
+        $this->denyAccessUnlessGranted($this->getDefaultRole(), null, 'Acesso negado!');
+    }
+
+    /**
      * Monta o formulário, faz as validações, manda salvar, trata erros, etc.
      *
      * @param Request $request
      * @param EntityId|null $entityId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function doForm(Request $request, EntityId $entityId = null)
     {
+        $this->checkAccess();
+
         if (!$entityId) {
             $entityName = $this->getEntityHandler()->getEntityClass();
             $entityId = new $entityName();
@@ -71,12 +107,16 @@ abstract class FormListController extends Controller
 
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
         $parameters['form'] = $form->createView();
-
+        $parameters['page_title'] = $this->getFormPageTitle();
         return $this->render($this->getFormView(), $parameters);
     }
 
     abstract public function getFilterDatas($params);
 
+    /**
+     * @param $params
+     * @return array
+     */
     public function doGetFilterDatas($params)
     {
         $filterDatas = $this->getFilterDatas($params);
@@ -107,11 +147,22 @@ abstract class FormListController extends Controller
     abstract public function getListRoute();
 
     /**
+     * Utilizado para setar na <title>.
+     */
+    public function getListPageTitle()
+    {
+        // Por padrão, retorno o nome da entidade no plural. Se preciso, sobreescrever.
+        return (new \ReflectionClass($this->getEntityHandler()->getEntityClass()))->getShortName() . "s";
+    }
+
+    /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
-    public function doList(Request $request)
+    public function doList(Request $request, $parameters)
     {
+        $this->checkAccess();
         $params = $request->query->all();
         if (!array_key_exists('filter', $params)) {
             // inicializa para evitar o erro
@@ -132,6 +183,9 @@ abstract class FormListController extends Controller
             }
         }
 
+        $params['page_title'] = $this->getListPageTitle();
+
+        $params = array_merge($params, $parameters);
 
         return $this->render($this->getListView(), $params);
     }
@@ -152,6 +206,7 @@ abstract class FormListController extends Controller
      */
     public function doDatatablesJsList(Request $request)
     {
+        $this->checkAccess();
         $repo = $this->getDoctrine()->getRepository($this->getEntityHandler()->getEntityClass());
 
         $rParams = $request->request->all();
@@ -208,11 +263,12 @@ abstract class FormListController extends Controller
 
     public function doDelete(Request $request, EntityId $entityId)
     {
+        $this->checkAccess();
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
-                $this->entityHandler->delete($entityId);
+                $this->getEntityHandler()->delete($entityId);
                 $this->addFlash('success', 'Registro deletado com sucesso.');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erro ao deletar registro.');

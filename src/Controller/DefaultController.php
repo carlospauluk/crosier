@@ -10,7 +10,7 @@ class DefaultController extends Controller
 
     /**
      *
-     * @Route("/")
+     * @Route("/", name="root")
      */
     public function routes()
     {
