@@ -191,9 +191,8 @@ class EntMenuController extends FormListController
         $encoder = new JsonEncoder();
         $serializer = new Serializer([$normalizer], [$encoder]);
 
-
-        if (!$session->get('mainmenu_pais')) {
-            $pais = $this->getDoctrine()->getRepository(EntMenu::class)->findBy(['pai' => null], ['ordem' => 'ASC']);
+        if (!$session->get('mainmenu')) {
+            $mainMenuSecured = $this->getDoctrine()->getRepository(EntMenu::class)->getMainMenuSecured();
 
             $attrs = ['id',
                 'label',
@@ -203,15 +202,15 @@ class EntMenuController extends FormListController
                 'app' => ['id', 'route', 'descricao'],
                 'filhos' => ['id', 'label', 'icon', 'tipo', 'cssStyle', 'app' => ['id', 'route', 'descricao']]];
 
-            $data = $serializer->normalize($pais, 'json', ['attributes' => $attrs]);
-            $session->set('mainmenu_pais', $data);
+            $jMainMenuSecured = $serializer->normalize($mainMenuSecured, 'json', ['attributes' => $attrs]);
+            $session->set('mainmenu', $jMainMenuSecured);
         } else {
-            $pais = $session->get('mainmenu_pais');
+            $jMainMenuSecured = $session->get('mainmenu');
         }
 
         return $this->render(
             '/Config/mainmenu.html.twig',
-            array('pais' => $pais)
+            array('mainMenu' => $jMainMenuSecured)
         );
     }
 
@@ -224,7 +223,7 @@ class EntMenuController extends FormListController
     public function clear(Request $request)
     {
         $session = new Session();
-        $session->remove('mainmenu_pais');
+        $session->remove('mainmenu');
         return $this->redirectToRoute('cfg_entMenu_list');
     }
 

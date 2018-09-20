@@ -102,7 +102,7 @@ class ClienteController extends FormListController
      */
     public function form(Request $request, Cliente $cliente = null)
     {
-        $this->checkAccess();
+        $this->getSecurityBusiness()->checkAccess("crm_cliente_form");
         if (!$cliente) {
             $cliente = new Cliente();
             $pessoa = new Pessoa();

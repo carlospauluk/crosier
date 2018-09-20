@@ -45,7 +45,8 @@ class AppController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData(['chave', 'valor'], 'LIKE', $params['filter']['descricao'])
+            new FilterData(['route', 'descricao'], 'LIKE', $params['filter']['descricao']),
+            new FilterData('m.nome', 'LIKE', $params['filter']['modulo'])
         );
     }
 

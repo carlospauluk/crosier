@@ -132,6 +132,16 @@ class App extends EntityId
         return $this->roles;
     }
 
+    public function getRolesArray() {
+        if ($this->roles) {
+            $rolesArray = [];
+            foreach ($this->roles as $role) {
+                $rolesArray[] = $role->getRole();
+            }
+            return $rolesArray;
+        }
+    }
+
 
 }
 
