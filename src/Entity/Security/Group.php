@@ -28,7 +28,7 @@ class Group extends EntityId
      *
      * @ORM\Column(name="groupname", type="string", length=90, unique=true)
      */
-    private $username;
+    private $groupname;
 
     /**
      *
@@ -45,24 +45,36 @@ class Group extends EntityId
         $this->roles = new ArrayCollection();
     }
 
+    /**
+     * @return mixed
+     */
     public function getId()
     {
         return $this->id;
     }
 
-    public function getUsername()
-    {
-        return $this->username;
-    }
-
-    public function setId($id)
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
     {
         $this->id = $id;
     }
 
-    public function setUsername($username)
+    /**
+     * @return mixed
+     */
+    public function getGroupname()
     {
-        $this->username = $username;
+        return $this->groupname;
+    }
+
+    /**
+     * @param mixed $groupname
+     */
+    public function setGroupname($groupname): void
+    {
+        $this->groupname = $groupname;
     }
 
     /**

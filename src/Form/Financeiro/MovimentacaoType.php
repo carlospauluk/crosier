@@ -40,12 +40,10 @@ class MovimentacaoType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $repoCarteira = $this->doctrine->getRepository(Carteira::class);
-        $carteiras = $repoCarteira->findAll(WhereBuilder::buildOrderBy('codigo'));
         $builder->add('carteira', EntityType::class, array(
             'label' => 'Carteira',
             'class' => Carteira::class,
-            'choices' => $carteiras,
+            'choices' => $this->doctrine->getRepository(Carteira::class)->findAll(WhereBuilder::buildOrderBy('codigo')),
             'choice_label' => function (Carteira $carteira) {
                 return $carteira->getDescricaoMontada();
             }

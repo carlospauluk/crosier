@@ -1,28 +1,28 @@
 <?php
 
-namespace App\Controller\Config;
+namespace App\Controller\Security;
 
 use App\Controller\FormListController;
-use App\Entity\Config\App;
-use App\EntityHandler\Config\AppEntityHandler;
+use App\Entity\Security\User;
 use App\EntityHandler\EntityHandler;
-use App\Form\Config\AppType;
+use App\EntityHandler\Security\UserEntityHandler;
+use App\Form\Security\UserType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Class AppController.
- * @package App\Controller\Config
+ * Class UserController.
+ * @package App\Controller\Security
  * @author Carlos Eduardo Pauluk
  */
-class AppController extends FormListController
+class UserController extends FormListController
 {
 
     private $entityHandler;
 
-    public function __construct(AppEntityHandler $entityHandler)
+    public function __construct(UserEntityHandler $entityHandler)
     {
         $this->entityHandler = $entityHandler;
     }
@@ -34,54 +34,53 @@ class AppController extends FormListController
 
     public function getFormRoute()
     {
-        return 'cfg_app_form';
+        return 'sec_user_form';
     }
 
     public function getFormView()
     {
-        return 'Config/appForm.html.twig';
+        return 'Security/userForm.html.twig';
     }
 
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData(['route', 'descricao'], 'LIKE', $params['filter']['descricao']),
-            new FilterData('m.nome', 'LIKE', $params['filter']['modulo'])
+            new FilterData(['username', 'nome'], 'LIKE', $params['filter']['username'])
         );
     }
 
     public function getListView()
     {
-        return 'Config/appList.html.twig';
+        return 'Security/userList.html.twig';
     }
 
     public function getListRoute()
     {
-        return 'cfg_app_list';
+        return 'sec_user_list';
     }
 
 
     public function getTypeClass()
     {
-        return AppType::class;
+        return UserType::class;
     }
 
     /**
      *
-     * @Route("/cfg/app/form/{id}", name="cfg_app_form", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @Route("/sec/user/form/{id}", name="sec_user_form", defaults={"id"=null}, requirements={"id"="\d+"})
      * @param Request $request
-     * @param App|null $app
+     * @param User|null $user
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
      */
-    public function form(Request $request, App $app = null)
+    public function form(Request $request, User $user = null)
     {
-        return $this->doForm($request, $app);
+        return $this->doForm($request, $user);
     }
 
     /**
      *
-     * @Route("/cfg/app/list/", name="cfg_app_list")
+     * @Route("/sec/user/list/", name="sec_user_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
@@ -99,16 +98,17 @@ class AppController extends FormListController
         return array(
             'attributes' => array(
                 'id',
-                'descricao',
-                'route',
-                'modulo' => ['nome']
+                'username',
+                'nome',
+                'email',
+                'grupo' => ['groupname']
             )
         );
     }
 
     /**
      *
-     * @Route("/cfg/app/datatablesJsList/", name="cfg_app_datatablesJsList")
+     * @Route("/sec/user/datatablesJsList/", name="sec_user_datatablesJsList")
      * @param Request $request
      * @return Response
      */
@@ -120,14 +120,23 @@ class AppController extends FormListController
 
     /**
      *
-     * @Route("/cfg/app/delete/{id}/", name="cfg_app_delete", requirements={"id"="\d+"})
+     * @Route("/sec/user/delete/{id}/", name="sec_user_delete", requirements={"id"="\d+"})
      * @param Request $request
-     * @param App $app
+     * @param User $user
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function delete(Request $request, App $app)
+    public function delete(Request $request, User $user)
     {
-        return $this->doDelete($request, $app);
+        return $this->doDelete($request, $user);
+    }
+
+    public function getListPageTitle()
+    {
+        return "Usuários do Sistema";
+    }
+
+    public function getFormPageTitle() {
+        return "Usuário do Sistema";
     }
 
 
