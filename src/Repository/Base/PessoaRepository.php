@@ -21,7 +21,7 @@ class PessoaRepository extends ServiceEntityRepository
     public function __construct(RegistryInterface $registry, LoggerInterface $logger)
     {
         parent::__construct($registry, Pessoa::class);
-        $this->logger = $logger;
+        $this->getLogger = $logger;
     }
 
     public function findByDocumento($documento)

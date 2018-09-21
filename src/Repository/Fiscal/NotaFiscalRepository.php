@@ -2,7 +2,7 @@
 
 namespace App\Repository\Fiscal;
 
-use App\Entity\Base\Config;
+use App\Entity\Config\Config;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Repository\FilterRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
@@ -17,7 +17,6 @@ use Doctrine\ORM\QueryBuilder;
 class NotaFiscalRepository extends FilterRepository
 {
 
-    private $logger;
 
     public function getEntityClass()
     {
@@ -44,7 +43,7 @@ class NotaFiscalRepository extends FilterRepository
             // FOR UPDATE para garantir que ninguém vai alterar este valor antes de terminar esta transação
             $sql = "SELECT * FROM cfg_config WHERE chave LIKE ? FOR UPDATE";
             $rsm = new ResultSetMapping();
-            $rsm->addEntityResult('App\Entity\Base\Config', 'c');
+            $rsm->addEntityResult('App\Entity\Config\Config', 'c');
             $rsm->addFieldResult('c', 'id', 'id');
             $rsm->addFieldResult('c', 'valor', 'valor');
             $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
@@ -87,8 +86,8 @@ class NotaFiscalRepository extends FilterRepository
             return $prox;
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
-            $this->logger->error($e);
-            $this->logger->error("Erro ao pesquisar próximo número de nota fiscal para [" . $producao . "] [" . $serie . "] [" . $tipoNotaFiscal . "]");
+            $this->getLogger()->error($e);
+            $this->getLogger()->error("Erro ao pesquisar próximo número de nota fiscal para [" . $producao . "] [" . $serie . "] [" . $tipoNotaFiscal . "]");
             throw new \Exception("Erro ao pesquisar próximo número de nota fiscal para [" . $producao . "] [" . $serie . "] [" . $tipoNotaFiscal . "]");
         }
     }

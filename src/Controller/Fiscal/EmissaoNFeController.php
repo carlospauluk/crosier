@@ -223,6 +223,8 @@ class EmissaoNFeController extends Controller
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
+                $notaFiscal = $this->notaFiscalBusiness->formData2NotaFiscal($data);
+                $notaFiscal = $this->notaFiscalBusiness->saveNotaFiscal($notaFiscal);
                 $notaFiscal = $this->notaFiscalBusiness->cartaCorrecao($notaFiscal);
                 return $this->redirectToRoute('fis_emissaonfe_form', array(
                     'notaFiscal' => $notaFiscal->getId()

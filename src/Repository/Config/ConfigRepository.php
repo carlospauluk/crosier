@@ -23,7 +23,7 @@ class ConfigRepository extends FilterRepository
     {
 
         // TODO: parametrizar o estabelecimento conforme o login
-        $ql = "SELECT c FROM App\Entity\Base\Config c WHERE c.chave = :chave AND c.estabelecimento = 1";
+        $ql = "SELECT c FROM App\Entity\Config\Config c WHERE c.chave = :chave AND c.estabelecimento = 1";
         $query = $this->getEntityManager()->createQuery($ql);
         $query->setParameters(array(
             'chave' => $chave

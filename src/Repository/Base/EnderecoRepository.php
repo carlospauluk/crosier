@@ -23,7 +23,7 @@ class EnderecoRepository extends ServiceEntityRepository
     public function __construct(RegistryInterface $registry, LoggerInterface $logger)
     {
         parent::__construct($registry, Endereco::class);
-        $this->logger = $logger;
+        $this->getLogger = $logger;
     }
 
     public function findPrimeiroByPessoa(Pessoa $pessoa)

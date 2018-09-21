@@ -624,7 +624,6 @@ class UnimakeBusiness
     {
         $notaFiscal = $this->verificaSePrecisaConsultarStatus($notaFiscal);
 
-
         $pastaXMLExemplos = getenv('PASTAARQUIVOSXMLEXEMPLO');
 
         $exemploNFe = file_get_contents($pastaXMLExemplos . "/-cce4.xml");

@@ -21,6 +21,6 @@ class NotaFiscalHistoricoRepository extends ServiceEntityRepository
     public function __construct(RegistryInterface $registry, LoggerInterface $logger)
     {
         parent::__construct($registry, NotaFiscal::class);
-        $this->logger = $logger;
+        $this->getLogger = $logger;
     }
 }

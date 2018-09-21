@@ -24,7 +24,7 @@ class FichaTecnicaController extends Controller
     {
         Route::class;
         $this->eSerializer = $eSerializer;
-        $this->logger = $logger;
+        $this->getLogger = $logger;
     }
 
     /**
