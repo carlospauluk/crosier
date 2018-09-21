@@ -445,8 +445,11 @@ class UnimakeBusiness
 
         $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
         $fileName = $pastaUnimake . "/envio/" . $notaFiscal->getUuid() . "-CONS-SIT-" . $rand . "-nfe.xml";
-        $xml =
-        file_put_contents($fileName, $pedSit->asXML());
+        $xml = $pedSit->asXML();
+        $bytes = file_put_contents($fileName, $xml);
+        if ($bytes < 1) {
+            throw new \Exception("Não foi possível escrever no arquivo: [" . $fileName . "]");
+        }
 
         $count = 20;
         $arqRetorno = $pastaUnimake . "/retorno/" . $notaFiscal->getUuid() . "-CONS-SIT-" . $rand . "-sit.xml";
