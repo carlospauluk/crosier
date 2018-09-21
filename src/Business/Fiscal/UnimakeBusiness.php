@@ -444,7 +444,9 @@ class UnimakeBusiness
         $rand = rand(10000000, 99999999);
 
         $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
-        file_put_contents($pastaUnimake . "/envio/" . $notaFiscal->getUuid() . "-CONS-SIT-" . $rand . "-nfe.xml", $pedSit->asXML());
+        $fileName = $pastaUnimake . "/envio/" . $notaFiscal->getUuid() . "-CONS-SIT-" . $rand . "-nfe.xml";
+        $xml =
+        file_put_contents($fileName, $pedSit->asXML());
 
         $count = 20;
         $arqRetorno = $pastaUnimake . "/retorno/" . $notaFiscal->getUuid() . "-CONS-SIT-" . $rand . "-sit.xml";
