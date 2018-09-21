@@ -1,6 +1,7 @@
 {% extends 'index.html.twig' %}
 
 
+{% block title %}Config{% endblock %}
 
 
 {% block page_content %}
@@ -37,7 +38,7 @@
 				</button>
 
 				<button type="button" value="Resetar" class="btn btn-secondary"
-					data-url="{{ url('fin_config_form') }}"
+					data-url="{{ url('cfg_config_form') }}"
 					data-target="#confirmationModal" data-toggle="modal">
 					<i class="fas fa-undo" aria-hidden="true"></i> Recarregar
 				</button>

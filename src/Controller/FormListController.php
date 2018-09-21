@@ -4,6 +4,7 @@ namespace App\Controller;
 
 
 use App\Business\Config\StoredViewInfoBusiness;
+use App\Business\Security\SecurityBusiness;
 use App\Entity\Base\EntityId;
 use App\EntityHandler\EntityHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -13,8 +14,17 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
+/**
+ * Classe pai para CRUDs padrão.
+ *
+ * @package App\Controller
+ */
 abstract class FormListController extends Controller
 {
+
+    private $storedViewInfoBusiness;
+
+    private $securityBusiness;
 
     abstract public function getEntityHandler(): ?EntityHandler;
 
@@ -29,7 +39,19 @@ abstract class FormListController extends Controller
 
     abstract public function getFormView();
 
-    private $storedViewInfoBusiness;
+    /**
+     * Utilizado para setar na <title>.
+     * @throws \Exception
+     */
+    public function getFormPageTitle()
+    {
+        // Por padrão, retorno o nome da entidade. Se preciso, sobreescrever.
+        try {
+            return (new \ReflectionClass($this->getEntityHandler()->getEntityClass()))->getShortName();
+        } catch (\ReflectionException $e) {
+            throw new \Exception($e);
+        }
+    }
 
     /**
      * @required
@@ -41,14 +63,36 @@ abstract class FormListController extends Controller
     }
 
     /**
+     *
+     * @required
+     * @param SecurityBusiness $securityBusiness
+     */
+    public function setSecurityBusiness(SecurityBusiness $securityBusiness)
+    {
+        $this->securityBusiness = $securityBusiness;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSecurityBusiness()
+    {
+        return $this->securityBusiness;
+    }
+
+    /**
      * Monta o formulário, faz as validações, manda salvar, trata erros, etc.
      *
      * @param Request $request
      * @param EntityId|null $entityId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
+     * @throws \Exception
      */
     public function doForm(Request $request, EntityId $entityId = null)
     {
+        $this->securityBusiness->checkAccess($this->getFormRoute());
+
         if (!$entityId) {
             $entityName = $this->getEntityHandler()->getEntityClass();
             $entityId = new $entityName();
@@ -71,12 +115,16 @@ abstract class FormListController extends Controller
 
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
         $parameters['form'] = $form->createView();
-
+        $parameters['page_title'] = $this->getFormPageTitle();
         return $this->render($this->getFormView(), $parameters);
     }
 
     abstract public function getFilterDatas($params);
 
+    /**
+     * @param $params
+     * @return array
+     */
     public function doGetFilterDatas($params)
     {
         $filterDatas = $this->getFilterDatas($params);
@@ -102,16 +150,44 @@ abstract class FormListController extends Controller
         return $clearedFilterDatas;
     }
 
+    /**
+     * Deve ser informado pela subclasse para poder renderizar a view da list.
+     *
+     * @return mixed
+     */
     abstract public function getListView();
 
+    /**
+     * Deve ser informado pela subclasse. É utilizado pela 'storedViewInfoBusiness', para 'redirectToRoute' e no 'checkAccess'.
+     *
+     * @return mixed
+     */
     abstract public function getListRoute();
 
     /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * Utilizado para setar na <title>.
      */
-    public function doList(Request $request)
+    public function getListPageTitle()
     {
+        // Por padrão, retorno o nome da entidade no plural. Se preciso, sobreescrever.
+        try {
+            return (new \ReflectionClass($this->getEntityHandler()->getEntityClass()))->getShortName() . "s";
+        } catch (\ReflectionException $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @param array $parameters
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
+    public function doList(Request $request, $parameters = array())
+    {
+        $this->securityBusiness->checkAccess($this->getListRoute());
+
         $params = $request->query->all();
         if (!array_key_exists('filter', $params)) {
             // inicializa para evitar o erro
@@ -132,6 +208,9 @@ abstract class FormListController extends Controller
             }
         }
 
+        $params['page_title'] = $this->getListPageTitle();
+
+        $params = array_merge($params, $parameters);
 
         return $this->render($this->getListView(), $params);
     }
@@ -152,6 +231,8 @@ abstract class FormListController extends Controller
      */
     public function doDatatablesJsList(Request $request)
     {
+        $this->securityBusiness->checkAccess($this->getListRoute());
+
         $repo = $this->getDoctrine()->getRepository($this->getEntityHandler()->getEntityClass());
 
         $rParams = $request->request->all();
@@ -208,11 +289,12 @@ abstract class FormListController extends Controller
 
     public function doDelete(Request $request, EntityId $entityId)
     {
+        $this->checkAccess();
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
-                $this->entityHandler->delete($entityId);
+                $this->getEntityHandler()->delete($entityId);
                 $this->addFlash('success', 'Registro deletado com sucesso.');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erro ao deletar registro.');

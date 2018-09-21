@@ -2,9 +2,13 @@
 
 namespace App\Controller\Financeiro;
 
+use App\Controller\FormListController;
 use App\Entity\Financeiro\Categoria;
+use App\Entity\Financeiro\Grupo;
+use App\EntityHandler\EntityHandler;
+use App\EntityHandler\Financeiro\CategoriaEntityHandler;
+use App\Form\Financeiro\CategoriaType;
 use App\Utils\Repository\FilterData;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,127 +16,149 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class CategoriaController extends Controller
+/**
+ * Class CategoriaController
+ * @package App\Controller\Financeiro
+ * @author Carlos Eduardo Pauluk
+ */
+class CategoriaController extends FormListController
 {
+
+    private $entityHandler;
+
+    public function __construct(CategoriaEntityHandler $entityHandler)
+    {
+        $this->entityHandler = $entityHandler;
+    }
+
+    public function getEntityHandler(): ?EntityHandler
+    {
+        return $this->entityHandler;
+    }
+
+    public function getFormRoute()
+    {
+        return 'fin_categoria_form';
+    }
+
+    public function getFormView()
+    {
+        return 'Financeiro/categoriaForm.html.twig';
+    }
+
+    public function getFilterDatas($params)
+    {
+        return array(
+            new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
+            new FilterData('dtConsolidado', 'BETWEEN', $params['filter']['dtConsolidado'])
+        );
+    }
+
+    public function getListView()
+    {
+        return 'Financeiro/categoriaList.html.twig';
+    }
+
+    public function getListRoute()
+    {
+        return 'fin_categoria_list';
+    }
+
+
+    public function getTypeClass()
+    {
+        return CategoriaType::class;
+    }
 
     /**
      *
-     * @Route("/fin/categoria/form/{id}", name="categoria_form", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @Route("/fin/categoria/form/{id}", name="fin_categoria_form", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @param Request $request
+     * @param Categoria|null $categoria
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
     public function form(Request $request, Categoria $categoria = null)
     {
-//         if (! $categoria) {
-//             $categoria = new Categoria();
-
-//             $categoria->setInserted(new \DateTime('now'));
-//             $categoria->setUpdated(new \DateTime('now'));
-//         }
-
-//         $form = $this->createForm(CategoriaType::class, $categoria);
-
-//         $form->handleRequest($request);
-
-//         if ($form->isSubmitted() && $form->isValid()) {
-//             // $form->getData() holds the submitted values
-//             // but, the original `$task` variable has also been updated
-//             $categoria = $form->getData();
-
-//             // ... perform some action, such as saving the task to the database
-//             // for example, if Task is a Doctrine entity, save it!
-//             $entityManager = $this->getDoctrine()->getManager();
-//             $entityManager->persist($categoria);
-//             $entityManager->flush();
-//             $this->addFlash('success', 'Registro salvo com sucesso!');
-//             return $this->redirectToRoute('categoria_form', array('id' => $categoria->getId()) );
-//         } else {
-//             $form->getErrors(true, false);
-//         }
-
-//         return $this->render('Financeiro/categoriaForm.html.twig', array(
-//             'form' => $form->createView()
-//         ));
+        return $this->doForm($request, $categoria);
     }
 
     /**
      *
-     * @Route("/fin/categoria/list/", name="categoria_list")
+     * @Route("/fin/categoria/list/", name="fin_categoria_list")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function list(Request $request)
     {
-        $dados = null;
-        $params = $request->query->all();
+        return $this->doList($request);
+    }
 
-        if (!array_key_exists('filter', $params)) {
-            $params['filter'] = null;
-        }
-
-        try {
-
-            $repo = $this->getDoctrine()->getRepository(Categoria::class);
-
-            if (!$params['filter'] or count($params['filter']) == 0) {
-                $dados = $repo->findAll();
-            } else {
-
-                $filters = array(
-                    new FilterData('descricao', 'LIKE', $params['filter']['descricao']),
-                    new FilterData('dtConsolidado', 'BETWEEN', $params['filter']['dtConsolidado'])
-                );
-
-                $dados = $repo->findByFilters($filters);
-            }
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
-        }
-
-        return $this->render('Financeiro/categoriaList.html.twig', array(
-            'dados' => $dados,
-            'filter' => $params['filter']
-        ));
+    /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'codigo',
+                'descricao',
+                'dtConsolidado' => ['timestamp'],
+                'limite'
+            )
+        );
     }
 
     /**
      *
-     * @Route("/fin/categoria/delete/{id}/", name="categoria_delete", requirements={"id"="\d+"})
+     * @Route("/fin/categoria/datatablesJsList/", name="fin_categoria_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
+    }
+
+    /**
      *
+     * @Route("/fin/categoria/delete/{id}/", name="fin_categoria_delete", requirements={"id"="\d+"})
+     * @param Request $request
+     * @param Categoria $categoria
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function delete(Request $request, Categoria $categoria)
     {
-        if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
-            $this->addFlash('error', 'Erro interno do sistema.');
-        } else {
-            try {
-                $em = $this->getDoctrine()->getManager();
-                $em->remove($categoria);
-                $em->flush();
-                $this->addFlash('success', 'post.deleted_successfully');
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Erro ao deletar categoria.');
-            }
-        }
-
-        return $this->redirectToRoute('categoria_list');
+        return $this->doDelete($request, $categoria);
     }
 
     /**
      *
-     * @Route("/fin/categoria/treelist/", name="categoria_treelist")
-     *
+     * @Route("/fin/categoria/select2json", name="fin_categoria_select2json", methods={"GET"}, options = { "expose" = true })
+     * @param Request $request
+     * @param Grupo $item
+     * @return Response
      */
-    public function getTreeList()
+    public function categoriaSelect2json(Request $request)
     {
+        $itens = $this->getDoctrine()->getRepository(Categoria::class)->findBy(['concreta' => true], ['codigo' => 'ASC']);
 
-        $repo = $this->getDoctrine()->getRepository(Categoria::class);
-        $categorias = $repo->buildTreeList();
+        $rs = array();
+        foreach ($itens as $item) {
+            $r['id'] = $item->getId();
+            $r['text'] = $item->getDescricaoMontada();
+            $rs[] = $r;
+        }
 
         $normalizer = new ObjectNormalizer();
-        $normalizer->setIgnoredAttributes(array('pai', 'subCategs'));
         $encoder = new JsonEncoder();
 
         $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($categorias, 'json');
+        $json = $serializer->serialize($rs, 'json');
 
         return new Response($json);
     }
+
 
 }

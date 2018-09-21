@@ -76,6 +76,7 @@ class CarteiraController extends FormListController
      * @param Request $request
      * @param Carteira|null $carteira
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function form(Request $request, Carteira $carteira = null)
     {
@@ -87,6 +88,7 @@ class CarteiraController extends FormListController
      * @Route("/fin/carteira/list/", name="fin_carteira_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function list(Request $request)
     {

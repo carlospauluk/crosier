@@ -2,6 +2,7 @@
 
 namespace App\Command\Base;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -66,12 +67,19 @@ class UppercaseFieldsJsonBuilderCommand extends Command
     {
         $array = array();
 
-        $all = $this->getDoctrine()->getManager()->getMetadataFactory()->getAllMetadata();
+        $all = $this->getDoctrine()->getEntityManager()->getMetadataFactory()->getAllMetadata();
+        $annotationReader = new AnnotationReader();
         foreach ($all as $classMeta) {
+            $reflectionClass = $classMeta->getReflectionClass();
             $fields = array();
-            $eMeta = $this->getDoctrine()->getManager()->getMetadataFactory()->getMetadataFor($classMeta->getName());
+            $eMeta = $this->getDoctrine()->getEntityManager()->getMetadataFactory()->getMetadataFor($classMeta->getName());
             $output->writeln('Pesquisando ' . $classMeta->getName());
             foreach ($eMeta->getFieldNames() as $field) {
+                $notUppercaseAnnotation = $annotationReader->getPropertyAnnotation(new \ReflectionProperty($classMeta->getName(),$field),'App\Doctrine\Annotations\NotUppercase');
+                if ($notUppercaseAnnotation) {
+                    continue;
+                }
+
                 $fieldM = $eMeta->getFieldMapping($field);
                 if ($fieldM['type'] == 'string') {
                     $output->writeln($field);

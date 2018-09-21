@@ -1,8 +1,6 @@
 'use strict';
 
 
-import CrosierMasks from "./CrosierMasks";
-
 class Utils {
 
     static escapeHtml(string) {

@@ -70,9 +70,11 @@ $(document).ready(function () {
         $('#btnConfirmationModalYes', this)
             .data('form', $(e.relatedTarget).data('form'))
             .data('url', $(e.relatedTarget).data('url'))
+            .data('function', $(e.relatedTarget).data('function'))
             .data('token', $(e.relatedTarget).data('token'));
     });
-    //Bind click to OK button within popup
+
+
     $('#confirmationModal').on(
         'click',
         '#btnConfirmationModalYes',

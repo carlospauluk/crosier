@@ -20,6 +20,6 @@ class AuthenticationSuccessHandler implements AuthenticationSuccessHandlerInterf
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
-
+        echo "relogando";
     }
 }

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}"/>
 
-    <title>{% block title %}{% endblock %}</title>
+    <title>{{ page_title is defined ? page_title ~ ' - Crosier v.0.0.1' : 'Crosier v.0.0.1' }} </title>
 
     {% block stylesheets %}
         <link rel="stylesheet" href="{{ asset('build/bse_layout.css') }}">

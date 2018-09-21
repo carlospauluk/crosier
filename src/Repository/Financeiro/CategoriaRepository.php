@@ -3,6 +3,7 @@
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Categoria;
+use App\Repository\FilterRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -12,20 +13,15 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class CategoriaRepository extends ServiceEntityRepository
+class CategoriaRepository extends FilterRepository
 {
-
-    public function __construct(RegistryInterface $registry)
-    {
-        parent::__construct($registry, Categoria::class);
-    }
 
     public function buildTreeList()
     {
 
         $sql = "SELECT id, codigo, concat(rpad('', 2*(length(codigo)-1),'.'), codigo, ' - ',  descricao) as descricaoMontada FROM fin_categoria ORDER BY codigo_ord";
 
-//         $em = $this->getDoctrine()->getManager();
+//         $em = $this->getDoctrine()->getEntityManager();
         $em = $this->getEntityManager();
         $stmt = $em->getConnection()->prepare($sql);
         $stmt->execute();
@@ -37,5 +33,10 @@ class CategoriaRepository extends ServiceEntityRepository
 //         $qb->select('e')->from('App\Entity\Financeiro\Categoria', 'e')->orderBy("e.codigoOrd");
 //         $query = $qb->getQuery();
 //         return $query->execute();
+    }
+
+    public function getEntityClass()
+    {
+        return Categoria::class;
     }
 }

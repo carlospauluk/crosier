@@ -102,6 +102,7 @@ class ClienteController extends FormListController
      */
     public function form(Request $request, Cliente $cliente = null)
     {
+        $this->getSecurityBusiness()->checkAccess("crm_cliente_form");
         if (!$cliente) {
             $cliente = new Cliente();
             $pessoa = new Pessoa();
@@ -143,7 +144,8 @@ class ClienteController extends FormListController
         return $this->render($this->getFormView(), array(
             'ref' => $cliente,
             'form' => $form->createView(),
-            'formEndereco' => $formEnderecoView
+            'formEndereco' => $formEnderecoView,
+            'page_title' => $this->getFormPageTitle()
         ));
     }
 
@@ -171,6 +173,7 @@ class ClienteController extends FormListController
      */
     public function enderecoDelete(Request $request, Cliente $ref, Endereco $endereco)
     {
+        $this->checkAccess();
         return $this->enderecoController->doEnderecoDelete($this, $request, $ref, $endereco);
     }
 
@@ -227,6 +230,5 @@ class ClienteController extends FormListController
     {
         return $this->doDelete($request, $cliente);
     }
-
 
 }

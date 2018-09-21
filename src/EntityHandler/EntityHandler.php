@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Security;
  * Class EntityHandler
  *
  * Classe abstrata responsável pela lógica ao salvar ou deletar entidades na base de dados.
- * FIXME: se algum dia o PHP suportar herança para tipagem de parâmetros em métodos, adicionar nos before's e after's aqui.
+ * FIXME: se algum dia o PHP suportar herança para tipagem de parâmetros em métodos, adicionar os tipos nos before's e after's aqui.
  * @package App\EntityHandler
  * @author Carlos Eduardo Pauluk
  */

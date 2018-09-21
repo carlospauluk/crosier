@@ -23,6 +23,7 @@ class MovimentacaoController extends MovimentacaoBaseController
      * @param Request $request
      * @param Movimentacao|null $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
     {
@@ -34,6 +35,7 @@ class MovimentacaoController extends MovimentacaoBaseController
      * @Route("/fin/movimentacao/list/", name="fin_movimentacao_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function list(Request $request)
     {
@@ -104,6 +106,36 @@ class MovimentacaoController extends MovimentacaoBaseController
         $vParams['total'] = $total;
 
         return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', $vParams);
+    }
+
+    /**
+     *
+     * @Route("/fin/movimentacao/aPagarReceber", name="fin_movimentacao_aPagarReceber")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function aPagarReceber(Request $request)
+    {
+        return new Response();
+    }
+
+    /**
+     *
+     * @Route("/fin/movimentacao/recorrentes", name="fin_movimentacao_recorrentes")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function recorrentes(Request $request)
+    {
+        return new Response();
+    }
+
+    /**
+     *
+     * @Route("/fin/movimentacao/caixa", name="fin_movimentacao_caixa")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function caixa(Request $request)
+    {
+        return new Response();
     }
 
 

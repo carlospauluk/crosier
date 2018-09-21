@@ -3,8 +3,7 @@
 namespace App\Repository\Security;
 
 use App\Entity\Security\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade User.
@@ -12,11 +11,11 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, User::class);
+        return User::class;
     }
 }

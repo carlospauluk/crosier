@@ -71,29 +71,6 @@ class MovimentacaoBaseController extends FormListController
         return MovimentacaoType::class;
     }
 
-    /**
-     *
-     * @Route("/fin/movimentacao/form/{id}", name="fin_movimentacao_form", defaults={"id"=null}, requirements={"id"="\d+"})
-     * @param Request $request
-     * @param Movimentacao|null $movimentacao
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     */
-    public function form(Request $request, Movimentacao $movimentacao = null)
-    {
-        return $this->doForm($request, $movimentacao);
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/list/", name="fin_movimentacao_list")
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function list(Request $request)
-    {
-        $parameters['filterChoices'] = $this->getFilterChoices();
-        return $this->doList($request, $parameters);
-    }
 
     /**
      * @return array|mixed
@@ -108,18 +85,6 @@ class MovimentacaoBaseController extends FormListController
                 'valorTotal'
             )
         );
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/datatablesJsList/", name="fin_movimentacao_datatablesJsList")
-     * @param Request $request
-     * @return Response
-     */
-    public function datatablesJsList(Request $request)
-    {
-        $jsonResponse = $this->doDatatablesJsList($request);
-        return $jsonResponse;
     }
 
     /**

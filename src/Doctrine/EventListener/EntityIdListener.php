@@ -1,14 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: carlos
- * Date: 13/09/18
- * Time: 15:33
- */
 
-namespace App\EventListener;
+namespace App\Doctrine\EventListener;
 
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use ReflectionClass;
 use Symfony\Component\Security\Core\Security;

@@ -29,7 +29,13 @@ Encore
     .createSharedEntry('bse_layout', './assets/js/bse/layout.js')
     .addEntry('bse/enderecoForm', './assets/js/bse/enderecoForm.js')
 
+    .addEntry('sec/userList', './assets/js/sec/userList.js')
+    .addEntry('sec/groupList', './assets/js/sec/groupList.js')
+    .addEntry('sec/roleList', './assets/js/sec/roleList.js')
+
     .addEntry('cfg/configList', './assets/js/cfg/configList.js')
+    .addEntry('cfg/appList', './assets/js/cfg/appList.js')
+    .addEntry('cfg/entMenuList', './assets/js/cfg/entMenuList.js')
 
     .addEntry('fis/emissaoNFe/form', './assets/js/fis/emissaoNFe/form.js')
 

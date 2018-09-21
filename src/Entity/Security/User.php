@@ -2,6 +2,7 @@
 
 namespace App\Entity\Security;
 
+use App\Doctrine\Annotations\NotUppercase;
 use App\Entity\Base\EntityId;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -26,19 +27,19 @@ class User extends EntityId implements UserInterface, \Serializable
     private $id;
 
     /**
-     *
+     * @NotUppercase()
      * @ORM\Column(name="username", type="string", length=90, unique=true)
      */
     private $username;
 
     /**
-     *
+     * @NotUppercase()
      * @ORM\Column(name="password", type="string", length=90)
      */
     private $password;
 
     /**
-     *
+     * @NotUppercase()
      * @ORM\Column(name="email", type="string", length=90, unique=true)
      */
     private $email;
@@ -65,6 +66,7 @@ class User extends EntityId implements UserInterface, \Serializable
     private $group;
 
     /**
+     * Renomeei o atributo para poder funcionar corretamente com o security do Symfony.
      *
      * @ORM\ManyToMany(targetEntity="Role")
      * @ORM\JoinTable(name="sec_user_role",
@@ -72,7 +74,7 @@ class User extends EntityId implements UserInterface, \Serializable
      *      inverseJoinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id")}
      *      )
      */
-    private $roles;
+    private $userRoles;
 
     public function __construct()
     {
@@ -150,30 +152,28 @@ class User extends EntityId implements UserInterface, \Serializable
     }
 
     /**
-     * //      *
-     * //      * @return Collection|Role[]
-     * //      */
-//     public function getRoles(): Collection
-//     {
-//         return $this->roles;
-//     }
+     *
+     * @return Collection|Role[]
+     *
+     */
+    public function getUserRoles(): Collection
+    {
+        return $this->userRoles;
+    }
 
 
     public function getRoles()
     {
-
         $roles = array();
-
-        foreach ($this->roles as $role) {
+        foreach ($this->userRoles as $role) {
             $roles[] = $role->getRole();
         }
-
         return $roles;
     }
 
-    public function setRoles($roles)
+    public function setUserRoles($userRoles)
     {
-        $this->roles = $roles;
+        $this->roles = $userRoles;
     }
 
     public function serialize()
