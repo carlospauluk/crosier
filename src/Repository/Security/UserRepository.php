@@ -13,6 +13,7 @@ use App\Repository\FilterRepository;
  */
 class UserRepository extends FilterRepository
 {
+
     public function getEntityClass()
     {
         return User::class;

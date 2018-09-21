@@ -3,8 +3,7 @@
 namespace App\Repository\Security;
 
 use App\Entity\Security\Group;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade Group.
@@ -12,11 +11,11 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class GroupRepository extends ServiceEntityRepository
+class GroupRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, Group::class);
+        return Group::class;
     }
 }

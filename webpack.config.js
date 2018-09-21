@@ -30,6 +30,8 @@ Encore
     .addEntry('bse/enderecoForm', './assets/js/bse/enderecoForm.js')
 
     .addEntry('sec/userList', './assets/js/sec/userList.js')
+    .addEntry('sec/groupList', './assets/js/sec/groupList.js')
+    .addEntry('sec/roleList', './assets/js/sec/roleList.js')
 
     .addEntry('cfg/configList', './assets/js/cfg/configList.js')
     .addEntry('cfg/appList', './assets/js/cfg/appList.js')
