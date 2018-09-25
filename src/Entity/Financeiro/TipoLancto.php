@@ -85,7 +85,7 @@ final class TipoLancto
     public static function getChoices()
     {
         $arr = array();
-        foreach (Status::ALL as $status) {
+        foreach (TipoLancto::ALL as $status) {
             $arr[$status['label']] = $status['sigla'];
         }
         return $arr;

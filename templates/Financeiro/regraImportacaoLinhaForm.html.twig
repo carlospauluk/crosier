@@ -57,23 +57,3 @@
 
 {% endblock %}
 
-
-{% block down_scripts %}
-
-
-<script>
-	//Bind click to OK button within popup
-	$('#btnYes').on(
-			'click',
-			function(e) {
-				var modalDiv = $(e.delegateTarget);
-				var url = $(this).data('url');
-				var form = $('<form></form>').attr("method", "get").attr(
-						"action", url);
-				$(form).appendTo('body').submit();
-
-			});
-
-</script>
-
-{% endblock %}

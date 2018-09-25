@@ -209,7 +209,7 @@ class EmissaoFiscalType extends AbstractType
             $builder->add('inscricaoEstadual', TextType::class, array(
                 'label' => 'Inscr Estadual',
                 'attr' => array(
-                    'class' => 'PESSOA_JURIDICA'
+                    'class' => 'PESSOA_JURIDICA DADOSPESSOA'
                 ),
                 'required' => false,
                 'disabled' => $disabled

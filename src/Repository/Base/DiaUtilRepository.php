@@ -107,33 +107,41 @@ class  DiaUtilRepository extends FilterRepository
     /**
      * Retorna o próximo dia útil financeiro (incluindo o dia passado).
      */
-    public function findProximoDiaUtilFinanceiro(\DateTime $dia): ?DiaUtil
+    public function findProximoDiaUtilFinanceiro(\DateTime $dia): ?\DateTime
     {
         $fim = clone $dia;
         $fim->add(new \DateInterval('P20D'));
 
         $lista = $this->findDiasUteisFinanceirosBy($dia, $fim);
 
-        return isset($lista[0]) ? $lista[0] : null;
+        if (isset($lista[0])) {
+            $proxDia = $lista[0];
+            return $proxDia->getDia();
+        }
+        return null;
     }
 
     /**
      * Retorna o dia útil financeiro anterior ao dia passado (incluindo o dia passado).
      */
-    public function findAnteriorDiaUtilFinanceiro(\DateTime $dia): ?DiaUtil
+    public function findAnteriorDiaUtilFinanceiro(\DateTime $dia): ?\DateTime
     {
         $ini = clone $dia;
         $ini->sub(new \DateInterval('P20D'));
 
         $lista = $this->findDiasUteisFinanceirosBy($ini, $dia);
 
-        return isset($lista[count($lista) - 1]) ? $lista[count($lista) - 1] : null;
+        if (isset($lista[count($lista) - 1])) {
+            $diaAnt = $lista[count($lista) - 1];
+            return $diaAnt->getDia();
+        }
+        return null;
     }
 
     /**
      * Retorna o próximo dia útil comercial (incluindo o dia passado).
      */
-    public function findProximoDiaUtilComercial(\DateTime $dia): ?DiaUtil
+    public function findProximoDiaUtilComercial(\DateTime $dia): ?\DateTime
     {
         $dia->setTime(0, 0, 0, 0);
         $fim = clone $dia;
@@ -141,13 +149,17 @@ class  DiaUtilRepository extends FilterRepository
 
         $lista = $this->findDiasUteisComerciaisBy($dia, $fim);
 
-        return isset($lista[0]) ? $lista[0] : null;
+        if (isset($lista[0])) {
+            $proxDia = $lista[0];
+            return $proxDia->getDia();
+        }
+        return null;
     }
 
     /**
      * Retorna o dia útil comercial anterior ao dia passado (incluindo o dia passado).
      */
-    public function findAnteriorDiaUtilComercial(\DateTime $dia): ?DiaUtil
+    public function findAnteriorDiaUtilComercial(\DateTime $dia): ?\DateTime
     {
         $ini = clone $dia;
         $ini->setTime(23, 59, 59, 999999);
@@ -155,7 +167,11 @@ class  DiaUtilRepository extends FilterRepository
 
         $lista = $this->findDiasUteisComerciaisBy($ini, $dia);
 
-        return isset($lista[count($lista) - 1]) ? $lista[count($lista) - 1] : null;
+        if (isset($lista[count($lista) - 1])) {
+            $diaAnt = $lista[count($lista) - 1];
+            return $diaAnt->getDia();
+        }
+        return null;
     }
 
     /**

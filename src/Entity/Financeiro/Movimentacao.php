@@ -862,6 +862,11 @@ class Movimentacao extends EntityId
         return $descricaoMontada;
     }
 
+    public function calcValorTotal() {
+        $valorTotal = $this->getValor() + $this->getDescontos() + $this->getAcrescimos();
+        $this->setValorTotal($valorTotal);
+    }
+
     // ---------------------------------------------------------------------------------------
 
     /**

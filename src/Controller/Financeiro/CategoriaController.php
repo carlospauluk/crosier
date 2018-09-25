@@ -76,6 +76,7 @@ class CategoriaController extends FormListController
      * @param Request $request
      * @param Categoria|null $categoria
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function form(Request $request, Categoria $categoria = null)
     {
@@ -87,6 +88,7 @@ class CategoriaController extends FormListController
      * @Route("/fin/categoria/list/", name="fin_categoria_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function list(Request $request)
     {
@@ -142,7 +144,7 @@ class CategoriaController extends FormListController
      */
     public function categoriaSelect2json(Request $request)
     {
-        $itens = $this->getDoctrine()->getRepository(Categoria::class)->findBy(['concreta' => true], ['codigo' => 'ASC']);
+        $itens = $this->getDoctrine()->getRepository(Categoria::class)->findBy([], ['codigoOrd' => 'ASC']);
 
         $rs = array();
         foreach ($itens as $item) {

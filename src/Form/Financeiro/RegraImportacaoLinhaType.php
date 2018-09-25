@@ -2,9 +2,16 @@
 
 namespace App\Form\Financeiro;
 
+use App\Entity\Financeiro\Banco;
+use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
+use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\RegraImportacaoLinha;
+use App\Entity\Financeiro\Status;
 use App\Entity\Financeiro\TipoLancto;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -14,14 +21,22 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class RegraImportacaoLinhaType extends AbstractType
 {
 
+    private $doctrine;
+
+    public function __construct(RegistryInterface $doctrine)
+    {
+        $this->doctrine = $doctrine;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
 
-        $builder->add('regexJava', TextType::class, array(
+        $builder->add('regraRegexJava', TextType::class, array(
             'label' => 'Regex Java'
         ));
 
-        $builder->add('tipoLancto', TextType::class, array(
+        $builder->add('tipoLancto', ChoiceType::class, array(
+            'label' => 'Tipo de Lancto',
             'choices' => TipoLancto::getChoices()
         ));
 
@@ -34,7 +49,8 @@ class RegraImportacaoLinhaType extends AbstractType
 
         $builder->add('carteira', EntityType::class, array(
             'label' => 'Carteira',
-            'class' => Carteira::class,
+            'class' => Carteira
+            ::class,
             'choices' => $carteiras,
             'choice_label' => function (Carteira $carteira) {
                 return $carteira->getCodigo() . " - " . $carteira->getDescricao();
@@ -74,12 +90,12 @@ class RegraImportacaoLinhaType extends AbstractType
             'label' => 'Padrão da Descrição'
         ));
 
-        $repoCategoria = $this->doctrine->getRepository(Categoria::class);
-        $categorias = $repoCategoria->findAll();
         $builder->add('categoria', EntityType::class, array(
             'class' => Categoria::class,
-            'choices' => $categorias,
-            'choice_label' => 'descricaoMontada'
+            'choices' => [],
+            'choice_label' => 'descricaoMontada',
+            'attr' => ['data-route' => 'fin_categoria_select2json',
+                'class' => 'autoSelect2']
         ));
 
         $builder->add('sinalValor', ChoiceType::class, array(

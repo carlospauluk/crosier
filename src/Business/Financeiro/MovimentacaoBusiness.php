@@ -26,6 +26,7 @@ class MovimentacaoBusiness
 
     /**
      * @param Movimentacao $movimentacao
+     * @throws \Doctrine\ORM\ORMException
      */
     public function mergeAll(Movimentacao $movimentacao)
     {

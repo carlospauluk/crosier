@@ -73,6 +73,15 @@ class UnimakeBusiness
         $finNFe = FinalidadeNF::get($notaFiscal->getFinalidadeNf())['codigo'];
         $nfe->infNFe->ide->finNFe = $finNFe;
 
+        // Devolução
+        if ($finNFe == 4) {
+            if (!$notaFiscal->getA03idNfReferenciada()) {
+                throw new \Exception("Nota fiscal de devolução sem Id NF Referenciada.");
+            } else {
+                $nfe->infNFe->ide->NFref->refNFe = $notaFiscal->getA03idNfReferenciada();
+            }
+        }
+
         if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
             $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:s\-03:00');
         } else {
@@ -188,6 +197,8 @@ class UnimakeBusiness
         } else {
             $nfe->infNFe->ide->tpAmb = 2;
         }
+
+
 
         unset($nfe->infNFe->det);
         $i = 1;

@@ -121,7 +121,7 @@ class Parcelamento extends EntityId
                 }
             }
         }
-        return $valorTotal;
+        $this->setValorTotal($valorTotal);
     }
 }
 

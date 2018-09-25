@@ -72,6 +72,7 @@
                             </h5>
                         </div>
 
+                        <!-- Anteriores (collapse) -->
                         <div id="collapseOne" class="collapse" aria-labelledby="headingOne"
                              data-parent="#accordion">
                             <div class="card-body">
@@ -141,7 +142,7 @@
 
                     <thead>
                     <tr style="background-color: lightgrey">
-                        <th scope="row" colspan="7" class="text-right">
+                        <th scope="row" colspan="8" class="text-right">
                             Saldo anterior:
                             R$ {{ anteriores.saldos.SALDO_POSTERIOR_REALIZADAS|number_format(2,',','.') }}<br/>
                             Saldo anterior (+ cheques):
@@ -182,7 +183,7 @@
                                 </td>
                                 <td>
                                     <div style="float: left">
-                                    {{ item.descricaoMontada|nl2br }}
+                                        {{ item.descricaoMontada|nl2br }}
                                     </div>
                                     {% if item.parcelamento %}
                                         <div class="text-right">

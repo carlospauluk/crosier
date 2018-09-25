@@ -181,7 +181,6 @@ abstract class FormListController extends Controller
      * @param Request $request
      * @param array $parameters
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \ReflectionException
      * @throws \Exception
      */
     public function doList(Request $request, $parameters = array())
@@ -244,6 +243,7 @@ abstract class FormListController extends Controller
         $orders = null;
         $draw = 1;
 
+        $formPesquisar = null;
         if ($rParams) {
             $start = $rParams['start'];
             $limit = $rParams['length'];
@@ -266,7 +266,6 @@ abstract class FormListController extends Controller
         $serializer = new Serializer(array($normalizer), array($encoder));
         $data = $serializer->normalize($dados, 'json', $this->getNormalizeAttributes());
 
-
         $recordsTotal = $repo->count(array());
 
         $results = array(
@@ -287,6 +286,11 @@ abstract class FormListController extends Controller
         return new Response($json);
     }
 
+    /**
+     * @param Request $request
+     * @param EntityId $entityId
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
     public function doDelete(Request $request, EntityId $entityId)
     {
         $this->checkAccess();

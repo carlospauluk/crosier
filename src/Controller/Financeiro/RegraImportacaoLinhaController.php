@@ -72,6 +72,7 @@ class RegraImportacaoLinhaController extends FormListController
      * @param Request $request
      * @param RegraImportacaoLinha|null $regraImportacaoLinha
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function form(Request $request, RegraImportacaoLinha $regraImportacaoLinha = null)
     {
@@ -83,6 +84,7 @@ class RegraImportacaoLinhaController extends FormListController
      * @Route("/fin/regraImportacaoLinha/list/", name="fin_regraImportacaoLinha_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \ReflectionException
      */
     public function list(Request $request)
     {
@@ -101,7 +103,7 @@ class RegraImportacaoLinhaController extends FormListController
                 'tipoLancto',
                 'status',
                 'carteira' => ['descricaoMontada'],
-                'modo'
+                'modo' => ['descricaoMontada']
             )
         );
     }
@@ -110,7 +112,7 @@ class RegraImportacaoLinhaController extends FormListController
      *
      * @Route("/fin/regraImportacaoLinha/datatablesJsList/", name="fin_regraImportacaoLinha_datatablesJsList")
      * @param Request $request
-     * @return Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function datatablesJsList(Request $request)
     {

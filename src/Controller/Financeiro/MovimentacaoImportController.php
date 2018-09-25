@@ -61,7 +61,11 @@ class MovimentacaoImportController extends Controller
      */
     public function import(Request $request)
     {
-        $session = new Session();
+        if ($request->request->get('btnSalvarTodas')) {
+            return $this->salvarTodas($request);
+        }
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+
         if ($session->get('vParams')) {
             $vParams = $session->get('vParams');
         } else {
@@ -121,10 +125,26 @@ class MovimentacaoImportController extends Controller
 
             $session->set('movs', $sessionMovs);
             $session->set('vParams', $vParams);
+            $this->addFlash('info', 'infomando 2');
         }
 
+        $vParams['page_title'] = "Importação de Movimentações";
 
         return $this->render('Financeiro/movimentacaoImport.html.twig', $vParams);
+    }
+
+    private function salvarTodas(Request $request)
+    {
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        try {
+            $movs = $session->get('movs');
+            $this->getEntityHandler()->persistAll($movs);
+            $session->getFlashBag()->add('success', 'Movimentações salvas com sucesso!');
+            $session->set('movs', null);
+        } catch (\Exception $e) {
+            $session->getFlashBag()->add('error', $e->getMessage());
+        }
+        return $this->redirectToRoute('fin_movimentacao_import');
     }
 
     /**
@@ -169,11 +189,13 @@ class MovimentacaoImportController extends Controller
      * @param $unqControle
      * @param Movimentacao|null $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Exception
      */
     public function form(Request $request, $unqControle)
     {
         if (!$unqControle) {
-            throw new Exception("unqControle não informado");
+            throw new \Exception("unqControle não informado");
         }
         $session = new Session();
         $sessionMovs = $session->get('movs');

@@ -20,8 +20,6 @@ abstract class EntityHandler
 {
     protected $entityManager;
 
-    private $entityIdBusiness;
-
     private $security;
 
     public function __construct(RegistryInterface $doctrine, Security $security)
@@ -36,7 +34,6 @@ abstract class EntityHandler
 
     public function persist(EntityId $entityId)
     {
-
         $this->beforePersist($entityId);
         $this->entityManager->persist($entityId);
         $this->entityManager->flush();
@@ -94,22 +91,5 @@ abstract class EntityHandler
     {
         $this->entityManager = $entityManager;
     }
-
-    /**
-     * @return EntityIdBusiness
-     */
-    public function getEntityIdBusiness(): EntityIdBusiness
-    {
-        return $this->entityIdBusiness;
-    }
-
-    /**
-     * @param EntityIdBusiness $entityIdBusiness
-     */
-    public function setEntityIdBusiness(EntityIdBusiness $entityIdBusiness): void
-    {
-        $this->entityIdBusiness = $entityIdBusiness;
-    }
-
 
 }

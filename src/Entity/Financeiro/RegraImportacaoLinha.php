@@ -86,7 +86,7 @@ class RegraImportacaoLinha extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
-     * @ORM\JoinColumn(name="centrocusto_id", nullable=true)
+     * @ORM\JoinColumn(name="categoria_id", nullable=true)
      */
     private $categoria;
 
