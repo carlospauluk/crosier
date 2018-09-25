@@ -81,14 +81,11 @@
 
                                     <thead>
                                     <tr>
-                                        <th scope="col">#</th>
                                         <th scope="col">Id</th>
                                         <th scope="col">Categoria<br/>Modo</th>
                                         <th scope="col">Descrição</th>
-                                        <th scope="col">Dt Vencto</th>
-                                        <th scope="col">Dt Pagto</th>
+                                        <th scope="col">Dt Vencto<br />Dt Pagto</th>
                                         <th scope="col">Valor Total</th>
-                                        <th scope="col">Alterado em</th>
                                         <th scope="col"></th>
                                     </tr>
                                     </thead>
@@ -96,7 +93,6 @@
                                     <tbody>
                                     {% for item in anteriores.movs %}
                                         <tr style="color: {{ item.categoria.codigo[0:1] == '1' ? 'blue' : 'red' }}">
-                                            <th scope="row">{{ loop.index }}</th>
                                             <td>{{ item.id }}</td>
                                             <td>
                                                 {{ item.categoria.descricaoMontada }}<br/>
@@ -116,15 +112,17 @@
                                                     </div>
                                                 {% endif %}
                                             </td>
-                                            <td>{{ item.dtVencto|date('d/m/Y') }}</td>
-                                            <td>{{ item.dtPagto|date('d/m/Y') }}</td>
+                                            <td>
+                                                {{ item.dtVencto|date('d/m/Y') }}<br />
+                                                {{ item.dtPagto|date('d/m/Y') }}
+                                            </td>
                                             <td class="text-right">{{ item.valorTotal|number_format(2,',','.') }}</td>
-                                            <td>{{ item.updated|date('d/m/Y H:i:s') }}</td>
                                             <td class="text-right">
                                                 <button type="button" class="btn btn-primary"
                                                         onclick="window.location.href='{{ url('fin_movimentacao_form', {id: item.id}) }}'">
                                                     <i class="fas fa-wrench" aria-hidden="true"></i>
-                                                </button>
+                                                </button><br />
+                                                <span class="badge badge-secondary">{{ item.updated|date('d/m/Y H:i:s') }}</span>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -142,7 +140,7 @@
 
                     <thead>
                     <tr style="background-color: lightgrey">
-                        <th scope="row" colspan="8" class="text-right">
+                        <th scope="row" colspan="4" class="text-right">
                             Saldo anterior:
                             R$ {{ anteriores.saldos.SALDO_POSTERIOR_REALIZADAS|number_format(2,',','.') }}<br/>
                             Saldo anterior (+ cheques):
@@ -157,15 +155,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <th scope="col">#</th>
                         <th scope="col">Id</th>
-                        <th scope="col">Status</th>
                         <th scope="col">Categoria<br/>Modo</th>
                         <th scope="col">Descrição</th>
-                        <th scope="col">Dt Vencto</th>
-                        <th scope="col">Dt Pagto</th>
+                        <th scope="col">Dt Vencto<br />Dt Pagto</th>
                         <th scope="col">Valor Total</th>
-                        <th scope="col">Alterado em</th>
                         <th scope="col"></th>
                     </tr>
                     </thead>
@@ -174,9 +168,7 @@
                     {% for dia in dias %}
                         {% for item in dia.movs %}
                             <tr style="color: {{ item.categoria.codigo[0:1] == '1' ? 'blue' : 'red' }}">
-                                <th scope="row">{{ loop.index }}</th>
                                 <td>{{ item.id }}</td>
-                                <td><i class="{{ item.statusIcone }}"></i></td>
                                 <td>
                                     {{ item.categoria.descricaoMontada }}<br/>
                                     {{ "%02d"|format(item.modo.codigo) }} - {{ item.modo.descricao|default('') }}
@@ -194,20 +186,22 @@
                                         </div>
                                     {% endif %}
                                 </td>
-                                <td>{{ item.dtVencto|date('d/m/Y') }}</td>
-                                <td>{{ item.dtPagto|date('d/m/Y') }}</td>
+                                <td>
+                                    V:{{ item.dtVencto|date('d/m/Y') }}<br />
+                                    P:{{ item.dtPagto ? item.dtPagto|date('d/m/Y') : '' }}
+                                </td>
                                 <td class="text-right">{{ item.valorTotal|number_format(2,',','.') }}</td>
-                                <td>{{ item.updated|date('d/m/Y H:i:s') }}</td>
                                 <td class="text-right">
                                     <button type="button" class="btn btn-primary"
                                             onclick="window.location.href='{{ url('fin_movimentacao_form', {id: item.id}) }}'">
                                         <i class="fas fa-wrench" aria-hidden="true"></i>
-                                    </button>
+                                    </button><br />
+                                    <span class="badge badge-secondary">{{ item.updated|date('d/m/Y H:i:s') }}</span>
                                 </td>
                             </tr>
                         {% endfor %}
                         <tr style="background-color: lightgrey">
-                            <th scope="row" colspan="8" class="text-right">
+                            <th scope="row" colspan="4" class="text-right">
                                 Saldo em {{ dia.dtUtil|date('d/m/Y') }}:
                                 R$ {{ dia.saldos.SALDO_POSTERIOR_REALIZADAS|number_format(2,',','.') }}<br/>
                                 Saldo (+ cheques) em {{ dia.dtUtil|date('d/m/Y') }}:

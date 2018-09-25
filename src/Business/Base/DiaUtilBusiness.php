@@ -37,9 +37,9 @@ class DiaUtilBusiness
 
                 if ($difDias == 0) {
                     if ($proFuturo) {
-                        $dtIni = $this->getDoctrine()->getRepository(DiaUtil::class)->findProximoDiaUtilComercial($dtIni->add(new \DateInterval('P1D')))->getDia();
+                        $dtIni = $this->getDoctrine()->getRepository(DiaUtil::class)->findProximoDiaUtilComercial($dtIni->add(new \DateInterval('P1D')));
                     } else {
-                        $dtIni = $this->getDoctrine()->getRepository(DiaUtil::class)->findAnteriorDiaUtilComercial($dtIni->sub(new \DateInterval('P1D')))->getDia();
+                        $dtIni = $this->getDoctrine()->getRepository(DiaUtil::class)->findAnteriorDiaUtilComercial($dtIni->sub(new \DateInterval('P1D')));
                     }
                     $dtFim = clone $dtIni;
                 } else {
