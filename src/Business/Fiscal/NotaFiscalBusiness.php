@@ -801,7 +801,7 @@ class NotaFiscalBusiness
             if ($notaFiscal) {
                 $this->addHistorico($notaFiscal, $notaFiscal->getSpartacusStatus(), $notaFiscal->getSpartacusMensretornoReceita(), "ENVIO DA CARTA DE CORREÇÃO PROCESSADO");
                 $notaFiscal = $this->consultarStatus($notaFiscal);
-                $this->unimakeBusiness->imprimirCancelamento($notaFiscal);
+                $this->unimakeBusiness->imprimirCartaCorrecao($notaFiscal);
             } else {
                 $this->addHistorico($notaFiscal, -2, "PROBLEMA AO ENVIAR CARTA DE CORREÇÃO");
             }

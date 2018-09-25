@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Utils\Repository\WhereBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -16,9 +17,28 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 abstract class FilterRepository extends ServiceEntityRepository
 {
 
+    private $logger;
+
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, $this->getEntityClass());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLogger():? LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @required
+     * @param mixed $logger
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     abstract public function getEntityClass();
