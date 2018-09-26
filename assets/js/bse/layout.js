@@ -69,6 +69,8 @@ $(document).ready(function () {
             .data('form', $(e.relatedTarget).data('form'))
             .data('url', $(e.relatedTarget).data('url'))
             .data('function', $(e.relatedTarget).data('function'))
+            .data('name', $(e.relatedTarget).attr('name'))
+            .data('value', $(e.relatedTarget).attr('value'))
             .data('token', $(e.relatedTarget).data('token'));
     });
 
@@ -78,15 +80,18 @@ $(document).ready(function () {
         '#btnConfirmationModalYes',
         function (e) {
             if ($(this).data('url')) {
-                var url = $(this).data('url');
-                var token = $(this).data('token');
-                var form = $('<form></form>').attr("method", "post").attr(
+                let url = $(this).data('url');
+                let token = $(this).data('token');
+                let form = $('<form></form>').attr("method", "post").attr(
                     "action", url);
                 form.append($('<input></input>').attr("type", "hidden").attr(
                     "name", "token").attr("value", token));
                 $(form).appendTo('body').submit();
             } else if ($(this).data('form')) {
-                $("[name='" + $(this).data('form') + "']").submit();
+                $("[name='" + $(this).data('form') + "']").append($('<input></input>')
+                    .attr("type", "hidden")
+                    .attr("name", $(this).data("name"))
+                    .attr("value", $(this).data("value"))).submit();
             }
 
         });

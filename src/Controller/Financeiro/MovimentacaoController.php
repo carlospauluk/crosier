@@ -36,6 +36,7 @@ class MovimentacaoController extends MovimentacaoBaseController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function list(Request $request)
     {
