@@ -125,7 +125,6 @@ class MovimentacaoImportController extends Controller
 
             $session->set('movs', $sessionMovs);
             $session->set('vParams', $vParams);
-            $this->addFlash('info', 'infomando 2');
         }
 
         $vParams['page_title'] = "Importação de Movimentações";
