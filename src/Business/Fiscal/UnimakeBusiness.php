@@ -85,7 +85,7 @@ class UnimakeBusiness
         if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
             $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:s\-03:00');
         } else {
-            unset($nfe->infNFe->ide->dhSaiEnt);
+            unset($nfe->infNFe->ide->dhSaiEnt); // NFCE não possui
             $nfe->infNFe->ide->idDest = 1;
         }
 
@@ -128,18 +128,19 @@ class UnimakeBusiness
                 $nfe->infNFe->dest->enderDest->xBairro = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getBairro();
-                $municipio = $this->doctrine->getRepository(Municipio::class)->findByNomeAndUf($notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getCidade(), $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getEstado());
-                $nfe->infNFe->dest->enderDest->cMun = $municipio->getMunicipioCodigo();
-                $nfe->infNFe->dest->enderDest->xMun = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getCidade();
-                $nfe->infNFe->dest->enderDest->UF = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getEstado();
+
+
+                $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
+                $estado = $notaFiscal->getPessoaDestinatario()->getEndereco()->getEstado();
+                $bsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $cidade, 'ufSigla' => $estado]);
+                if (!$bsMunicipio) {
+                    throw new \Exception("Município inválido: [" . $cidade . "-" . $estado . "]");
+                }
+                $nfe->infNFe->dest->enderDest->cMun = $bsMunicipio->getMunicipioCodigo();
+                $nfe->infNFe->dest->enderDest->xMun = $bsMunicipio->getMunicipioNome();
+                $nfe->infNFe->dest->enderDest->UF = $bsMunicipio->getUfSigla();
+
+
                 $nfe->infNFe->dest->enderDest->CEP = preg_replace("/[^0-9]/", "", $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getCep());
@@ -278,8 +279,17 @@ class UnimakeBusiness
                 $this->pessoaBusiness->fillTransients($notaFiscal->getTranspFornecedor()->getPessoa());
 
                 $nfe->infNFe->transp->transporta->xEnder = substr($notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEnderecoCompleto(), 0, 60);
-                $nfe->infNFe->transp->transporta->xMun = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getCidade();
-                $nfe->infNFe->transp->transporta->UF = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEstado();
+
+
+                $transpCidade = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getCidade();
+                $transpEstado = $notaFiscal->getTranspFornecedor()->getPessoa()->getEndereco()->getEstado();
+                $transpBsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $transpCidade, 'ufSigla' => $transpEstado]);
+                if (!$transpBsMunicipio) {
+                    throw new \Exception("Município inválido (transp): [" . $transpCidade . "-" . $transpEstado . "]");
+                }
+
+                $nfe->infNFe->transp->transporta->xMun = $transpBsMunicipio->getMunicipioNome();
+                $nfe->infNFe->transp->transporta->UF = $transpBsMunicipio->getUfSigla();
 
                 $nfe->infNFe->transp->vol->qVol = number_format($notaFiscal->getTranspQtdeVolumes(), 0);
                 $nfe->infNFe->transp->vol->esp = $notaFiscal->getTranspEspecieVolumes();

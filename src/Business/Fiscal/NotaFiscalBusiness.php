@@ -5,6 +5,7 @@ namespace App\Business\Fiscal;
 use App\Business\Base\PessoaBusiness;
 use App\Business\CRM\ClienteBusiness;
 use App\Entity\Base\Endereco;
+use App\Entity\Base\Municipio;
 use App\Entity\Base\Pessoa;
 use App\Entity\CRM\Cliente;
 use App\Entity\Estoque\Fornecedor;
@@ -130,15 +131,23 @@ class NotaFiscalBusiness
                 $formData['bairro'] = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getBairro();
-                $formData['cidade'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getCidade();
-                $formData['estado'] = $notaFiscal->getPessoaDestinatario()
-                    ->getEndereco()
-                    ->getEstado();
+
+
+                $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
+                $estado = $notaFiscal->getPessoaDestinatario()->getEndereco()->getEstado();
+                $bsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $cidade, 'ufSigla' => $estado]);
+                if (!$bsMunicipio) {
+                    throw new \Exception("Município inválido: [" . $cidade . "-" . $estado . "]");
+                } else {
+                    $formData['cidade'] = $cidade;
+                    $formData['estado'] = $estado;
+                }
+
                 $formData['cep'] = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getCep();
+
+
             }
             $formData['fone1'] = $notaFiscal->getPessoaDestinatario()->getFone1();
         }
