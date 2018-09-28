@@ -45,7 +45,7 @@ class StoredViewInfoBusiness
         }
         $storedViewInfo->setViewInfo($serialized);
 
-        $this->entityHandler->persist($storedViewInfo);
+        $this->entityHandler->save($storedViewInfo);
     }
 
     public function retrieve($viewRoute)

@@ -21,7 +21,7 @@ class EntMenuBusiness
         foreach ($ordArr as $ord) {
             $entMenu = $this->entityHandler->getEntityManager()->getRepository(EntMenu::class)->find($ord);
             $entMenu->setOrdem($i++);
-            $this->entityHandler->persist($entMenu);
+            $this->entityHandler->save($entMenu);
         }
 
     }

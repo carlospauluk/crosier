@@ -117,7 +117,7 @@ class MovimentacaoBusiness
         if ($movimentacao->getChequeBanco() and $movimentacao->getChequeBanco()->getId()) {
             $movimentacao->setChequeBanco($em->merge($movimentacao->getChequeBanco()));
         }
-        }
+    }
 
     /**
      * Gera parcelamentos de movimentações.
@@ -247,7 +247,7 @@ class MovimentacaoBusiness
                         $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $m199->getCarteira()]);
                         $m199->setOperadoraCartao($operadoraCartao);
 
-                        $m199 = $this->getMovimentacaoEntityHandler()->persist($m199);
+                        $m199 = $this->getMovimentacaoEntityHandler()->save($m199);
                         $results[] = "Operadora corrigida para '" . $m199->getDescricao() . "' - R$ " . $m199->getValor() . " (1.99): " . $operadoraCartao->getDescricao();
                     } else {
                         $operadoraCartao = $m199->getOperadoraCartao();
@@ -256,7 +256,7 @@ class MovimentacaoBusiness
                     if ($m299->getOperadoraCartao() == null) {
                         // provavelmente TAMBÉM isso não deveria ser necessário, visto que na importação isto já deve ter sido acertado.
                         $m299->setOperadoraCartao($operadoraCartao);
-                        $m299 = $this->getMovimentacaoEntityHandler()->persist($m299);
+                        $m299 = $this->getMovimentacaoEntityHandler()->save($m299);
                         $results[] = "Operadora corrigida para '" . $m299->getDescricao() . "' - R$ " . $m299->getValor() . " (2.99): " . $operadoraCartao->getDescricao();
                     } else {
 //                        getMovimentacaoDataMapper() . detach(m299);
@@ -265,7 +265,7 @@ class MovimentacaoBusiness
                     if ($m101->getOperadoraCartao() == null) {
                         // provavelmente isso não deveria ser necessário, visto que na importação isto já deve ter sido acertado.
                         $m101->setOperadoraCartao($operadoraCartao);
-                        $m101 = $this->getMovimentacaoEntityHandler()->persist($m101);
+                        $m101 = $this->getMovimentacaoEntityHandler()->save($m101);
                         $results[] = "Operadora corrigida para '" . $m101->getDescricao() . "' - R$ " . $m101->getValor() . " (1.01): " . $operadoraCartao->getDescricao();
                     } else {
 //                        getMovimentacaoDataMapper() . detach(m101);
@@ -359,7 +359,7 @@ class MovimentacaoBusiness
 // Incluir na cadeia
         $m101->setCadeia($m299->getCadeia());
         $m101->setCadeiaOrdem(3);
-        $m101 = $this->getMovimentacaoEntityHandler()->persist($m101);
+        $m101 = $this->getMovimentacaoEntityHandler()->save($m101);
 
 // flush para o BD já...
         $this->getMovimentacaoEntityHandler()->getEntityManager()->flush();

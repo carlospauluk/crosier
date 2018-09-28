@@ -439,14 +439,14 @@ class NotaFiscalBusiness
             }
 
 
-            $notaFiscal = $this->notaFiscalEntityHandler->persist($notaFiscal);
+            $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->doctrine->getEntityManager()->flush();
 
             if ($novaNota) {
                 $notaFiscalVenda = new NotaFiscalVenda();
                 $notaFiscalVenda->setNotaFiscal($notaFiscal);
                 $notaFiscalVenda->setVenda($venda);
-                $this->notaFiscalVendaEntityHandler->persist($notaFiscalVenda);
+                $this->notaFiscalVendaEntityHandler->save($notaFiscalVenda);
             }
 
             $this->doctrine->getEntityManager()->commit();
@@ -496,7 +496,7 @@ class NotaFiscalBusiness
 
             $this->calcularTotais($notaFiscal);
 
-            $this->notaFiscalEntityHandler->persist($notaFiscal);
+            $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->doctrine->getEntityManager()->flush();
 
             $this->doctrine->getEntityManager()->commit();
@@ -816,7 +816,7 @@ class NotaFiscalBusiness
         if (!$notaFiscal->getChaveAcesso()) {
             $notaFiscal->setChaveAcesso($this->buildChaveAcesso($notaFiscal));
 
-            $notaFiscal = $this->notaFiscalEntityHandler->persist($notaFiscal);
+            $notaFiscal = $this->notaFiscalEntityHandler->save($notaFiscal);
             $this->doctrine->getEntityManager()->flush();
         }
         return $notaFiscal;
@@ -856,7 +856,7 @@ class NotaFiscalBusiness
         $historico->setDescricao($descricao ? $descricao : " ");
         $historico->setObs($obs);
         $historico->setNotaFiscal($notaFiscal);
-        $this->notaFiscalHistoricoEntityHandler->persist($historico);
+        $this->notaFiscalHistoricoEntityHandler->save($historico);
         $this->doctrine->getEntityManager()->flush();
     }
 

@@ -7,7 +7,7 @@ use App\EntityHandler\EntityHandler;
 class NotaFiscalItemEntityHandler extends EntityHandler
 {
 
-    public function beforePersist($nfItem)
+    public function beforeSave($nfItem)
     {
         if (!$nfItem->getOrdem()) {
             $ultimaOrdem = 0;

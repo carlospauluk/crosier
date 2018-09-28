@@ -198,7 +198,7 @@ class ClienteBusiness
             $cliente->setFone1($pessoa->getFone1());
             $cliente->setEmail($pessoa->getEmail());
             $cliente->setInscricaoEstadual($pessoa->getInscricaoEstadual());
-            return $this->clienteEntityHandler->persist($cliente);
+            return $this->clienteEntityHandler->save($cliente);
         } else {
             return $cliente;
         }

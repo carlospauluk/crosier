@@ -28,14 +28,18 @@ abstract class EntityHandler
         $this->security = $security;
     }
 
-    public function beforePersist($entityId)
+    public function beforeSave($entityId)
     {
     }
 
-    public function persist(EntityId $entityId)
+    public function save(EntityId $entityId)
     {
-        $this->beforePersist($entityId);
-        $this->entityManager->persist($entityId);
+        $this->beforeSave($entityId);
+        if ($entityId->getId()) {
+            $entityId = $this->entityManager->merge($entityId);
+        } else {
+            $this->entityManager->persist($entityId);
+        }
         $this->entityManager->flush();
         $this->afterPersist($entityId);
         return $entityId;
@@ -69,7 +73,7 @@ abstract class EntityHandler
         $newE = clone $e;
         $newE->setId(null);
         $this->beforeClone($newE);
-        $newE = $this->persist($newE);
+        $newE = $this->save($newE);
         $this->getEntityManager()->flush($newE);
         return $newE;
     }

@@ -8,7 +8,7 @@ use App\EntityHandler\EntityHandler;
 class EntMenuEntityHandler extends EntityHandler
 {
 
-    public function beforePersist($entMenu)
+    public function beforeSave($entMenu)
     {
         if (!$entMenu->getOrdem()) {
             if ($entMenu->getPai()) {

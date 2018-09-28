@@ -8,7 +8,7 @@ use App\EntityHandler\EntityHandler;
 class ClienteEntityHandler extends EntityHandler
 {
 
-    public function beforePersist($fornecedor)
+    public function beforeSave($fornecedor)
     {
         if (!$fornecedor->getCodigo()) {
             $codigo = $this->getEntityManager()->getRepository(Cliente::class)->findProximoCodigo();

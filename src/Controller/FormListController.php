@@ -105,7 +105,7 @@ abstract class FormListController extends Controller
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $entity = $form->getData();
-                $this->getEntityHandler()->persist($entity);
+                $this->getEntityHandler()->save($entity);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute($this->getFormRoute(), array('id' => $entityId->getId()));
             } else {

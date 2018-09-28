@@ -99,7 +99,7 @@ class EntMenuController extends FormListController
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $entity = $form->getData();
-                $this->getEntityHandler()->persist($entity);
+                $this->getEntityHandler()->save($entity);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute($this->getFormRoute(), array('id' => $entMenu->getId(), 'pai' => $paiId));
             } else {

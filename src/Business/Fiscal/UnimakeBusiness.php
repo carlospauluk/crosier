@@ -324,7 +324,7 @@ class UnimakeBusiness
         $notaFiscal->setSpartacusStatus(-100);
         $notaFiscal->setSpartacusMensretornoReceita("AGUARDANDO FATURAMENTO");
 
-        $this->notaFiscalEntityHandler->persist($notaFiscal);
+        $this->notaFiscalEntityHandler->save($notaFiscal);
         $this->doctrine->getEntityManager()->flush();
 
 
@@ -410,7 +410,7 @@ class UnimakeBusiness
                                 $notaFiscal->setSpartacusMensretornoReceita($xMotivo);
                                 $notaFiscal->setProtocoloAutorizacao($nProt);
                                 $notaFiscal->setDtSpartacusStatus(new \DateTime());
-                                $this->notaFiscalEntityHandler->persist($notaFiscal);
+                                $this->notaFiscalEntityHandler->save($notaFiscal);
                                 $this->doctrine->getEntityManager()->flush();
                                 break;
                             }
@@ -422,7 +422,7 @@ class UnimakeBusiness
 
                     $notaFiscal->setSpartacusStatus(0);
                     $notaFiscal->setSpartacusMensretornoReceita($message);
-                    $this->notaFiscalEntityHandler->persist($notaFiscal);
+                    $this->notaFiscalEntityHandler->save($notaFiscal);
                     $this->doctrine->getEntityManager()->flush();
                     return $notaFiscal;
                 } else {
@@ -481,7 +481,7 @@ class UnimakeBusiness
                     $notaFiscal->setProtocoloAutorizacao($retorno->protNFe->infProt->nProt->__toString());
                 }
 
-                $this->notaFiscalEntityHandler->persist($notaFiscal);
+                $this->notaFiscalEntityHandler->save($notaFiscal);
                 $this->doctrine->getEntityManager()->flush();
                 break;
             }
@@ -617,7 +617,7 @@ class UnimakeBusiness
                     $notaFiscal->setSpartacusStatus($retorno->retEvento->infEvento->cStat->__toString());
                     $notaFiscal->setSpartacusMensretornoReceita($retorno->retEvento->infEvento->xMotivo->__toString());
 
-                    $this->notaFiscalEntityHandler->persist($notaFiscal);
+                    $this->notaFiscalEntityHandler->save($notaFiscal);
                     $this->doctrine->getEntityManager()->flush();
                     break;
                 } else if (file_exists($arqRetornoErro)) {
@@ -626,7 +626,7 @@ class UnimakeBusiness
 
                     $notaFiscal->setSpartacusStatus(0);
                     $notaFiscal->setSpartacusMensretornoReceita($message);
-                    $this->notaFiscalEntityHandler->persist($notaFiscal);
+                    $this->notaFiscalEntityHandler->save($notaFiscal);
                     $this->doctrine->getEntityManager()->flush();
                     return $notaFiscal;
                 }
@@ -694,7 +694,7 @@ class UnimakeBusiness
                     $notaFiscal->setSpartacusStatus($retorno->retEvento->infEvento->cStat->__toString());
                     $notaFiscal->setSpartacusMensretornoReceita($retorno->retEvento->infEvento->xMotivo->__toString());
 
-                    $this->notaFiscalEntityHandler->persist($notaFiscal);
+                    $this->notaFiscalEntityHandler->save($notaFiscal);
                     $this->doctrine->getEntityManager()->flush();
                     break;
                 } else if (file_exists($arqRetornoErro)) {
@@ -703,7 +703,7 @@ class UnimakeBusiness
 
                     $notaFiscal->setSpartacusStatus(0);
                     $notaFiscal->setSpartacusMensretornoReceita($message);
-                    $this->notaFiscalEntityHandler->persist($notaFiscal);
+                    $this->notaFiscalEntityHandler->save($notaFiscal);
                     $this->doctrine->getEntityManager()->flush();
                     return $notaFiscal;
                 }

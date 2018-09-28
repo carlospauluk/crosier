@@ -192,7 +192,7 @@ class VendaBusiness
             $venda->setStatus('PREVENDA');
 
             $entityManager = $this->doctrine->getEntityManager();
-            $this->vendaEntityHandler->persist($venda);
+            $this->vendaEntityHandler->save($venda);
             $entityManager->flush();
 
         }

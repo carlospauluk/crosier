@@ -125,7 +125,7 @@ class ClienteController extends FormListController
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $cliente = $this->clienteBusiness->formData2Cliente($data);
-                $this->getEntityHandler()->persist($cliente);
+                $this->getEntityHandler()->save($cliente);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute($this->getFormRoute(), array('id' => $cliente->getId()));
             } else {

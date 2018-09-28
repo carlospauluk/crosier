@@ -34,7 +34,7 @@ class UserEntityHandler extends EntityHandler
     }
 
 
-    public function beforePersist($user)
+    public function beforeSave($user)
     {
         $encoded = $this->encoder->encodePassword($user,$user->getPassword());
         $user->setPassword($encoded);

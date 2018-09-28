@@ -326,7 +326,7 @@ class EmissaoNFeController extends Controller
 
                 // ... perform some action, such as saving the task to the database
                 // for example, if Task is a Doctrine entity, save it!
-                $entityManager = $this->notaFiscalItemEntityHandler->persist($item);
+                $entityManager = $this->notaFiscalItemEntityHandler->save($item);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute('fis_emissaonfe_form', array(
                     'notaFiscal' => $notaFiscal->getId(),

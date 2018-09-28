@@ -58,7 +58,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         return Movimentacao::class;
     }
 
-    public function beforePersist($movimentacao)
+    public function beforeSave($movimentacao)
     {
 
         $movimentacao->setDescricao(trim($movimentacao->getDescricao()));
@@ -209,7 +209,7 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @return \App\Entity\Base\EntityId|Movimentacao|null
      * @throws \Exception
      */
-    public function persist($movimentacao)
+    public function save($movimentacao)
     {
         // Se estiver inserindo, verifica os procedimentos para cada tipoLancto.
         if (!$movimentacao->getId()) {
@@ -224,7 +224,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
         }
 
-        return parent::persist($movimentacao);
+        return parent::save($movimentacao);
     }
 
     /**
@@ -237,7 +237,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $this->getEntityManager()->beginTransaction();
             foreach ($movs as $mov) {
                 $this->getMovimentacaoBusiness()->mergeAll($mov);
-                $this->persist($mov);
+                $this->save($mov);
             }
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
@@ -255,8 +255,6 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function saveTransfPropria(Movimentacao $movimentacao)
     {
-        $cadeiaOrdem = !$movimentacao->getCadeiaOrdem() ? 1 : $movimentacao->getCadeiaOrdem();
-
         $moviment299 = null;
 
         // Se NÃO estiver passando uma 299 então é uma TRANSF_CAIXA (101 + 299 + 199).
@@ -288,17 +286,10 @@ class MovimentacaoEntityHandler extends EntityHandler
             $cadeiaOrdem = 1; // é a primeira movimentação das 2
             $moviment299->setCadeiaOrdem($cadeiaOrdem);
         }
-
-        $cadeia->setVinculante(false);
-
-        $cadeia = $this->getCadeiaEntityHandler()->persist($cadeia);
-
         $moviment299->setCadeia($cadeia);
 
         // Salvar a 199
         $moviment199 = new Movimentacao();
-        $moviment199->setCadeiaOrdem(++$cadeiaOrdem); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
-        $moviment199->setCadeia($cadeia);
         $moviment199->setDescricao($movimentacao->getDescricao());
         $moviment199->setStatus('REALIZADA');
         $moviment199->setCategoria($this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 199]));
@@ -317,18 +308,21 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment199->setValorTotal($moviment299->getValorTotal());
         $moviment199->setTipoLancto($moviment299->getTipoLancto());
         $moviment199->setBandeiraCartao($moviment299->getBandeiraCartao());
-
-        $moviment299 = parent::persist($moviment299);
-        // agora que já salvou a primeira, pode fechar a cadeia
-        $cadeia = $moviment299->getCadeia();
-        $cadeia->setFechada(true);
+        $moviment199->setCadeiaOrdem(++$cadeiaOrdem); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
         $moviment199->setCadeia($cadeia);
-        $moviment199 = parent::persist($moviment199);
 
-
-        // Tem que salvar a cadeia, pois foi removido os Cascades devido a outros problemas...
         $cadeia->setVinculante(true);
-        $cadeia = $this->getCadeiaEntityHandler()->persist($cadeia);
+        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
+
+        $moviment299 = parent::save($moviment299);
+        $moviment199 = parent::save($moviment199);
+
+        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
+        $this->getCadeiaEntityHandler()->getEntityManager()->flush();
+
+        // agora que já salvou a primeira, pode fechar a cadeia
+        $cadeia->setFechada(true);
+        $this->getCadeiaEntityHandler()->getEntityManager()->flush();
 
         return $moviment299;
     }
@@ -351,7 +345,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->setDtPagto($movimentacao->getDtMoviment());
             $movimentacao->setCadeia($cadeia);
             $movimentacao->setCadeiaOrdem(1);
-            $movimentacao = parent::persist($movimentacao);
+            $movimentacao = parent::save($movimentacao);
             $movimentacao = $this->saveTransfPropria($movimentacao);
             $this->getEntityManager()->flush();
             return $movimentacao;
@@ -426,7 +420,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                         $this->calcularNovaDtVencto($originante, $posterior);
 
                         try {
-                            $posterior = $this->persist($posterior);
+                            $posterior = $this->save($posterior);
                             $result = "<<SUCESSO>> ao atualizar movimentação: " . $originante->getDescricao();
                         } catch (\Exception $e) {
                             $result = "<<ERRO>> ao atualizar movimentação: " . $originante->getDescricao() . ". (" . $e->getMessage() . ")";
@@ -473,13 +467,13 @@ class MovimentacaoEntityHandler extends EntityHandler
 
             // Tem que salvar a cadeia, pois foi removido os Cascades devido a outros problemas...
 
-            $cadeia = $this->getCadeiaEntityHandler()->persist($cadeia);
+            $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
 
             $originante->setCadeia($cadeia);
 
             if ($salvarOriginal) {
                 try {
-                    $originante = $this->persist($originante);
+                    $originante = $this->save($originante);
                     $result .= "<<SUCESSO>> ao salvar movimentação originante: " . $originante->getDescricao();
                 } catch (\Exception $e) {
                     $result .= "<<ERRO>> ao salvar movimentação originante: " . $originante->getDescricao() . ". (" . $e->getMessage() . ")";
@@ -488,7 +482,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
 
             try {
-                $nova = $this->persist($nova);
+                $nova = $this->save($nova);
                 $result .= "<<SUCESSO>> ao gerar movimentação: " . $nova->getDescricao();
             } catch (\Exception $e) {
                 $result .= "<<ERRO>> ao atualizar movimentação: " . $originante->getDescricao() . ". (" . $e->getMessage() . ")";

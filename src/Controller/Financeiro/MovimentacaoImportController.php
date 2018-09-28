@@ -61,15 +61,21 @@ class MovimentacaoImportController extends Controller
      */
     public function import(Request $request)
     {
-        if ($request->request->get('btnSalvarTodas')) {
-            return $this->salvarTodas($request);
-        }
-        $session = $request->hasSession() ? $request->getSession() : new Session();
 
-        if ($session->get('vParams')) {
-            $vParams = $session->get('vParams');
-        } else {
-            // Valores padrão
+        if ($request->request->get('btnImportar')) {
+            // Se foi mandado importar
+            $this->importar($request);
+        } else if ($request->request->get('btnSalvarTodas')) {
+            // Se foi mandado salvar todas
+            $this->salvarTodas($request);
+            $this->importar($request);
+        }
+
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $vParams = $session->get('vParams');
+        if (!$vParams) {
+            // Valores padrão para o primeiro load
+            $vParams = [];
             $vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
             $vParams['linhasExtrato'] = null;
             $vParams['carteiraExtrato'] = null;
@@ -79,58 +85,69 @@ class MovimentacaoImportController extends Controller
             $vParams['gerarSemRegras'] = null;
         }
 
-        // Se foi mandado importar
-        if ($request->request->get('tipoExtrato') and $request->request->get('linhasExtrato')) {
-            $vParams['tipoExtrato'] = $request->request->get('tipoExtrato');
-            $vParams['linhasExtrato'] = $request->request->get('linhasExtrato');
-
-            $carteiraExtrato = null;
-            $carteiraExtratoId = $request->request->get('carteiraExtrato');
-            $vParams['carteiraExtrato'] = $carteiraExtratoId;
-            if ($carteiraExtratoId) {
-                $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraExtratoId);
-            }
-
-            $carteiraDestino = null;
-            $carteiraDestinoId = $request->request->get('carteiraDestino');
-            $vParams['carteiraDestino'] = $carteiraDestinoId;
-            if ($carteiraDestinoId) {
-                $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraDestinoId);
-            }
-
-            $vParams['grupoItem'] = $request->request->get('grupoItem');
-            if ($vParams['grupoItem']) {
-                $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($vParams['grupoItem']);
-                $vParams['grupo'] = $grupoItem->getId();
-            }
-            $vParams['gerarSemRegras'] = $request->request->get('gerarSemRegras');
-
-            // Importa
-            $r = $this->movimentacaoImporter->importar(
-                $vParams['tipoExtrato'],
-                $vParams['linhasExtrato'],
-                $carteiraExtrato,
-                $carteiraDestino,
-                $vParams['grupoItem'],
-                $vParams['gerarSemRegras']);
-
-            $vParams['movsImportadas'] = $r['movs'];
-
-            $sessionMovs = array();
-            foreach ($r['movs'] as $mov) {
-                $sessionMovs[$mov->getUnqControle()] = $mov;
-            }
-            $vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
-            $vParams['total'] = $this->getBusiness()->somarMovimentacoes($r['movs']);
-
-            $session->set('movs', $sessionMovs);
-            $session->set('vParams', $vParams);
-        }
-
         $vParams['page_title'] = "Importação de Movimentações";
-
         return $this->render('Financeiro/movimentacaoImport.html.twig', $vParams);
     }
+
+    /**
+     * @param Request $request
+     * @param $vParams
+     * @param $session
+     * @return mixed
+     * @throws \Exception
+     */
+    public function importar(Request $request)
+    {
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+
+        $vParams = $session->get('vParams');
+
+        $vParams['tipoExtrato'] = $request->request->get('tipoExtrato');
+        $vParams['linhasExtrato'] = $request->request->get('linhasExtrato');
+
+        $carteiraExtrato = null;
+        $carteiraExtratoId = $request->request->get('carteiraExtrato');
+        $vParams['carteiraExtrato'] = $carteiraExtratoId;
+        if ($carteiraExtratoId) {
+            $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraExtratoId);
+        }
+
+        $carteiraDestino = null;
+        $carteiraDestinoId = $request->request->get('carteiraDestino');
+        $vParams['carteiraDestino'] = $carteiraDestinoId;
+        if ($carteiraDestinoId) {
+            $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraDestinoId);
+        }
+
+        $vParams['grupoItem'] = $request->request->get('grupoItem');
+        if ($vParams['grupoItem']) {
+            $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($vParams['grupoItem']);
+            $vParams['grupo'] = $grupoItem->getId();
+        }
+        $vParams['gerarSemRegras'] = $request->request->get('gerarSemRegras');
+
+        // Importa
+        $r = $this->movimentacaoImporter->importar(
+            $vParams['tipoExtrato'],
+            $vParams['linhasExtrato'],
+            $carteiraExtrato,
+            $carteiraDestino,
+            $vParams['grupoItem'],
+            $vParams['gerarSemRegras']);
+
+        $vParams['movsImportadas'] = $r['movs'];
+
+        $sessionMovs = array();
+        foreach ($r['movs'] as $mov) {
+            $sessionMovs[$mov->getUnqControle()] = $mov;
+        }
+        $vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
+        $vParams['total'] = $this->getBusiness()->somarMovimentacoes($r['movs']);
+
+        $session->set('movs', $sessionMovs);
+        $session->set('vParams', $vParams);
+    }
+
 
     private function salvarTodas(Request $request)
     {
@@ -143,7 +160,6 @@ class MovimentacaoImportController extends Controller
         } catch (\Exception $e) {
             $session->getFlashBag()->add('error', $e->getMessage());
         }
-        return $this->redirectToRoute('fin_movimentacao_import');
     }
 
     /**
@@ -225,6 +241,7 @@ class MovimentacaoImportController extends Controller
 
         return $this->render('Financeiro/movimentacaoImportForm.html.twig', $parameters);
     }
+
 
 
 }

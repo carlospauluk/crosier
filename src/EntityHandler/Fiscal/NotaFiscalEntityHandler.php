@@ -32,7 +32,7 @@ class NotaFiscalEntityHandler extends EntityHandler
         return NotaFiscal::class;
     }
 
-    public function beforePersist($notaFiscal)
+    public function beforeSave($notaFiscal)
     {
         $this->notaFiscalBusiness->calcularTotais($notaFiscal);
     }

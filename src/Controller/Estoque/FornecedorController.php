@@ -126,7 +126,7 @@ class FornecedorController extends FormListController
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $fornecedor = $this->fornecedorBusiness->formData2Fornecedor($data);
-                $this->getEntityHandler()->persist($fornecedor);
+                $this->getEntityHandler()->save($fornecedor);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
                 return $this->redirectToRoute($this->getFormRoute(), array('id' => $fornecedor->getId()));
             } else {
