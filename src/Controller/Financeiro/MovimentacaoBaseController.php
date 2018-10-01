@@ -81,8 +81,13 @@ class MovimentacaoBaseController extends FormListController
             'attributes' => array(
                 'id',
                 'descricao',
+                'categoria' => ['id','codigoSuper','descricaoMontada'],
+                'carteira' => ['id', 'descricaoMontada'],
                 'dtUtil' => ['timestamp'],
-                'valorTotal'
+                'valorTotal',
+                'updated' => ['timestamp'],
+                'userUpdated' => ['id','nome'],
+                'pessoa' => ['id', 'nome', 'nome_fantasia']
             )
         );
     }

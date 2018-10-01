@@ -149,6 +149,8 @@ $(document).ready(function () {
         );
     });
 
+    $('[data-toggle="tooltip"]').tooltip();
+
 });
 
 global.$ = $; // manter isso até remover todos os <script>'s dos templates

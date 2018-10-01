@@ -45,21 +45,6 @@ class MovimentacaoController extends MovimentacaoBaseController
     }
 
     /**
-     * @return array|mixed
-     */
-    public function getNormalizeAttributes()
-    {
-        return array(
-            'attributes' => array(
-                'id',
-                'descricao',
-                'dtUtil' => ['timestamp'],
-                'valorTotal'
-            )
-        );
-    }
-
-    /**
      *
      * @Route("/fin/movimentacao/datatablesJsList/", name="fin_movimentacao_datatablesJsList")
      * @param Request $request

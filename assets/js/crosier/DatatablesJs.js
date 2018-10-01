@@ -1,13 +1,13 @@
 'use strict';
 
-import Utils from "./Utils";
+import $ from "jquery";
 
 class DatatablesJs {
 
     static makeDatatableJs(listId, columns) {
         $(document).ready(function () {
 
-            $(listId).DataTable({
+            let datatable = $(listId).DataTable({
                 paging: true,
                 serverSide: true,
                 stateSave: true,
@@ -25,6 +25,12 @@ class DatatablesJs {
                     "url": "/build/static/datatables-Portuguese-Brasil.json"
                 }
             });
+
+            datatable.on( 'draw', function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            } );
+
+
 
         });
     }

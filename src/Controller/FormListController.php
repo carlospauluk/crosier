@@ -261,6 +261,13 @@ abstract class FormListController extends Controller
         $countByFilter = $repo->doCountByFilters($filterDatas);
         $dados = $repo->findByFilters($filterDatas, $orders, $start, $limit);
 
+        // Para que possa acessar todas os atributos de dentro do getDatatablesColumns() no DatatablesJs
+        $dadosE = [];
+        foreach ($dados as $dado) {
+            $dadosE[]['e'] = $dado;
+        }
+        $dados = $dadosE;
+
         $normalizer = new ObjectNormalizer();
         $encoder = new JsonEncoder();
         $serializer = new Serializer(array($normalizer), array($encoder));
