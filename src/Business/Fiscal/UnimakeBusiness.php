@@ -234,10 +234,7 @@ class UnimakeBusiness
             $itemXML->prod->indTot = '1';
 
 
-            if ($nfItem->getCsosn() == 102) {
-                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
-                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
-            } else if ($nfItem->getCsosn() == 900) {
+            if ($nfItem->getCsosn() == 900) {
                 $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
                 $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
@@ -247,6 +244,9 @@ class UnimakeBusiness
                 // Soma para o total
                 $total_bcICMS += $nfItem->getIcmsValorBc();
                 $total_vICMS += $nfItem->getIcmsValor();
+            } else { // o nosso por padrão é sempre 103
+                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
             }
 
             $itemXML->imposto->PIS->PISNT->CST = '07';
