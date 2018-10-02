@@ -45,11 +45,10 @@ class NotaFiscalItem extends EntityId
 
     /**
      *
-     * @ORM\Column(name="icms", type="decimal", nullable=false, precision=15, scale=2)
-     * @Assert\NotNull(message="O campo 'icms' deve ser informado")
-     * @Assert\Type("numeric", message="O campo 'icms' deve ser numérico")
+     * @ORM\Column(name="csosn", type="integer", nullable=true)
+     * @Assert\Range(min = 0)
      */
-    private $icmsAliquota;
+    private $csosn;
 
     /**
      *
@@ -137,6 +136,14 @@ class NotaFiscalItem extends EntityId
 
     /**
      *
+     * @ORM\Column(name="icms", type="decimal", nullable=false, precision=15, scale=2)
+     * @Assert\NotNull(message="O campo 'icms' deve ser informado")
+     * @Assert\Type("numeric", message="O campo 'icms' deve ser numérico")
+     */
+    private $icmsAliquota;
+
+    /**
+     *
      * @ORM\Column(name="ncm_existente", type="boolean", nullable=true)
      */
     private $ncmExistente;
@@ -185,6 +192,16 @@ class NotaFiscalItem extends EntityId
     public function setDescricao($descricao)
     {
         $this->descricao = $descricao;
+    }
+
+    public function getCsosn()
+    {
+        return $this->csosn;
+    }
+
+    public function setCsosn($csosn): void
+    {
+        $this->csosn = $csosn;
     }
 
     public function getIcmsAliquota()

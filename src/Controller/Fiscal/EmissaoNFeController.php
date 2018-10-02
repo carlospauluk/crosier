@@ -4,9 +4,11 @@ namespace App\Controller\Fiscal;
 
 use App\Business\Base\PessoaBusiness;
 use App\Business\Fiscal\NotaFiscalBusiness;
+use App\Controller\FormListController;
 use App\Entity\Base\Pessoa;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\NotaFiscalItem;
+use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use App\EntityHandler\Fiscal\NotaFiscalItemEntityHandler;
 use App\Form\Fiscal\EmissaoFiscalType;
@@ -15,9 +17,10 @@ use App\Utils\Repository\FilterData;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class EmissaoNFeController extends Controller
+class EmissaoNFeController extends FormListController
 {
 
     private $notaFiscalBusiness;
@@ -27,6 +30,51 @@ class EmissaoNFeController extends Controller
     private $notaFiscalItemEntityHandler;
 
     private $notaFiscalEntityHandler;
+
+    public function getEntityHandler(): ?EntityHandler
+    {
+        return $this->notaFiscalEntityHandler;
+    }
+
+    /**
+     * Necessário para poder passar para o createForm.
+     *
+     * @return mixed
+     */
+    public function getTypeClass()
+    {
+        return NotaFiscal::class;
+    }
+
+    public function getFormRoute()
+    {
+        return "fis_emissaonfe_form";
+    }
+
+    public function getFormView()
+    {
+        return "Fiscal/emissaoNFe/formItem.html.twig";
+    }
+
+    /**
+     * Deve ser informado pela subclasse para poder renderizar a view da list.
+     *
+     * @return mixed
+     */
+    public function getListView()
+    {
+        return "Fiscal/emissaoNFe/list.html.twig";
+    }
+
+    /**
+     * Deve ser informado pela subclasse. É utilizado pela 'storedViewInfoBusiness', para 'redirectToRoute' e no 'checkAccess'.
+     *
+     * @return mixed
+     */
+    public function getListRoute()
+    {
+        return "fis_emissaonfe_list";
+    }
 
     public function __construct(NotaFiscalBusiness $notaFiscalBusiness,
                                 PessoaBusiness $pessoaBusiness,
@@ -141,6 +189,7 @@ class EmissaoNFeController extends Controller
      * @param Request $request
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function cancelarForm(Request $request, NotaFiscal $notaFiscal)
     {
@@ -202,6 +251,7 @@ class EmissaoNFeController extends Controller
      * @param Request $request
      * @param NotaFiscal $notaFiscal
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function cartaCorrecaoForm(Request $request, NotaFiscal $notaFiscal)
     {
@@ -347,7 +397,7 @@ class EmissaoNFeController extends Controller
      * @Route("/fis/emissaonfe/deleteItem/{item}", name="fis_emissaonfe_deleteItem", requirements={"item"="\d+"})
      * @param Request $request
      * @param NotaFiscalItem|null $item
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function deleteItem(Request $request, NotaFiscalItem $item)
     {
@@ -371,41 +421,61 @@ class EmissaoNFeController extends Controller
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return [
+            'attributes' => [
+                'id',
+                'numero',
+                'serie',
+                'dtEmissao',
+                'infoStatus',
+                'pessoaDestinatario' => ['id', 'tipoPessoa', 'documento', 'nome', 'nomeFantasia'],
+                'valorTotal',
+                'updated' => ['timestamp'],
+                'userUpdated' => ['id', 'nome']
+            ]
+        ];
+    }
+
+    public function getFilterDatas($params)
+    {
+        return array(
+            new FilterData('tipoNotaFiscal', 'EQ', $params['filter']['tipoNotaFiscal']),
+            new FilterData('numero', 'EQUALS', isset($params['filter']['numero']) ? $params['filter']['numero'] : null),
+            new FilterData('dtEmissao', 'BETWEEN_DATE', isset($params['filter']['dtEmissao']) ? $params['filter']['dtEmissao'] : null),
+            new FilterData(['p.nome', 'p.nomeFantasia'], 'LIKE', isset($params['filter']['pessoaDestinatario']) ? $params['filter']['pessoaDestinatario'] : null)
+        );
+    }
+
+    /**
      *
-     * @Route("/fis/emissaonfe/list", name="fis_emissaonfe_list")
+     * @Route("/fis/emissaonfe/list/", name="fis_emissaonfe_list")
      * @param Request $request
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function list(Request $request)
     {
-        $dados = null;
-        $params = $request->query->all();
-
-        if (!array_key_exists('filter', $params)) {
-            $params['filter'] = array();
-        }
-
-        try {
-            $repo = $this->getDoctrine()->getRepository(NotaFiscal::class);
-
-            $params['filter']['tipoNotaFiscal'] = 'NFE';
-
-            $filterDatas = array(
-                new FilterData('tipoNotaFiscal', 'EQ', $params['filter']['tipoNotaFiscal']),
-                new FilterData(array('p.nome', 'p.nomeFantasia'), 'LIKE', $params['filter']['pessoaDestinatario_nome'] ?? null),
-                new FilterData('dtEmissao', 'BETWEEN_DATE', isset($params['filter']['dtEmissao']) ? $params['filter']['dtEmissao'] : null)
-            );
-            $dados = $repo->findByFilters($filterDatas);
-
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erro ao listar (' . $e->getMessage() . ')');
-        }
-
-        return $this->render('Fiscal/emissaoNFe/list.html.twig', array(
-            'dados' => $dados,
-            'filter' => $params['filter']
-        ));
+//        $parameters['filterChoices'] = $this->getFilterChoices();
+        return $this->doList($request);
     }
+
+    /**
+     *
+     * @Route("/fis/emissaonfe/datatablesJsList/", name="fis_emissaonfe_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $defaultFilters['filter']['tipoNotaFiscal'] = 'NFE';
+        $jsonResponse = $this->doDatatablesJsList($request, $defaultFilters);
+        return $jsonResponse;
+    }
+
 
     /**
      * @Route("/fis/emissaonfe/clonar/{notaFiscal}", name="fis_emissaonfe_clonar")

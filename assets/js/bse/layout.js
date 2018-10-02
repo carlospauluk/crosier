@@ -52,12 +52,7 @@ Numeral.locale('pt-br');
 $(document).ready(function () {
 
 
-    CrosierMasks.maskDateTimes();
-    CrosierMasks.maskMoneys();
-    CrosierMasks.maskDecs();
-    CrosierMasks.maskCPF_CNPJ();
-    CrosierMasks.maskTelefone9digitos();
-    CrosierMasks.maskCEP();
+    CrosierMasks.maskAll();
 
 
     $(document).ajaxStart(function () {
