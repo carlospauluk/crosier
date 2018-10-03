@@ -234,6 +234,10 @@ class UnimakeBusiness
             $itemXML->prod->indTot = '1';
 
 
+            if (!$nfItem->getCsosn()) {
+                $nfItem->setCsosn(103);
+            }
+
             if ($nfItem->getCsosn() == 900) {
                 $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
                 $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
