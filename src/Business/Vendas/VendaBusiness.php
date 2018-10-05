@@ -45,8 +45,7 @@ class VendaBusiness
      * Percorre a pasta onde tem os arquivos do EKT e gera as ven_venda correspondentes.
      * Depois renomeia os arquivos para não serem reprocessados.
      */
-    public
-    function processarTXTsEKTeApagarArquivos()
+    public function processarTXTsEKTeApagarArquivos()
     {
         $this->processarTXTsEKT();
         // Depois de processar todos os arquivos, renomeia-os para evitar que seja processados novamente
@@ -113,8 +112,14 @@ class VendaBusiness
                     // Algum bug no EKT permite gerar venda com vendedor = 0. Neste caso, ignora.
                     continue;
                 }
-                $venda->setVendedor($this->doctrine->getRepository(Funcionario::class)
-                    ->findByCodigo($cabecalho[2]));
+
+                $vendedor = $this->doctrine->getRepository(Funcionario::class)->findByCodigo($cabecalho[2]);
+                if (!$vendedor) {
+                    // FIXME: colocar um log aqui
+                    continue;
+                }
+
+                $venda->setVendedor($vendedor);
 
                 $venda->setDeletado(false);
 
