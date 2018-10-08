@@ -2,6 +2,7 @@
 
 namespace App\Entity\Financeiro;
 
+use App\Doctrine\Annotations\NotUppercase;
 use App\Entity\Base\EntityId;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,6 +30,7 @@ class RegraImportacaoLinha extends EntityId
     /**
      * Em casos especiais (como na utilização de named groups) posso usar uma regex em java.
      *
+     * @NotUppercase()
      * @ORM\Column(name="regra_regex_java", type="string", nullable=false, length=500)
      * @Assert\NotBlank()
      */
@@ -78,6 +80,7 @@ class RegraImportacaoLinha extends EntityId
 
     /**
      *
+     * @NotUppercase()
      * @ORM\Column(name="padrao_descricao", type="string", nullable=false, length=500)
      * @Assert\NotBlank()
      */

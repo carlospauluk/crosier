@@ -186,8 +186,8 @@
                                     {% endif %}
                                     {% if item.cadeia %}
                                         <div class="text-right">
-                                            <a href="{{ url('fin_movimentacao_listCadeia', {parcelamento: item.cadeia.id}) }}"
-                                               class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
+                                            <a href="{{ url('fin_movimentacao_listCadeia', {cadeia: item.cadeia.id}) }}"
+                                               class="btn btn-primary" role="button" aria-pressed="true">
                                                 <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
                                             </a>
                                         </div>

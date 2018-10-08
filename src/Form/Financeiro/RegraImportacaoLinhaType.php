@@ -10,6 +10,7 @@ use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\RegraImportacaoLinha;
 use App\Entity\Financeiro\Status;
 use App\Entity\Financeiro\TipoLancto;
+use App\Utils\Repository\WhereBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
@@ -44,55 +45,55 @@ class RegraImportacaoLinhaType extends AbstractType
             'choices' => Status::getChoices()
         ));
 
-        $repoCarteira = $this->doctrine->getRepository(Carteira::class);
-        $carteiras = $repoCarteira->findAll();
-
         $builder->add('carteira', EntityType::class, array(
             'label' => 'Carteira',
             'class' => Carteira
             ::class,
-            'choices' => $carteiras,
-            'choice_label' => function (Carteira $carteira) {
-                return $carteira->getCodigo() . " - " . $carteira->getDescricao();
-            }
+            'choices' => array_merge([null], $this->doctrine->getRepository(Carteira::class)->findAll(WhereBuilder::buildOrderBy('codigo'))),
+            'choice_label' => function (?Carteira $carteira) {
+                if ($carteira) {
+                    return $carteira->getCodigo() . " - " . $carteira->getDescricao();
+                }
+            },
+            'required' => false
         ));
 
         $builder->add('carteiraDestino', EntityType::class, array(
             'label' => 'Carteira Destino',
             'class' => Carteira::class,
-            'choices' => $carteiras,
-            'choice_label' => function (Carteira $carteira) {
-                return $carteira->getCodigo() . " - " . $carteira->getDescricao();
-            }
+            'choices' => array_merge([null], $this->doctrine->getRepository(Carteira::class)->findAll(WhereBuilder::buildOrderBy('codigo'))),
+            'choice_label' => function (?Carteira $carteira) {
+                if ($carteira) {
+                    return $carteira->getCodigo() . " - " . $carteira->getDescricao();
+                }
+            },
+            'required' => false
         ));
 
-        $repoCentroCusto = $this->doctrine->getRepository(CentroCusto::class);
-        $centrosCusto = $repoCentroCusto->findAll();
         $builder->add('centroCusto', EntityType::class, array(
             'class' => CentroCusto::class,
-            'choices' => $centrosCusto,
+            'choices' => $this->doctrine->getRepository(CentroCusto::class)->findAll(WhereBuilder::buildOrderBy('codigo')),
             'choice_label' => function (CentroCusto $centroCusto) {
                 return $centroCusto->getDescricao();
             }
         ));
 
-        $repoModo = $this->doctrine->getRepository(Modo::class);
-        $modos = $repoModo->findAll();
         $builder->add('modo', EntityType::class, array(
             'class' => Modo::class,
-            'choices' => $modos,
+            'choices' => $this->doctrine->getRepository(Modo::class)->findAll(WhereBuilder::buildOrderBy('codigo')),
             'choice_label' => function (Modo $modo) {
                 return $modo->getCodigo() . " - " . $modo->getDescricao();
             }
         ));
 
         $builder->add('padraoDescricao', TextType::class, array(
-            'label' => 'Padrão da Descrição'
+            'label' => 'Padrão da Descrição',
+            'attr' => ['style' => 'text-transform: none;'],
+            'data' => '%s'
         ));
 
         $builder->add('categoria', EntityType::class, array(
             'class' => Categoria::class,
-            'choices' => [],
             'choice_label' => 'descricaoMontada',
             'attr' => ['data-route' => 'fin_categoria_select2json',
                 'class' => 'autoSelect2']
@@ -118,15 +119,18 @@ class RegraImportacaoLinhaType extends AbstractType
         ));
 
         $builder->add('chequeAgencia', TextType::class, array(
-            'label' => 'Cheque - Agência'
+            'label' => 'Cheque - Agência',
+            'required' => false
         ));
 
         $builder->add('chequeConta', TextType::class, array(
-            'label' => 'Cheque - Conta'
+            'label' => 'Cheque - Conta',
+            'required' => false
         ));
 
         $builder->add('chequeNumCheque', TextType::class, array(
-            'label' => 'Cheque - Número'
+            'label' => 'Cheque - Número',
+            'required' => false
         ));
 
 

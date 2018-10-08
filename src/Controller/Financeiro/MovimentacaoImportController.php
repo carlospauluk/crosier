@@ -68,8 +68,12 @@ class MovimentacaoImportController extends Controller
      */
     public function handleVParams(Request $request) {
         $session = $request->hasSession() ? $request->getSession() : new Session();
-        $this->vParams = array_merge($this->vParams, $session->get('vParams'));
-        $this->vParams = array_merge($this->vParams, $request->request->all());
+        if (is_array($session->get('vParams'))) {
+            $this->vParams = array_merge($this->vParams, $session->get('vParams'));
+        }
+        if (is_array($request->request->all())) {
+            $this->vParams = array_merge($this->vParams, $request->request->all());
+        }
     }
 
     /**

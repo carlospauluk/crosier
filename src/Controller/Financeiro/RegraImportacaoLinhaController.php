@@ -85,6 +85,7 @@ class RegraImportacaoLinhaController extends FormListController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function list(Request $request)
     {
@@ -103,7 +104,9 @@ class RegraImportacaoLinhaController extends FormListController
                 'tipoLancto',
                 'status',
                 'carteira' => ['descricaoMontada'],
-                'modo' => ['descricaoMontada']
+                'modo' => ['descricaoMontada'],
+                'updated',
+                'userUpdated' => ['id', 'nome']
             )
         );
     }
@@ -130,6 +133,16 @@ class RegraImportacaoLinhaController extends FormListController
     public function delete(Request $request, RegraImportacaoLinha $regraImportacaoLinha)
     {
         return $this->doDelete($request, $regraImportacaoLinha);
+    }
+
+    public function getFormPageTitle()
+    {
+        return "Regra de Importação de Linha";
+    }
+
+    public function getListPageTitle()
+    {
+        return "Regras de Importação de Linhas";
     }
 
 

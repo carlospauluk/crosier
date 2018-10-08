@@ -60,6 +60,9 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     public function beforeSave($movimentacao)
     {
+        if (!$movimentacao->getModo()) {
+            throw new \Exception("Modo deve ser informado para a movimentação '" . $movimentacao->getDescricao() . "''");
+        }
 
         $movimentacao->setDescricao(trim($movimentacao->getDescricao()));
 

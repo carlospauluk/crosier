@@ -255,7 +255,9 @@ abstract class FormListController extends Controller
             }
             $draw = (int)$rParams['draw'];
             parse_str(urldecode($rParams['formPesquisar']), $formPesquisar);
-            $formPesquisar = array_merge_recursive($formPesquisar, $defaultFilters);
+            if (is_array($defaultFilters)) {
+                $formPesquisar = array_merge_recursive($formPesquisar, $defaultFilters);
+            }
             $filterDatas = $this->doGetFilterDatas($formPesquisar);
         }
 
