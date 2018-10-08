@@ -78,6 +78,10 @@
                                     <i class="fab fa-searchengin" aria-hidden="true"></i> Importar
                                 </button>
 
+                                <button type="submit" class="btn btn-secondary" value="Limpar" name="btnLimpar">
+                                    <i class="fas fa-broom" aria-hidden="true"></i> Limpar
+                                </button>
+
                                 <button type="button" value="Salvar" class="btn btn-warning" name="btnSalvarTodas"
                                         data-form="movimentacao_import" data-target="#confirmationModal"
                                         data-toggle="modal">
@@ -92,7 +96,7 @@
 
                 <div class="row">&nbsp;</div>
 
-                {% if movsImportadas is defined %}
+                {% if movs is defined %}
 
                 <div class="table-responsive-sm">
 
@@ -114,7 +118,7 @@
                         </thead>
 
                         <tbody>
-                        {% for item in movsImportadas %}
+                        {% for item in movs %}
                             <tr style="color: {{ item.categoria.codigo[0:1] == '1' ? 'blue' : 'red' }}">
                                 <th scope="row"><span data-toggle="tooltip" data-placement="top" title="{{ item.unqControle }}">{{ loop.index }}</span></th>
                                 <td>{{ item.id }}</td>

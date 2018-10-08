@@ -91,6 +91,7 @@ class MovimentacaoExtratoController extends MovimentacaoBaseController
         $parameters['proxPeriodoI'] = $prox['dtIni'];
         $parameters['proxPeriodoF'] = $prox['dtFim'];
 
+        $parameters['page_title'] = "Extrato de Movimentações";
 
         return $this->render('Financeiro/movimentacaoExtratoList.html.twig', $parameters);
     }

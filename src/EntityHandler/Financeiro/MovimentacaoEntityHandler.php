@@ -245,7 +245,11 @@ class MovimentacaoEntityHandler extends EntityHandler
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
-            throw new \Exception('Erro ao salvar movimentações importadas: (' . $e->getMessage() . ')');
+            $err = 'Erro ao salvar movimentações importadas. ';
+            if ($mov) {
+                $err .= '(' . $mov->getDescricao() . ')';
+            }
+            throw new \Exception($err);
         }
     }
 

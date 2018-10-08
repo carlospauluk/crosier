@@ -178,16 +178,16 @@
                                     </div>
                                     {% if item.parcelamento %}
                                         <div class="text-right">
-                                            <button type="button" class="btn btn-primary"
-                                                    onclick="window.location.href='{{ url('fin_movimentacao_listParcelamento', {parcelamento: item.parcelamento.id}) }}'">
+                                            <a href="{{ url('fin_movimentacao_list', {filter: {parcelamento: item.parcelamento.id}}) }}"
+                                               class="btn btn-outline-primary" role="button" target="_blank" aria-pressed="true">
                                                 <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
-                                            </button>
+                                            </a>
                                         </div>
                                     {% endif %}
                                     {% if item.cadeia %}
                                         <div class="text-right">
-                                            <a href="{{ url('fin_movimentacao_listCadeia', {cadeia: item.cadeia.id}) }}"
-                                               class="btn btn-primary" role="button" aria-pressed="true">
+                                            <a href="{{ url('fin_movimentacao_list', {filter: {cadeia: item.cadeia.id}}) }}"
+                                               class="btn btn-outline-secondary" role="button" target="_blank" aria-pressed="true">
                                                 <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
                                             </a>
                                         </div>

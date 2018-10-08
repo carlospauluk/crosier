@@ -113,6 +113,8 @@ class MovimentacaoBaseController extends FormListController
             new FilterData('carteira', 'IN', isset($params['filter']['carteira']) ? $params['filter']['carteira'] : null),
             new FilterData('status', 'IN', isset($params['filter']['status']) ? $params['filter']['status'] : null),
             new FilterData('modo', 'IN', isset($params['filter']['modo']) ? $params['filter']['modo'] : null),
+            new FilterData('cadeia', 'EQ', isset($params['filter']['cadeia']) ? $params['filter']['cadeia'] : null),
+            new FilterData('parcelamento', 'EQ', isset($params['filter']['parcelamento']) ? $params['filter']['parcelamento'] : null),
             new FilterData('categoria', 'IN', isset($params['filter']['categoria']) ? $params['filter']['categoria'] : null)
         );
 

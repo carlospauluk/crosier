@@ -43,13 +43,7 @@ class MovimentacaoImportController extends Controller
         $this->business = $business;
         $this->movimentacaoImporter = $movimentacaoImporter;
 
-        $this->vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
-        $this->vParams['linhasExtrato'] = null;
-        $this->vParams['carteiraExtrato'] = null;
-        $this->vParams['carteiraDestino'] = null;
-        $this->vParams['grupo'] = null;
-        $this->vParams['grupoItem'] = null;
-        $this->vParams['gerarSemRegras'] = null;
+        $this->setDefaults();
     }
 
     public function getEntityHandler(): ?EntityHandler
@@ -62,11 +56,23 @@ class MovimentacaoImportController extends Controller
         return $this->business;
     }
 
+    public function setDefaults() {
+        $this->vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
+        $this->vParams['linhasExtrato'] = null;
+        $this->vParams['carteiraExtrato'] = null;
+        $this->vParams['carteiraDestino'] = null;
+        $this->vParams['grupo'] = null;
+        $this->vParams['grupoItem'] = null;
+        $this->vParams['gerarSemRegras'] = null;
+        $this->vParams['movs'] = null;
+        $this->vParams['total'] = null;
+    }
+
     /**
      * Lida com os vParams, sobrepondo na seguinte ordem: defaults > session > request.
      * @param Request $request
      */
-    public function handleVParams(Request $request) {
+    public function handleVParams(?Request $request) {
         $session = $request->hasSession() ? $request->getSession() : new Session();
         if (is_array($session->get('vParams'))) {
             $this->vParams = array_merge($this->vParams, $session->get('vParams'));
@@ -95,6 +101,8 @@ class MovimentacaoImportController extends Controller
                 // Se foi mandado salvar todas
                 $this->salvarTodas($request);
                 $this->importar($request);
+            } else if ($request->request->get('btnLimpar')) {
+                $this->limpar($request);
             }
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
@@ -105,6 +113,12 @@ class MovimentacaoImportController extends Controller
         $session->set('vParams', $this->vParams);
 
         return $this->render('Financeiro/movimentacaoImport.html.twig', $this->vParams);
+    }
+
+    public function limpar(Request $request) {
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $session->set('vParams', null);
+        $this->setDefaults();
     }
 
     /**
@@ -140,10 +154,10 @@ class MovimentacaoImportController extends Controller
             $grupoItem,
             $this->vParams['gerarSemRegras']);
 
-        $this->vParams['movsImportadas'] = $r['movs'];
+        $movsImportadas = $r['movs'];
 
         $sessionMovs = array();
-        foreach ($r['movs'] as $mov) {
+        foreach ($movsImportadas as $mov) {
             $sessionMovs[$mov->getUnqControle()] = $mov;
         }
         $this->vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
