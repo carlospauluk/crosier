@@ -9,6 +9,7 @@ use App\Entity\Fiscal\ModalidadeFrete;
 use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\TipoNotaFiscal;
 use App\EntityHandler\Fiscal\NotaFiscalEntityHandler;
+use App\Utils\FileUtils;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -585,10 +586,20 @@ class UnimakeBusiness
 
         $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
 
-        $pastaAutorizados = $pastaUnimake . '/enviado/Autorizados/' . $notaFiscal->getDtEmissao()->format('Ym') . '/';
+//        $pastaAutorizados = $pastaUnimake . '/enviado/Autorizados/' . $notaFiscal->getDtEmissao()->format('Ym') . '/';
 
-        if (file_exists($pastaAutorizados . $nomeArquivo)) {
-            copy($pastaAutorizados . $nomeArquivo, $pastaUnimake . '/reimpressao/' . $nomeArquivo);
+        // FIXME: depois que fizer o OneToMany para cartas de correção, isso não é mais necessário.
+        FileUtils::getDirContents($pastaUnimake . '/enviado/Autorizados/', $files);
+        $achouArquivo = false;
+        foreach ($files as $file) {
+            if (basename($file) == $nomeArquivo) {
+                copy($file, $pastaUnimake . '/reimpressao/' . $nomeArquivo);
+                $achouArquivo = true;
+                break;
+            }
+        }
+        if (!$achouArquivo) {
+            throw new \Exception("Arquivo da carta de correção não encontrado (" . $nomeArquivo . ")");
         }
     }
 

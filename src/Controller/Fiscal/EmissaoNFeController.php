@@ -444,7 +444,7 @@ class EmissaoNFeController extends FormListController
     {
         return array(
             new FilterData('tipoNotaFiscal', 'EQ', $params['filter']['tipoNotaFiscal']),
-            new FilterData('numero', 'EQUALS', isset($params['filter']['numero']) ? $params['filter']['numero'] : null),
+            new FilterData('numero', 'EQ', isset($params['filter']['numero']) ? $params['filter']['numero'] : null),
             new FilterData('dtEmissao', 'BETWEEN_DATE', isset($params['filter']['dtEmissao']) ? $params['filter']['dtEmissao'] : null),
             new FilterData(['p.nome', 'p.nomeFantasia'], 'LIKE', isset($params['filter']['pessoaDestinatario']) ? $params['filter']['pessoaDestinatario'] : null)
         );
