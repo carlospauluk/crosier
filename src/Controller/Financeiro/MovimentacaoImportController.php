@@ -32,6 +32,8 @@ class MovimentacaoImportController extends Controller
     private $business;
 
     private $movimentacaoImporter;
+    
+    private $vParams = array();
 
     public function __construct(MovimentacaoEntityHandler $entityHandler,
                                 MovimentacaoBusiness $business,
@@ -40,6 +42,14 @@ class MovimentacaoImportController extends Controller
         $this->entityHandler = $entityHandler;
         $this->business = $business;
         $this->movimentacaoImporter = $movimentacaoImporter;
+
+        $this->vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
+        $this->vParams['linhasExtrato'] = null;
+        $this->vParams['carteiraExtrato'] = null;
+        $this->vParams['carteiraDestino'] = null;
+        $this->vParams['grupo'] = null;
+        $this->vParams['grupoItem'] = null;
+        $this->vParams['gerarSemRegras'] = null;
     }
 
     public function getEntityHandler(): ?EntityHandler
@@ -53,6 +63,16 @@ class MovimentacaoImportController extends Controller
     }
 
     /**
+     * Lida com os vParams, sobrepondo na seguinte ordem: defaults > session > request.
+     * @param Request $request
+     */
+    public function handleVParams(Request $request) {
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $this->vParams = array_merge($this->vParams, $session->get('vParams'));
+        $this->vParams = array_merge($this->vParams, $request->request->all());
+    }
+
+    /**
      *
      * @Route("/fin/movimentacao/import", name="fin_movimentacao_import", options = { "expose" = true })
      * @param Request $request
@@ -61,104 +81,82 @@ class MovimentacaoImportController extends Controller
      */
     public function import(Request $request)
     {
+        $this->handleVParams($request);
 
-        if ($request->request->get('btnImportar')) {
-            // Se foi mandado importar
-            $this->importar($request);
-        } else if ($request->request->get('btnSalvarTodas')) {
-            // Se foi mandado salvar todas
-            $this->salvarTodas($request);
-            $this->importar($request);
+        try {
+            if ($request->request->get('btnImportar')) {
+                // Se foi mandado importar
+                $this->importar($request);
+            } else if ($request->request->get('btnSalvarTodas')) {
+                // Se foi mandado salvar todas
+                $this->salvarTodas($request);
+                $this->importar($request);
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
         }
 
         $session = $request->hasSession() ? $request->getSession() : new Session();
-        $vParams = $session->get('vParams');
-        if (!$vParams) {
-            // Valores padrão para o primeiro load
-            $vParams = [];
-            $vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
-            $vParams['linhasExtrato'] = null;
-            $vParams['carteiraExtrato'] = null;
-            $vParams['carteiraDestino'] = null;
-            $vParams['grupo'] = null;
-            $vParams['grupoItem'] = null;
-            $vParams['gerarSemRegras'] = null;
-        }
+        $this->vParams['page_title'] = "Importação de Movimentações";
+        $session->set('vParams', $this->vParams);
 
-        $vParams['page_title'] = "Importação de Movimentações";
-        return $this->render('Financeiro/movimentacaoImport.html.twig', $vParams);
+        return $this->render('Financeiro/movimentacaoImport.html.twig', $this->vParams);
     }
 
     /**
      * @param Request $request
-     * @param $vParams
+     * @param $this->vParams
      * @param $session
      * @return mixed
      * @throws \Exception
      */
     public function importar(Request $request)
     {
-        $session = $request->hasSession() ? $request->getSession() : new Session();
-
-        $vParams = $session->get('vParams');
-
-        $vParams['tipoExtrato'] = $request->request->get('tipoExtrato');
-        $vParams['linhasExtrato'] = $request->request->get('linhasExtrato');
-
         $carteiraExtrato = null;
-        $carteiraExtratoId = $request->request->get('carteiraExtrato');
-        $vParams['carteiraExtrato'] = $carteiraExtratoId;
-        if ($carteiraExtratoId) {
-            $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraExtratoId);
+        if ($this->vParams['carteiraExtrato']) {
+            $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraExtrato']);
         }
 
         $carteiraDestino = null;
-        $carteiraDestinoId = $request->request->get('carteiraDestino');
-        $vParams['carteiraDestino'] = $carteiraDestinoId;
-        if ($carteiraDestinoId) {
-            $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($carteiraDestinoId);
+        if ($this->vParams['carteiraDestino']) {
+            $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($request->request->get($this->vParams['carteiraDestino']));
         }
 
-        $vParams['grupoItem'] = $request->request->get('grupoItem');
-        if ($vParams['grupoItem']) {
-            $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($vParams['grupoItem']);
-            $vParams['grupo'] = $grupoItem->getId();
+        $grupoItem = null;
+        if ($this->vParams['grupoItem']) {
+            $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($this->vParams['grupoItem']);
+            $this->vParams['grupo'] = $grupoItem->getId();
         }
-        $vParams['gerarSemRegras'] = $request->request->get('gerarSemRegras');
 
-        // Importa
         $r = $this->movimentacaoImporter->importar(
-            $vParams['tipoExtrato'],
-            $vParams['linhasExtrato'],
+            $this->vParams['tipoExtrato'],
+            $this->vParams['linhasExtrato'],
             $carteiraExtrato,
             $carteiraDestino,
-            $vParams['grupoItem'],
-            $vParams['gerarSemRegras']);
+            $grupoItem,
+            $this->vParams['gerarSemRegras']);
 
-        $vParams['movsImportadas'] = $r['movs'];
+        $this->vParams['movsImportadas'] = $r['movs'];
 
         $sessionMovs = array();
         foreach ($r['movs'] as $mov) {
             $sessionMovs[$mov->getUnqControle()] = $mov;
         }
-        $vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
-        $vParams['total'] = $this->getBusiness()->somarMovimentacoes($r['movs']);
+        $this->vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
+        $this->vParams['total'] = $this->getBusiness()->somarMovimentacoes($r['movs']);
 
-        $session->set('movs', $sessionMovs);
-        $session->set('vParams', $vParams);
+        $this->vParams['movs'] = $sessionMovs;
     }
 
 
     private function salvarTodas(Request $request)
     {
-        $session = $request->hasSession() ? $request->getSession() : new Session();
         try {
-            $movs = $session->get('movs');
-            $this->getEntityHandler()->persistAll($movs);
-            $session->getFlashBag()->add('success', 'Movimentações salvas com sucesso!');
-            $session->set('movs', null);
+            $this->getEntityHandler()->persistAll($this->vParams['movs']);
+            $this->addFlash('success', 'Movimentações salvas com sucesso!');
+            $this->vParams['movs'] = null;
         } catch (\Exception $e) {
-            $session->getFlashBag()->add('error', $e->getMessage());
+            $this->addFlash('error', $e->getMessage());
         }
     }
 
@@ -241,7 +239,6 @@ class MovimentacaoImportController extends Controller
 
         return $this->render('Financeiro/movimentacaoImportForm.html.twig', $parameters);
     }
-
 
 
 }

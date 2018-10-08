@@ -2,6 +2,7 @@
 
 namespace App\Controller\Financeiro;
 
+use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Parcelamento;
 use App\Utils\Repository\FilterData;
@@ -90,6 +91,19 @@ class MovimentacaoController extends MovimentacaoBaseController
 
         $vParams['movs'] = $movs;
         $vParams['total'] = $total;
+
+        return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', $vParams);
+    }
+
+    /**
+     *
+     * @Route("/fin/movimentacao/listCadeia/{cadeia}", name="fin_movimentacao_listCadeia", requirements={"cadeia"="\d+"})
+     * @param Cadeia $cadeia
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function listCadeia(Cadeia $cadeia)
+    {
+        $movs = $this->getDoctrine()->getRepository(Movimentacao::class)->findBy(['cadeia' => $cadeia]);
 
         return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', $vParams);
     }

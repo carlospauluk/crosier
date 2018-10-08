@@ -16,14 +16,19 @@ $(document).ready(function () {
     $('#tipoExtrato').on('select2:select', function () {
             let tipoExtrato = $('#tipoExtrato').val();
             $('#grupoRow, #carteiraExtratoRow, #carteiraDestinoRow, #gerarRow').hide();
+            $('#grupoRow, #carteiraExtratoRow, #carteiraDestinoRow, #gerarRow').attr('required', false);
             if (tipoExtrato.includes('GRUPO')) {
                 $('#grupoRow').show();
+                $('#grupoRow').attr('required', true);
             } else if (tipoExtrato.includes('DEBITO')) {
                 $('#carteiraExtratoRow').show();
                 $('#carteiraDestinoRow').show();
+                $('#carteiraExtratoRow').attr('required', true);
+                $('#carteiraDestinoRow').attr('required', true);
                 $('#gerarRow').show();
             } else {
                 $('#carteiraExtratoRow').show();
+                $('#carteiraExtratoRow').attr('required', true);
                 $('#gerarRow').show();
             }
         }

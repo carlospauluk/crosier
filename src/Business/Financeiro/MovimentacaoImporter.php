@@ -77,7 +77,7 @@ class MovimentacaoImporter
      * @return mixed
      * @throws \Exception
      */
-    public function importar($tipoExtrato, $linhasExtrato, Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem, $gerarSemRegras)
+    public function importar($tipoExtrato, $linhasExtrato, ?Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem, $gerarSemRegras)
     {
         $this->tipoExtrato = $tipoExtrato;
         $this->linhasExtrato = $linhasExtrato;
@@ -85,6 +85,16 @@ class MovimentacaoImporter
         $this->carteiraDestino = $carteiraDestino;
         $this->grupoItem = $grupoItem;
         $this->gerarSemRegras = $gerarSemRegras;
+
+        if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
+            if (!$carteiraExtrato or !$carteiraExtrato) {
+                throw new \Exception("Para extratos de cartões de débito, é necessário informar a carteira de origem e de destino.");
+            }
+        } elseif (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
+            if (!$grupoItem) {
+                throw new \Exception("Para extratos de grupos de movimentações, é necessário informar o grupo.");
+            }
+        }
 
         switch ($tipoExtrato) {
             case 'EXTRATO_GRUPO_MOVIMENTACOES':

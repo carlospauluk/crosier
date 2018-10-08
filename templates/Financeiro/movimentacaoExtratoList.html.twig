@@ -140,13 +140,12 @@
 
                     <thead>
                     <tr style="background-color: lightgrey">
-                        <th scope="row" colspan="4" class="text-right">
+                        <th scope="row" colspan="5" class="text-right">
                             Saldo anterior:
                             R$ {{ anteriores.saldos.SALDO_POSTERIOR_REALIZADAS|number_format(2,',','.') }}<br/>
                             Saldo anterior (+ cheques):
                             R$ {{ anteriores.saldos.SALDO_POSTERIOR_COM_CHEQUES|number_format(2,',','.') }}
                         </th>
-                        <td/>
                         <td class="text-right">
                             <button type="button" class="btn btn-primary"
                                     onclick="window.location.href='{{ url('fin_movimentacao_form') }}'">
@@ -185,6 +184,14 @@
                                             </button>
                                         </div>
                                     {% endif %}
+                                    {% if item.cadeia %}
+                                        <div class="text-right">
+                                            <a href="{{ url('fin_movimentacao_listCadeia', {parcelamento: item.cadeia.id}) }}"
+                                               class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
+                                                <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     V:{{ item.dtVencto|date('d/m/Y') }}<br />
@@ -201,13 +208,12 @@
                             </tr>
                         {% endfor %}
                         <tr style="background-color: lightgrey">
-                            <th scope="row" colspan="4" class="text-right">
+                            <th scope="row" colspan="5" class="text-right">
                                 Saldo em {{ dia.dtUtil|date('d/m/Y') }}:
                                 R$ {{ dia.saldos.SALDO_POSTERIOR_REALIZADAS|number_format(2,',','.') }}<br/>
                                 Saldo (+ cheques) em {{ dia.dtUtil|date('d/m/Y') }}:
                                 R$ {{ dia.saldos.SALDO_POSTERIOR_COM_CHEQUES|number_format(2,',','.') }}
                             </th>
-                            <td/>
                             <td class="text-right">
                                 <button type="button" class="btn btn-primary"
                                         onclick="window.location.href='{{ url('fin_movimentacao_form') }}'">
