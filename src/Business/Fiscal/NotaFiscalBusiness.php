@@ -74,6 +74,7 @@ class NotaFiscalBusiness
      *
      * @param NotaFiscal $notaFiscal
      * @return NULL[]|string[]|\App\Entity\Financeiro\TipoPessoa[]
+     * @throws \Exception
      */
     public function notaFiscal2FormData(NotaFiscal $notaFiscal, $tipoPessoa = null)
     {

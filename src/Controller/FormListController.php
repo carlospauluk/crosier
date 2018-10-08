@@ -228,7 +228,7 @@ abstract class FormListController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function doDatatablesJsList(Request $request)
+    public function doDatatablesJsList(Request $request, $defaultFilters = null)
     {
         $this->securityBusiness->checkAccess($this->getListRoute());
 
@@ -255,6 +255,7 @@ abstract class FormListController extends Controller
             }
             $draw = (int)$rParams['draw'];
             parse_str(urldecode($rParams['formPesquisar']), $formPesquisar);
+            $formPesquisar = array_merge_recursive($formPesquisar, $defaultFilters);
             $filterDatas = $this->doGetFilterDatas($formPesquisar);
         }
 

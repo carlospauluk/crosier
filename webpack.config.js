@@ -38,6 +38,7 @@ Encore
     .addEntry('cfg/entMenuList', './assets/js/cfg/entMenuList.js')
 
     .addEntry('fis/emissaoNFe/form', './assets/js/fis/emissaoNFe/form.js')
+    .addEntry('fis/emissaoNFe/list', './assets/js/fis/emissaoNFe/list.js')
 
     .addEntry('est/fornecedorList', './assets/js/est/fornecedorList.js')
     .addEntry('est/fornecedorForm', './assets/js/est/fornecedorForm.js')

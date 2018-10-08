@@ -2,6 +2,8 @@
 
 import $ from "jquery";
 
+import CrosierMasks from './CrosierMasks';
+
 class DatatablesJs {
 
     static makeDatatableJs(listId, columns) {
@@ -26,10 +28,10 @@ class DatatablesJs {
                 }
             });
 
-            datatable.on( 'draw', function () {
+            datatable.on('draw', function () {
                 $('[data-toggle="tooltip"]').tooltip();
-            } );
-
+                CrosierMasks.maskAll();
+            });
 
 
         });

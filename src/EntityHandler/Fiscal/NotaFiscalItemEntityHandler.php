@@ -18,6 +18,9 @@ class NotaFiscalItemEntityHandler extends EntityHandler
             }
             $nfItem->setOrdem($ultimaOrdem + 1);
         }
+        if (!$nfItem->getCsosn()) {
+            $nfItem->setCsosn(103);
+        }
     }
 
     public function getEntityClass()

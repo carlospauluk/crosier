@@ -200,9 +200,11 @@ class UnimakeBusiness
         }
 
 
-
         unset($nfe->infNFe->det);
         $i = 1;
+
+        $total_bcICMS = 0;
+        $total_vICMS = 0;
         foreach ($notaFiscal->getItens() as $nfItem) {
             $itemXML = $nfe->infNFe->addChild('det');
             $itemXML['nItem'] = $nfItem->getOrdem();
@@ -231,15 +233,34 @@ class UnimakeBusiness
             }
             $itemXML->prod->indTot = '1';
 
-            $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
-            $itemXML->imposto->ICMS->ICMSSN102->CSOSN = 103;
+
+            if (!$nfItem->getCsosn()) {
+                $nfItem->setCsosn(103);
+            }
+
+            if ($nfItem->getCsosn() == 900) {
+                $itemXML->imposto->ICMS->ICMSSN900->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN900->CSOSN = $nfItem->getCsosn();
+                $itemXML->imposto->ICMS->ICMSSN900->modBC = '0';
+                $itemXML->imposto->ICMS->ICMSSN900->vBC = $nfItem->getIcmsValorBc();
+                $itemXML->imposto->ICMS->ICMSSN900->pICMS = $nfItem->getIcmsAliquota();
+                $itemXML->imposto->ICMS->ICMSSN900->vICMS = $nfItem->getIcmsValor();
+                // Soma para o total
+                $total_bcICMS += $nfItem->getIcmsValorBc();
+                $total_vICMS += $nfItem->getIcmsValor();
+            } else { // o nosso por padrão é sempre 103
+                $itemXML->imposto->ICMS->ICMSSN102->orig = '0';
+                $itemXML->imposto->ICMS->ICMSSN102->CSOSN = $nfItem->getCsosn();
+            }
+
             $itemXML->imposto->PIS->PISNT->CST = '07';
             $itemXML->imposto->COFINS->COFINSNT->CST = '07';
+
             $i++;
         }
         $nfe->infNFe->addChild('total');
-        $nfe->infNFe->total->ICMSTot->vBC = '0.00';
-        $nfe->infNFe->total->ICMSTot->vICMS = '0.00';
+        $nfe->infNFe->total->ICMSTot->vBC = number_format($total_bcICMS, 2, '.', '');
+        $nfe->infNFe->total->ICMSTot->vICMS = number_format($total_vICMS, 2, '.', '');
         $nfe->infNFe->total->ICMSTot->vICMSDeson = '0.00';
         $nfe->infNFe->total->ICMSTot->vFCP = '0.00';
         $nfe->infNFe->total->ICMSTot->vBCST = '0.00';
@@ -732,7 +753,8 @@ class UnimakeBusiness
         return $notaFiscal;
     }
 
-    public function consultarCNPJ($cnpj) {
+    public function consultarCNPJ($cnpj)
+    {
         $pastaXMLExemplos = getenv('PASTAARQUIVOSXMLEXEMPLO');
 
         $exemplo = file_get_contents($pastaXMLExemplos . "/-cons-cad.xml");
