@@ -35,7 +35,7 @@ function getDatatablesColumns() {
             data: 'e.dtEmissao',
             title: 'Dt Emissão',
             render: function (data, type, row) {
-                return Moment.unix(data.timestamp).format('DD/MM/YYYY');
+                return data ? Moment.unix(data.timestamp).format('DD/MM/YYYY') : null;
             },
             className: 'text-center'
 

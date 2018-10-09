@@ -97,8 +97,13 @@ class EmissaoFiscalPVController extends Controller
             if ($form->isValid()) {
                 $notaFiscal = $this->notaFiscalBusiness->formData2NotaFiscal($data);
                 $notaFiscal = $this->notaFiscalBusiness->saveNotaFiscalVenda($venda, $notaFiscal);
-                $notaFiscal = $this->notaFiscalBusiness->faturar($notaFiscal);
+                try {
+                    $notaFiscal = $this->notaFiscalBusiness->faturar($notaFiscal);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', $e->getMessage());
+                }
                 $data = $this->notaFiscalBusiness->notaFiscal2FormData($notaFiscal);
+
                 return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
                     'id' => $venda->getId()
                 ));

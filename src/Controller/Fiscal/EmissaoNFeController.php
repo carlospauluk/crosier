@@ -15,7 +15,6 @@ use App\Form\Fiscal\EmissaoFiscalType;
 use App\Form\Fiscal\NotaFiscalItemType;
 use App\Utils\Repository\FilterData;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -177,7 +176,11 @@ class EmissaoNFeController extends FormListController
             $this->addFlash('erro', 'E a Nota Fiscal?');
         }
 
-        $this->notaFiscalBusiness->faturar($notaFiscal);
+        try {
+            $this->notaFiscalBusiness->faturar($notaFiscal);
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
         return $this->redirectToRoute('fis_emissaonfe_form', array(
             'notaFiscal' => $notaFiscal->getId()
         ));
@@ -430,7 +433,7 @@ class EmissaoNFeController extends FormListController
                 'id',
                 'numero',
                 'serie',
-                'dtEmissao',
+                'dtEmissao' => ['timestamp'],
                 'infoStatus',
                 'pessoaDestinatario' => ['id', 'tipoPessoa', 'documento', 'nome', 'nomeFantasia'],
                 'valorTotal',

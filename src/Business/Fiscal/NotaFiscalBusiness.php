@@ -133,21 +133,14 @@ class NotaFiscalBusiness
                     ->getEndereco()
                     ->getBairro();
 
-
                 $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
                 $estado = $notaFiscal->getPessoaDestinatario()->getEndereco()->getEstado();
-                $bsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $cidade, 'ufSigla' => $estado]);
-                if (!$bsMunicipio) {
-                    throw new \Exception("Município inválido: [" . $cidade . "-" . $estado . "]");
-                } else {
-                    $formData['cidade'] = $cidade;
-                    $formData['estado'] = $estado;
-                }
+                $formData['cidade'] = $cidade;
+                $formData['estado'] = $estado;
 
                 $formData['cep'] = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getCep();
-
 
             }
             $formData['fone1'] = $notaFiscal->getPessoaDestinatario()->getFone1();
@@ -584,12 +577,36 @@ class NotaFiscalBusiness
     }
 
     /**
+     *
+     * @param NotaFiscal $notaFiscal
+     * @throws \Exception
+     */
+    public function checkNotaFiscal(NotaFiscal $notaFiscal) {
+        if (!$notaFiscal) {
+            throw new \Exception('Nota Fiscal null');
+        }
+        if (!$notaFiscal->getPessoaDestinatario()) {
+            throw new \Exception('Pessoa destinatário null');
+        }
+        $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
+        $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
+        $estado = $notaFiscal->getPessoaDestinatario()->getEndereco()->getEstado();
+        $bsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $cidade, 'ufSigla' => $estado]);
+        if (!$bsMunicipio) {
+            throw new \Exception("Município inválido: [" . $cidade . "-" . $estado . "]");
+        }
+    }
+
+    /**
      * @param NotaFiscal $notaFiscal
      * @return NotaFiscal
      * @throws \Exception
      */
     public function faturar(NotaFiscal $notaFiscal)
     {
+        // Verifica algumas regras antes de mandar faturar na receita.
+        $this->checkNotaFiscal($notaFiscal);
+
         $this->addHistorico($notaFiscal, -1, "INICIANDO FATURAMENTO");
         if ($this->permiteFaturamento($notaFiscal)) {
             $this->handleIdeFields($notaFiscal);
@@ -917,7 +934,8 @@ class NotaFiscalBusiness
     }
 
 
-    public function consultarCNPJ($cnpj) {
+    public function consultarCNPJ($cnpj)
+    {
         return $this->unimakeBusiness->consultarCNPJ($cnpj);
     }
 
