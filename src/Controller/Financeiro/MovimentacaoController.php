@@ -138,5 +138,10 @@ class MovimentacaoController extends MovimentacaoBaseController
         return new Response();
     }
 
+    public function getListPageTitle()
+    {
+        return "Movimentações";
+    }
+
 
 }

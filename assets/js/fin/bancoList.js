@@ -9,21 +9,21 @@ function getDatatablesColumns() {
     return [
         {
             name: 'e.codigoBanco',
-            data: 'codigoBanco',
+            data: 'e.codigoBanco',
             title: 'Código'
         },
         {
             name: 'e.nome',
-            data: 'nome',
+            data: 'e.nome',
             title: 'Nome'
         },
         {
             name: 'e.id',
-            data: 'id',
+            data: 'e.id',
             title: '',
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
-                let url = routeedit + '/' + data;
+                let url = routeedit + '/' + data.id;
                 return "<button type=\"button\" class=\"btn btn-primary\" onclick=\"window.location.href='" + url + "'\">" +
                     "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></button>";
             },

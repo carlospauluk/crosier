@@ -2,6 +2,7 @@
 
 namespace App\EntityHandler\Security;
 
+use App\Entity\Security\Group;
 use App\EntityHandler\EntityHandler;
 
 /**

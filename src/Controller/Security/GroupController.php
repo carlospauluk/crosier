@@ -84,6 +84,7 @@ class GroupController extends FormListController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function list(Request $request)
     {

@@ -8,17 +8,17 @@ function getDatatablesColumns() {
     return [
         {
             name: 'e.chave',
-            data: 'chave',
+            data: 'e.chave',
             title: 'Chave'
         },
         {
             name: 'e.valor',
-            data: 'valor',
+            data: 'e.valor',
             title: 'Valor'
         },
         {
             name: 'e.global',
-            data: 'global',
+            data: 'e.global',
             title: 'Global',
             render: function (data, type, row) {
                 return data ? 'S' : 'N'
@@ -26,11 +26,11 @@ function getDatatablesColumns() {
         },
         {
             name: 'e.id',
-            data: 'id',
+            data: 'e.id',
             title: '',
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
-                let url = routeedit + '/' + data;
+                let url = routeedit + '/' + data.id;
                 return "<button type=\"button\" class=\"btn btn-primary\" onclick=\"window.location.href='" + url + "'\">" +
                     "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></button>";
             },

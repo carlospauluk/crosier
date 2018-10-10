@@ -13,22 +13,22 @@ function getDatatablesColumns() {
     return [
         {
             name: 'e.role',
-            data: 'role',
+            data: 'e.role',
             title: 'Role'
         },
         {
             name: 'e.descricao',
-            data: 'descricao',
+            data: 'e.descricao',
             title: 'Descrição'
         },
         {
             name: 'e.id',
-            data: 'id',
+            data: 'e.id',
             title: '',
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
-                let url = routeedit + '/' + data;
-                let deleteUrl = Routing.generate('cfg_app_delete', {id: data} );
+                let url = routeedit + '/' + data.id;
+                let deleteUrl = Routing.generate('cfg_app_delete', {id: data.id} );
                 let csrfTokenDelete = $(listId).data('crsf-token-delete');
                 return "<button type=\"button\" class=\"btn btn-primary\" onclick=\"window.location.href='" + url + "'\">" +
                     "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></button>" +

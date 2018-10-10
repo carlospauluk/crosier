@@ -9,12 +9,12 @@ function getDatatablesColumns() {
     return [
         {
             name: 'e.descricao',
-            data: 'descricao',
+            data: 'e.descricao',
             title: 'Descrição'
         },
         {
             name: 'm.descricao',
-            data: 'modo',
+            data: 'e.modo',
             title: 'Modo',
             render: function (data, type, row) {
                 return data.descricao
@@ -22,16 +22,16 @@ function getDatatablesColumns() {
         },
         {
             name: 'e.labels',
-            data: 'labels',
+            data: 'e.labels',
             title: 'Labels'
         },
         {
             name: 'e.id',
-            data: 'id',
+            data: 'e.id',
             title: '',
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
-                let url = routeedit + '/' + data;
+                let url = routeedit + '/' + data.id;
                 return "<button type=\"button\" class=\"btn btn-primary\" onclick=\"window.location.href='" + url + "'\">" +
                     "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></button>";
             },
