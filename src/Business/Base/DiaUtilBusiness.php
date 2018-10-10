@@ -27,8 +27,13 @@ class DiaUtilBusiness
     public function incPeriodo($proFuturo, $ini, $fim)
     {
         try {
-            $dtIni = \DateTime::createFromFormat('Y-m-d', $ini)->setTime(0, 0, 0, 0);
-            $dtFim = \DateTime::createFromFormat('Y-m-d', $fim)->setTime(23, 59, 59, 999999);
+            if ($ini instanceof \DateTime) {
+                $dtIni = $ini->setTime(0,0,0,0);
+                $dtFim = $fim->setTime(23,59,59,999999);
+            } else {
+                $dtIni = \DateTime::createFromFormat('Y-m-d', $ini)->setTime(0, 0, 0, 0);
+                $dtFim = \DateTime::createFromFormat('Y-m-d', $fim)->setTime(23, 59, 59, 999999);
+            }
             $difDias = $dtFim->diff($dtIni)->days;// Se na tela foi informado um período relatorial...
 
             if (DateTimeUtils::isPeriodoRelatorial($dtIni, $dtFim)) {

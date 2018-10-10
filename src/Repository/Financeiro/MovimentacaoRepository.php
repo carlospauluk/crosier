@@ -4,6 +4,7 @@ namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
+use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Repository\FilterRepository;
 use App\Utils\Repository\FilterData;
@@ -75,17 +76,33 @@ class MovimentacaoRepository extends FilterRepository
         return $r[0]['valor_total'];
     }
 
-    public function findTotal(Carteira $carteira, Categoria $categoria, \DateTime $dtIni, \DateTime $dtFim)
+    public function findTotal(\DateTime $dtIni, \DateTime $dtFim, ?Carteira $carteira = null, ?Categoria $categoria = null, ?Modo $modo = null)
     {
-        $ql = "SELECT SUM( m.valor_total ) as valor_total FROM fin_movimentacao m WHERE m.carteira_id = :carteiraId AND m.categoria_id = :categoriaId AND m.dt_pagto BETWEEN :dtIni AND :dtFim";
+        $dtIni->setTime(0, 0, 0, 0);
+        $dtFim->setTime(23, 59, 59, 999999);
+
+        $params = [];
+        $params['dtIni'] = $dtIni;
+        $params['dtFim'] = $dtFim;
+
+        $ql = "SELECT SUM( m.valor_total ) as valor_total FROM fin_movimentacao m WHERE m.dt_pagto BETWEEN :dtIni AND :dtFim";
+
+        if ($carteira) {
+            $ql .= " AND m.carteira_id = :carteiraId";
+            $params['carteiraId'] = $carteira->getId();
+        }
+        if ($categoria) {
+            $ql .= " AND m.categoria_id = :categoriaId";
+            $params['categoriaId'] = $categoria->getId();
+        }
+        if ($modo) {
+            $ql .= " AND m.modo_id = :modoId";
+            $params['modoId'] = $modo->getId();
+        }
+
         $rsm = new ResultSetMapping ();
         $qry = $this->getEntityManager()->createNativeQuery($ql, $rsm);
-        $dtIni->setTime(0, 0, 0, 0);
-        $qry->setParameter('dtIni', $dtIni);
-        $dtFim->setTime(23, 59, 59, 999999);
-        $qry->setParameter('dtFim', $dtFim);
-        $qry->setParameter('carteiraId', $carteira->getId());
-        $qry->setParameter('categoriaId', $categoria->getId());
+        $qry->setParameters($params);
         $qry->getSQL();
         $qry->getParameters();
         $rsm->addScalarResult('valor_total', 'valor_total');

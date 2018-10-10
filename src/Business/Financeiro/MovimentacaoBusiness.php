@@ -370,4 +370,32 @@ class MovimentacaoBusiness
         return $result;
     }
 
+
+    /**
+     * Cálcula a taxa do cartão com base no valor lançado do custo financeiro mensal.
+     * @param Carteira $carteira
+     * @param $debito
+     * @param $totalVendas
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
+     * @return float
+     */
+    public function calcularTaxaCartao(Carteira $carteira, $debito, $totalVendas, \DateTime $dtIni, \DateTime $dtFim)
+    {
+        if ($debito) {
+            $cCustoOperacionalCartao = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 202005002]);
+        } else {
+            $cCustoOperacionalCartao = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 202005001]);
+        }
+        $tCustoOperacionalCartao = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $carteira, $cCustoOperacionalCartao);
+
+        $taxaCartao = 0.0;
+
+        if (($tCustoOperacionalCartao != null) and ($totalVendas != null) and ($tCustoOperacionalCartao > 0)
+            and ($totalVendas > 0)) {
+            $taxaCartao = bcmul(bcdiv($tCustoOperacionalCartao, $totalVendas, 6), 100, 2);
+        }
+        return $taxaCartao;
+    }
+
 }

@@ -43,9 +43,6 @@ class MovimentacaoExtratoController extends MovimentacaoBaseController
             $parameters['filter'] = array();
             $parameters['filter']['dtUtil']['i'] = date('Y-m-d');
             $parameters['filter']['dtUtil']['f'] = date('Y-m-d');
-            $parameters['filter']['carteira'] = 1;
-        } else {
-
         }
 
         $filterDatas = $this->getFilterDatas($parameters);

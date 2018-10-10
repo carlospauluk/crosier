@@ -221,16 +221,17 @@ class GrupoItem extends EntityId
     {
         if (($this->getMovimentacoes() != null) && (count($this->getMovimentacoes()) > 0)) {
             $bdValor = 0.0;
-            foreach ($this->getMovimentacoes as $m) {
+            foreach ($this->getMovimentacoes() as $m) {
                 if (substr($m->getCategoria()->getCodigo(), 0, 1) == "1") {
                     $bdValor += $m->getValorTotal();
                 } else {
                     $bdValor -= $m->getValorTotal();
                 }
             }
+            return abs($bdValor);
         }
+        return 0.0;
 
-        return abs($bdValor);
     }
 
     /**
