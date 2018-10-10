@@ -3,6 +3,7 @@
 namespace App\Repository\Financeiro;
 
 use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\Movimentacao;
 use App\Repository\FilterRepository;
 use App\Utils\Repository\FilterData;
@@ -72,6 +73,28 @@ class MovimentacaoRepository extends FilterRepository
         $r = $qry->getResult();
 
         return $r[0]['valor_total'];
+    }
+
+    public function findTotal(Carteira $carteira, Categoria $categoria, \DateTime $dtIni, \DateTime $dtFim)
+    {
+        $ql = "SELECT SUM( m.valor_total ) as valor_total FROM fin_movimentacao m WHERE m.carteira_id = :carteiraId AND m.categoria_id = :categoriaId AND m.dt_pagto BETWEEN :dtIni AND :dtFim";
+        $rsm = new ResultSetMapping ();
+        $qry = $this->getEntityManager()->createNativeQuery($ql, $rsm);
+        $dtIni->setTime(0, 0, 0, 0);
+        $qry->setParameter('dtIni', $dtIni);
+        $dtFim->setTime(23, 59, 59, 999999);
+        $qry->setParameter('dtFim', $dtFim);
+        $qry->setParameter('carteiraId', $carteira->getId());
+        $qry->setParameter('categoriaId', $categoria->getId());
+        $qry->getSQL();
+        $qry->getParameters();
+        $rsm->addScalarResult('valor_total', 'valor_total');
+        $r = $qry->getResult();
+        if ($r) {
+            return $r[0]['valor_total'];
+        } else {
+            return null;
+        }
     }
 
 

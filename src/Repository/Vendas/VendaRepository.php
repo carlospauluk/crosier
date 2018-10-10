@@ -4,6 +4,7 @@ namespace App\Repository\Vendas;
 
 use App\Entity\Vendas\Venda;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMapping;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -62,5 +63,45 @@ class VendaRepository extends ServiceEntityRepository
         $hoje = new \DateTime();
         $mesano = $hoje->format('Ym');
         return $this->findByPVAndMesAno($pv, $mesano);
+    }
+
+    public function findTotalAVistaEKT(\DateTime $dtIni, \DateTime $dtFim, $bonsucesso)
+    {
+        $ql = "SELECT sum(v.valor_total) as total " .
+            "FROM ven_venda v, ven_plano_pagto pp, rh_funcionario vendedor " .
+            "WHERE " .
+            "vendedor.id = v.vendedor_id AND " .
+            "v.plano_pagto_id = pp.id " .
+            "AND v.pv IS NOT NULL " .
+            "AND (" .
+            "pp.codigo LIKE '1.00' OR " .
+            "pp.codigo LIKE '9.99' OR " .
+            "pp.codigo LIKE '3.0' OR " .
+            "pp.codigo LIKE '5%' OR " .
+            "pp.codigo LIKE '2%') AND " .
+            "v.dt_venda BETWEEN :dtIni AND :dtFim " .
+            "AND v.deletado = false";
+
+        if ($bonsucesso == true) {
+            $ql .= " AND (vendedor.codigo < 90 OR vendedor.codigo = 99)";
+        } else {
+            $ql .= " AND vendedor.codigo = 95";
+        }
+
+        $rsm = new ResultSetMapping();
+        $qry = $this->getEntityManager()->createNativeQuery($ql, $rsm);
+        $dtIni->setTime(0, 0, 0, 0);
+        $qry->setParameter('dtIni', $dtIni);
+        $dtFim->setTime(23, 59, 59, 999999);
+        $qry->setParameter('dtFim', $dtFim);
+        $qry->getSQL();
+        $qry->getParameters();
+        $rsm->addScalarResult('total', 'total');
+        $r = $qry->getResult();
+        if ($r) {
+            return $r[0]['total'];
+        } else {
+            return null;
+        }
     }
 }
