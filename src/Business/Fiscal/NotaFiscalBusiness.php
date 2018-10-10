@@ -581,19 +581,21 @@ class NotaFiscalBusiness
      * @param NotaFiscal $notaFiscal
      * @throws \Exception
      */
-    public function checkNotaFiscal(NotaFiscal $notaFiscal) {
+    public function checkNotaFiscal(NotaFiscal $notaFiscal)
+    {
         if (!$notaFiscal) {
             throw new \Exception('Nota Fiscal null');
         }
-        if (!$notaFiscal->getPessoaDestinatario()) {
-            throw new \Exception('Pessoa destinatário null');
-        }
-        $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
-        $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
-        $estado = $notaFiscal->getPessoaDestinatario()->getEndereco()->getEstado();
-        $bsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $cidade, 'ufSigla' => $estado]);
-        if (!$bsMunicipio) {
-            throw new \Exception("Município inválido: [" . $cidade . "-" . $estado . "]");
+        if ($notaFiscal->getPessoaDestinatario()) {
+            $this->pessoaBusiness->fillTransients($notaFiscal->getPessoaDestinatario());
+            if ($notaFiscal->getPessoaDestinatario()->getEndereco()) {
+                $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
+                $estado = $notaFiscal->getPessoaDestinatario()->getEndereco()->getEstado();
+                $bsMunicipio = $this->doctrine->getRepository(Municipio::class)->findOneBy(['municipioNome' => $cidade, 'ufSigla' => $estado]);
+                if (!$bsMunicipio) {
+                    throw new \Exception("Município inválido: [" . $cidade . "-" . $estado . "]");
+                }
+            }
         }
     }
 

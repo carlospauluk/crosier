@@ -132,6 +132,9 @@ class EmissaoFiscalPVController extends Controller
     /**
      *
      * @Route("/fis/emissaofiscalpv/processarPV/{pv}", name="fis_emissaofiscalpv_processarPV", defaults={"pv"=null}, requirements={"pv"="\d+"})
+     * @param Request $request
+     * @param $pv
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function processarPV(Request $request, $pv)
     {
