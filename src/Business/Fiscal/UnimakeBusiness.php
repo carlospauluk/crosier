@@ -126,9 +126,9 @@ class UnimakeBusiness
                 $nfe->infNFe->dest->enderDest->nro = $notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
                     ->getNumero();
-                $nfe->infNFe->dest->enderDest->xBairro = $notaFiscal->getPessoaDestinatario()
+                $nfe->infNFe->dest->enderDest->xBairro = trim($notaFiscal->getPessoaDestinatario()
                     ->getEndereco()
-                    ->getBairro();
+                    ->getBairro());
 
 
                 $cidade = $notaFiscal->getPessoaDestinatario()->getEndereco()->getCidade();
