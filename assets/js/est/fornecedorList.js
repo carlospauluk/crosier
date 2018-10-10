@@ -10,12 +10,12 @@ function getDatatablesColumns() {
     return [
         {
             name: 'e.codigo',
-            data: 'codigo',
+            data: 'e.codigo',
             title: 'Código'
         },
         {
             name: 'p.nome',
-            data: 'pessoa',
+            data: 'e.pessoa',
             title: 'Nome',
             render: function (data, type, row) {
                 return data.nome;
@@ -23,7 +23,7 @@ function getDatatablesColumns() {
         },
         {
             name: 'e.updated',
-            data: 'updated',
+            data: 'e.updated',
             title: 'Atualizado',
             render: function (data, type, row) {
                 return Moment.unix(data.timestamp).format('DD/MM/YYYY HH:mm:ss');
@@ -33,11 +33,11 @@ function getDatatablesColumns() {
         },
         {
             name: 'e.id',
-            data: 'id',
+            data: 'e.id',
             title: '',
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
-                let url = routeedit + '/' + data;
+                let url = routeedit + '/' + data.id
                 return "<button type=\"button\" class=\"btn btn-primary\" onclick=\"window.location.href='" + url + "'\">" +
                     "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></button>";
             }
