@@ -67,9 +67,9 @@ class ConferenciaFinanceiroBusiness
         $lists['debito_rdcard'] = ['titulo' => 'Redecard - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 31, 'TOTAL RDCARD - DÉBITOS')];
 
 
-        $lists['grupos'] = $this->buildListGrupos($dtFim);
+        $lists['grupos'] = ['titulo' => 'Grupos de Movimentações', 'itens' => $this->buildListGrupos($dtFim)];
 
-        $lists['transfs199e299'] = $this->buildList199e299($dtIni, $dtFim);
+        $lists['transfs199e299'] = ['titulo' => 'Transferências entre Carteiras', 'itens' => $this->buildList199e299($dtIni, $dtFim)];
 
 
         return $lists;
