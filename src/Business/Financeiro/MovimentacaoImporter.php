@@ -467,9 +467,11 @@ class MovimentacaoImporter
                             $movimentacao = new Movimentacao();
                             $movimentacao->setUnqControle(md5(uniqid(rand(), true)));
                             $movimentacao->setChequeNumCheque($numCheque);
-                            $movimentacao->setChequeBanco($regra->getCarteira()->getBanco());
-                            $movimentacao->setChequeAgencia($regra->getCarteira()->getAgencia());
-                            $movimentacao->setChequeConta($regra->getCarteira()->getConta());
+                            $carteira = $regra->getCarteira() ? $regra->getCarteira() : $carteiraOrigem;
+                            $movimentacao->setCarteira($carteira);
+                            $movimentacao->setChequeBanco($carteira->getBanco());
+                            $movimentacao->setChequeAgencia($carteira->getAgencia());
+                            $movimentacao->setChequeConta($carteira->getConta());
                         }
 
                     } else if ($regra->getTipoLancto() == 'CHEQUE_TERCEIROS') {

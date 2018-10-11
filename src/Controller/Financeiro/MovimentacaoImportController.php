@@ -32,7 +32,7 @@ class MovimentacaoImportController extends Controller
     private $business;
 
     private $movimentacaoImporter;
-    
+
     private $vParams = array();
 
     public function __construct(MovimentacaoEntityHandler $entityHandler,
@@ -56,7 +56,8 @@ class MovimentacaoImportController extends Controller
         return $this->business;
     }
 
-    public function setDefaults() {
+    public function setDefaults()
+    {
         $this->vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
         $this->vParams['linhasExtrato'] = null;
         $this->vParams['carteiraExtrato'] = null;
@@ -72,7 +73,8 @@ class MovimentacaoImportController extends Controller
      * Lida com os vParams, sobrepondo na seguinte ordem: defaults > session > request.
      * @param Request $request
      */
-    public function handleVParams(?Request $request) {
+    public function handleVParams(?Request $request)
+    {
         $session = $request->hasSession() ? $request->getSession() : new Session();
         if (is_array($session->get('vParams'))) {
             $this->vParams = array_merge($this->vParams, $session->get('vParams'));
@@ -95,10 +97,8 @@ class MovimentacaoImportController extends Controller
 
         try {
             if ($request->request->get('btnImportar')) {
-                // Se foi mandado importar
                 $this->importar($request);
             } else if ($request->request->get('btnSalvarTodas')) {
-                // Se foi mandado salvar todas
                 $this->salvarTodas($request);
                 $this->importar($request);
             } else if ($request->request->get('btnLimpar')) {
@@ -115,7 +115,8 @@ class MovimentacaoImportController extends Controller
         return $this->render('Financeiro/movimentacaoImport.html.twig', $this->vParams);
     }
 
-    public function limpar(Request $request) {
+    public function limpar(Request $request)
+    {
         $session = $request->hasSession() ? $request->getSession() : new Session();
         $session->set('vParams', null);
         $this->setDefaults();
@@ -123,13 +124,19 @@ class MovimentacaoImportController extends Controller
 
     /**
      * @param Request $request
-     * @param $this->vParams
+     * @param $this ->vParams
      * @param $session
      * @return mixed
      * @throws \Exception
      */
     public function importar(Request $request)
     {
+        $tipoExtrato = $request->get('tipoExtrato');
+        if (!$tipoExtrato) {
+            throw new \Exception('É necessário informar o tipo do extrato.');
+        }
+
+
         $carteiraExtrato = null;
         if ($this->vParams['carteiraExtrato']) {
             $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraExtrato']);
@@ -144,6 +151,21 @@ class MovimentacaoImportController extends Controller
         if ($this->vParams['grupoItem']) {
             $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($this->vParams['grupoItem']);
             $this->vParams['grupo'] = $grupoItem->getId();
+        }
+
+
+        if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
+            if (!$carteiraExtrato or !$carteiraDestino) {
+                throw new \Exception("Para extratos do tipo 'DÉBITO' é necessário informar as carteiras de origem e destino");
+            }
+        } else if (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
+            if (!$grupoItem) {
+                throw new \Exception("Para extratos do tipo 'GRUPO' é necessário informar o grupo");
+            }
+        } else {
+            if (!$carteiraExtrato) {
+                throw new \Exception("É necessário informar a carteira do extrato");
+            }
         }
 
         $r = $this->movimentacaoImporter->importar(
