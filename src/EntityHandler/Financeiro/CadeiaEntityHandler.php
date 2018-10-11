@@ -13,4 +13,20 @@ class CadeiaEntityHandler extends EntityHandler
     {
         return Cadeia::class;
     }
+
+    public function beforeSave($cadeia)
+    {
+        if (!$cadeia->getUnqc()) {
+            $cadeia->setUnqc(md5(uniqid(rand(), true)));
+        }
+    }
+
+    public function corrigirUnqcs() {
+        $cadeias = $this->getEntityManager()->getRepository(Cadeia::class)->findAll();
+        foreach ($cadeias as $cadeia) {
+            $this->save($cadeia);
+        }
+    }
+
+
 }

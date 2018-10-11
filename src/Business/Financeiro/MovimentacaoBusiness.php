@@ -77,7 +77,7 @@ class MovimentacaoBusiness
      */
     public function mergeAll(Movimentacao $movimentacao)
     {
-        $em = $this->doctrine->getEntityManager();
+        $em = $this->doctrine->getManager();
         if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getId()) {
             $movimentacao->setCategoria($em->merge($movimentacao->getCategoria()));
         }
@@ -93,7 +93,7 @@ class MovimentacaoBusiness
         if ($movimentacao->getModo() and $movimentacao->getModo()->getId()) {
             $movimentacao->setModo($em->merge($movimentacao->getModo()));
         }
-        if ($movimentacao->getGrupoItem() and $movimentacao->getCarteira()->getId()) {
+        if ($movimentacao->getGrupoItem() and $movimentacao->getGrupoItem()->getId()) {
             $movimentacao->setGrupoItem($em->merge($movimentacao->getGrupoItem()));
         }
         if ($movimentacao->getOperadoraCartao() and $movimentacao->getOperadoraCartao()->getId()) {

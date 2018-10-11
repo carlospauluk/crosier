@@ -24,7 +24,7 @@ abstract class EntityHandler
 
     public function __construct(RegistryInterface $doctrine, Security $security)
     {
-        $this->entityManager = $doctrine->getEntityManager();
+        $this->entityManager = $doctrine->getManager();
         $this->security = $security;
     }
 

@@ -6,6 +6,7 @@ use App\Entity\Base\EntityId;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\ChangeTrackingPolicy;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -29,6 +30,12 @@ class Cadeia extends EntityId
      * @ORM\Column(type="bigint")
      */
     private $id;
+
+    /**
+     * md5(uniqid(rand(), true))
+     * @ORM\Column(name="unqc", type="string", nullable=true, length=32)
+     */
+    private $unqc;
 
     /**
      *
@@ -75,6 +82,23 @@ class Cadeia extends EntityId
     {
         $this->id = $id;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getUnqc()
+    {
+        return $this->unqc;
+    }
+
+    /**
+     * @param mixed $unqc
+     */
+    public function setUnqc($unqc): void
+    {
+        $this->unqc = $unqc;
+    }
+
 
     /**
      *

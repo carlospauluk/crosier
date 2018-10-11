@@ -3,9 +3,9 @@
 namespace App\Doctrine\EventListener;
 
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use ReflectionClass;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -19,6 +19,22 @@ class EntityIdListener
 {
 
     private $security;
+
+    private $doctrine;
+
+    /**
+     * @required
+     * @param RegistryInterface $doctrine
+     */
+    public function setDoctrine(RegistryInterface $doctrine)
+    {
+        $this->doctrine = $doctrine;
+    }
+
+    public function getDoctrine(): RegistryInterface
+    {
+        return $this->doctrine;
+    }
 
     /**
      * @required
@@ -34,10 +50,10 @@ class EntityIdListener
         $entityId = $args->getObject();
         $this->handleUppercaseFields($entityId);
         $entityId->setInserted(new \DateTime('now'));
-        $entityId->setEstabelecimento($this->security->getUser()->getEstabelecimento());
-        $entityId->setUserInserted($this->security->getUser());
+        $entityId->setEstabelecimento($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()->getEstabelecimento()));
+        $entityId->setUserInserted($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
         $entityId->setUpdated(new \DateTime('now'));
-        $entityId->setUserUpdated($this->security->getUser());
+        $entityId->setUserUpdated($entityId->getUserInserted());
     }
 
     public function preUpdate(LifecycleEventArgs $args)
@@ -45,7 +61,7 @@ class EntityIdListener
         $entityId = $args->getObject();
         $this->handleUppercaseFields($entityId);
         $entityId->setUpdated(new \DateTime());
-        $entityId->setUserUpdated($this->security->getUser());
+        $entityId->setUserUpdated($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
     }
 
 

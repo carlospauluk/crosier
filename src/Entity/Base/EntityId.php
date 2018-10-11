@@ -2,6 +2,8 @@
 
 namespace App\Entity\Base;
 
+use App\Entity\Config\Estabelecimento;
+use App\Entity\Security\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -56,17 +58,17 @@ class EntityId
         return $this->updated;
     }
 
-    public function getEstabelecimento()
+    public function getEstabelecimento(): ?Estabelecimento
     {
         return $this->estabelecimento;
     }
 
-    public function getUserInserted()
+    public function getUserInserted(): ?User
     {
         return $this->userInserted;
     }
 
-    public function getUserUpdated()
+    public function getUserUpdated(): ?User
     {
         return $this->userUpdated;
     }
@@ -81,17 +83,17 @@ class EntityId
         $this->updated = $updated;
     }
 
-    public function setEstabelecimento($estabelecimento)
+    public function setEstabelecimento(?Estabelecimento $estabelecimento)
     {
         $this->estabelecimento = $estabelecimento;
     }
 
-    public function setUserInserted($userInserted)
+    public function setUserInserted(?User $userInserted)
     {
         $this->userInserted = $userInserted;
     }
 
-    public function setUserUpdated($userUpdated)
+    public function setUserUpdated(?User $userUpdated)
     {
         $this->userUpdated = $userUpdated;
     }

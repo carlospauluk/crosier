@@ -10,6 +10,7 @@ use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
+use Psr\Log\LoggerInterface;
 
 class MovimentacaoEntityHandler extends EntityHandler
 {
@@ -17,6 +18,8 @@ class MovimentacaoEntityHandler extends EntityHandler
     private $movimentacaoBusiness;
 
     private $cadeiaEntityHandler;
+
+    private $logger;
 
     /**
      * @return mixed
@@ -34,6 +37,24 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $this->movimentacaoBusiness = $movimentacaoBusiness;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @required
+     * @param mixed $logger
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
 
     /**
      * @return mixed
@@ -227,7 +248,9 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
         }
 
-        return parent::save($movimentacao);
+        $movimentacao = parent::save($movimentacao);
+        return $movimentacao;
+
     }
 
     /**
@@ -241,6 +264,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             foreach ($movs as $mov) {
                 $this->getMovimentacaoBusiness()->mergeAll($mov);
                 $this->save($mov);
+                $this->getEntityManager()->clear();
             }
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
@@ -324,12 +348,10 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment299 = parent::save($moviment299);
         $moviment199 = parent::save($moviment199);
 
-        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
-        $this->getCadeiaEntityHandler()->getEntityManager()->flush();
 
         // agora que já salvou a primeira, pode fechar a cadeia
         $cadeia->setFechada(true);
-        $this->getCadeiaEntityHandler()->getEntityManager()->flush();
+        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
 
         return $moviment299;
     }
@@ -572,6 +594,5 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         return $movimentacao;
     }
-
 
 }
