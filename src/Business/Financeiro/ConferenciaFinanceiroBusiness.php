@@ -88,7 +88,7 @@ class ConferenciaFinanceiroBusiness
         $registroConferencia = $this->doctrine->getRepository(RegistroConferencia::class)->findOneBy(['descricao' => $rcDescricao, 'dtRegistro' => $dt]);
 
         if (!$registroConferencia or is_nan($registroConferencia->getValor())) {
-            return ['titulo' => $rcDescricao . ' (INFORMADO)',
+            return ['titulo' => '*** ' . $rcDescricao . ' (INFORMADO)',
                 'valor' => 0,
                 'icon' => $this->chooseIcon($totalComparado, null)];
         } else {
@@ -111,16 +111,16 @@ class ConferenciaFinanceiroBusiness
         $icone = null;
         if ($valor and $rc) {
             if ($valor == $rc->getValor()) {
-                $icone = "checked";
+                $icone = 'checked';
             } else {
                 if ($rc->getObs() != null) {
-                    $icone = "attention";
+                    $icone = 'attention';
                 } else {
-                    $icone = "cancel";
+                    $icone = 'cancel';
                 }
             }
         } else {
-            $icone = "checked";
+            $icone = 'checked';
         }
 
         return $icone;
@@ -174,7 +174,7 @@ class ConferenciaFinanceiroBusiness
         if ($tVendasEKT) {
             $dif = $tCaixaAvista101 - $tVendasEKT;
             $icone = $tVendasEKT == $tCaixaAvista101 ? 'checked' : 'attention';
-            $obs = "(DIF: " . $dif . ")";
+            $obs = '(DIF: ' . $dif . ')';
             $list[] = ['titulo' => 'TOTAL EKT - CAIXA A VISTA',
                 'valor' => $tVendasEKT,
                 'icone' => $icone,
@@ -218,7 +218,7 @@ class ConferenciaFinanceiroBusiness
         $tAjustesCaixaAprazoPos = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $caixaAPrazo, $cAjustesDeCaixaPos);
         $tAjustesCaixaAprazoNeg = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $caixaAPrazo, $cAjustesDeCaixaNeg);
 
-        $obsAjustesCaixaPrazo = $tAjustesCaixaAprazoPos . "(+) . " . $tAjustesCaixaAprazoNeg . "(-)";
+        $obsAjustesCaixaPrazo = $tAjustesCaixaAprazoPos . '(+) . ' . $tAjustesCaixaAprazoNeg . '(-)';
 
 
         $tAjustesAprazo = $tAjustesCaixaAprazoPos - $tAjustesCaixaAprazoNeg;
@@ -249,7 +249,7 @@ class ConferenciaFinanceiroBusiness
         $c102 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 102]);
         $carteira = $this->doctrine->getRepository(Carteira::class)->findOneBy(['codigo' => $carteiraCodigo]);
         if (!$carteira) {
-            throw new \Exception("Carteira não encontrada para código $carteiraCodigo");
+            throw new \Exception('Carteira não encontrada para código $carteiraCodigo');
         }
 
         $modo = $this->doctrine->getRepository(Modo::class)->findOneBy(['codigo' => $modoCodigo]);
@@ -264,7 +264,7 @@ class ConferenciaFinanceiroBusiness
 
         $taxa = $this->movimentacaoBusiness->calcularTaxaCartao($carteira, false, $total, $dtIni, $dtFim);
 
-        $icone = $taxa > 0.0001 ? "checked" : "cancel";
+        $icone = $taxa > 0.0001 ? 'checked' : 'cancel';
 
         $list[] = ['titulo' => 'TAXA',
             'valor' => $taxa,
@@ -286,10 +286,11 @@ class ConferenciaFinanceiroBusiness
             $valorLanctos = $gi->getValorLanctos();
             $valorInformado = $gi->getValorInformado();
 
-            $icone = $valorLanctos == $valorInformado ? "checked" : "cancel";
+            $icone = $valorLanctos == $valorInformado ? 'checked' : 'cancel';
 
-            $list[] = ['titulo' => "TOTAL LANÇADO - " . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos, 'icone' => $icone];
-            $list[] = ['titulo' => "TOTAL INFORMADO - " . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos, 'icone' => $icone];
+            $list[] = ['titulo' => 'TOTAL LANÇADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos, 'icone' => $icone];
+            $list[] = ['titulo' => '*** TOTAL INFORMADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos, 'icone' => $icone];
+            $list[] = ['titulo' => '', 'valor' => null];
         }
 
         return $list;
@@ -298,8 +299,9 @@ class ConferenciaFinanceiroBusiness
     /**
      * Resumo de TRANSFERÊNCIAS ENTRE CARTEIRAS.
      *
-     * @return
-     * @throws ViewException
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
+     * @return array
      */
     public function buildList199e299(\DateTime $dtIni, \DateTime $dtFim)
     {
@@ -309,11 +311,11 @@ class ConferenciaFinanceiroBusiness
         $t299 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, null, $c299);
         $t199 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, null, $c199);
 
-        $icone = $t199 == $t299 ? "checked" : "cancel";
+        $icone = $t199 == $t299 ? 'checked' : 'cancel';
 
         $list = [];
-        $list[] = ['titulo' => "TOTAL - " . $c299->getPai()->getDescricao(), 'valor' => $t299, 'icone' => $icone];
-        $list[] = ['titulo' => "TOTAL - " . $c199->getPai()->getDescricao(), 'valor' => $t199, 'icone' => $icone];
+        $list[] = ['titulo' => 'TOTAL - ' . $c299->getPai()->getDescricao(), 'valor' => $t299, 'icone' => $icone];
+        $list[] = ['titulo' => 'TOTAL - ' . $c199->getPai()->getDescricao(), 'valor' => $t199, 'icone' => $icone];
 
         return $list;
     }
