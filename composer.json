@@ -6,6 +6,7 @@
         "ext-iconv": "*",
         "ext-soap": "*",
         "ext-bcmath": "*",
+        "ext-zip": "*",
         "econea/nusoap": "~0.9.5.1",
         "friendsofsymfony/jsrouting-bundle": "^2.2",
         "sensio/framework-extra-bundle": "^5.1",

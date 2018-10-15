@@ -21,7 +21,10 @@ use App\Entity\Vendas\Venda;
 use App\EntityHandler\Fiscal\NotaFiscalEntityHandler;
 use App\EntityHandler\Fiscal\NotaFiscalHistoricoEntityHandler;
 use App\EntityHandler\Fiscal\NotaFiscalVendaEntityHandler;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use ZipArchive;
 
 /**
  * Classe responsável pelos trâmites com a entidade NotaFiscal.
@@ -939,6 +942,58 @@ class NotaFiscalBusiness
     public function consultarCNPJ($cnpj)
     {
         return $this->unimakeBusiness->consultarCNPJ($cnpj);
+    }
+
+
+    /**
+     * @param $mesano
+     * @return bool|string
+     * @throws \Exception
+     */
+    public function criarZip($mesano)
+    {
+        $mesano = str_replace('-', '', $mesano);
+        $zip = new ZipArchive();
+
+        $pastaUnimake = getenv('FISCAL_UNIMAKE_PASTAROOT');
+        $pastaXMLs = $pastaUnimake . "/enviado/Autorizados/" . $mesano;
+        $pastaF = getenv('PASTA_F');
+
+        $pastaNFEs = $pastaF . "/NOTAS FISCAIS/NFE/" . $mesano;
+        $pastaNFCEs = $pastaF . "/NOTAS FISCAIS/NFCE/" . $mesano;
+        $pastaCARTACORRs = $pastaF . "/NOTAS FISCAIS/CARTACORR/" . $mesano;
+
+        $zipname = $pastaUnimake . "/backup/" . $mesano . ".zip";
+
+        if ($zip->open($zipname, ZIPARCHIVE::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+            throw new \Exception("cannot open <$zipname>");
+        }
+
+        $this->criarZipDir($zip, $pastaXMLs, 'xmls');
+        $this->criarZipDir($zip, $pastaCARTACORRs, 'cartacorr');
+        $this->criarZipDir($zip, $pastaNFCEs, 'nfce');
+        $this->criarZipDir($zip, $pastaNFEs, 'nfe');
+
+        // Zip archive will be created only after closing object
+        $zip->close();
+        return file_get_contents($zipname);
+
+    }
+
+    private function criarZipDir($zip, $pasta, $nomePasta) {
+        $xmls = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pasta), RecursiveIteratorIterator::LEAVES_ONLY);
+        $zip->addEmptyDir($nomePasta);
+        foreach ($xmls as $name => $file) {
+            // Skip directories (they would be added automatically)
+            if (!$file->isDir()) {
+                // Get real and relative path for current file
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($pasta) + 1);
+
+                // Add current file to archive
+                $zip->addFile($filePath, $nomePasta . "/" . $relativePath);
+            }
+        }
     }
 
 
