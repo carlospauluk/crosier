@@ -173,7 +173,7 @@ class ClienteController extends FormListController
      */
     public function enderecoDelete(Request $request, Cliente $ref, Endereco $endereco)
     {
-        $this->checkAccess();
+        $this->getSecurityBusiness()->checkAccess("crm_cliente_form");
         return $this->enderecoController->doEnderecoDelete($this, $request, $ref, $endereco);
     }
 
