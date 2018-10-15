@@ -3,8 +3,10 @@
 namespace App\Repository\Vendas;
 
 use App\Entity\Vendas\Venda;
+use App\Repository\FilterRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -13,12 +15,13 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class VendaRepository extends ServiceEntityRepository
+class VendaRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function handleFrombyFilters(QueryBuilder &$qb)
     {
-        parent::__construct($registry, Venda::class);
+        return $qb->from($this->getEntityClass(), 'e')
+            ->leftJoin('App\Entity\RH\Funcionario', 'vendedor', 'WITH', 'e.vendedor = vendedor');
     }
 
     public function findByDtVendaAndPV(\DateTime $dtVenda, $pv)
@@ -103,5 +106,31 @@ class VendaRepository extends ServiceEntityRepository
         } else {
             return null;
         }
+    }
+
+    public function findTotalVendasPorPeriodoVendedores(\DateTime $dtIni, \DateTime $dtFim, $codVendedorIni, $codVendedorFim) {
+
+        $sql = "SELECT vendedor.id, sum(valor_total) FROM ven_venda v, rh_funcionario vendedor " .
+            "WHERE v.vendedor_id = vendedor.id AND " .
+            "v.dt_venda BETWEEN :dtIni and :dtFim AND " .
+            "vendedor.codigo BETWEEN :codVendedorIni AND :codVendedorFim " .
+            "GROUP BY v.vendedor_id";
+
+        $rsm = new ResultSetMapping();
+        $qry = $this->getEntityManager()->createNativeQuery($ql, $rsm);
+        $dtIni->setTime(0, 0, 0, 0);
+        $qry->setParameter('dtIni', $dtIni);
+        $dtFim->setTime(23, 59, 59, 999999);
+        $qry->setParameter('dtFim', $dtFim);
+        $qry->getSQL();
+        $qry->getParameters();
+        $rsm->addScalarResult('total', 'total');
+        $r = $qry->getResult();
+
+    }
+
+    public function getEntityClass()
+    {
+        return Venda::class;
     }
 }
