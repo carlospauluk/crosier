@@ -2,12 +2,11 @@
 
 namespace App\Repository\Vendas;
 
+use App\Entity\RH\Funcionario;
 use App\Entity\Vendas\Venda;
 use App\Repository\FilterRepository;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * Repository para a entidade Venda.
@@ -108,26 +107,63 @@ class VendaRepository extends FilterRepository
         }
     }
 
-    public function findTotalVendasPorPeriodoVendedores(\DateTime $dtIni, \DateTime $dtFim, $codVendedorIni, $codVendedorFim) {
+    /**
+     *
+     *
+     * @param \DateTime $dtIni
+     * @param \DateTime $dtFim
+     * @param $codVendedorIni
+     * @param $codVendedorFim
+     * @return mixed
+     */
+    public function findTotalVendasPorPeriodoVendedores(\DateTime $dtIni, \DateTime $dtFim, $codVendedorIni = null, $codVendedorFim = null)
+    {
 
-        $sql = "SELECT vendedor.id, sum(valor_total) FROM ven_venda v, rh_funcionario vendedor " .
+        $sql = "SELECT vendedor.id as vendedor_id, sum(valor_total) as total " .
+            "FROM ven_venda v, rh_funcionario vendedor, ven_plano_pagto pp " .
             "WHERE v.vendedor_id = vendedor.id AND " .
+            "v.plano_pagto_id = pp.id AND " .
+            "pp.codigo != '6.00' AND " .
+            "v.deletado != true AND " .
             "v.dt_venda BETWEEN :dtIni and :dtFim AND " .
             "vendedor.codigo BETWEEN :codVendedorIni AND :codVendedorFim " .
-            "GROUP BY v.vendedor_id";
+            "GROUP BY v.vendedor_id ORDER BY total DESC";
 
         $rsm = new ResultSetMapping();
-        $qry = $this->getEntityManager()->createNativeQuery($ql, $rsm);
+        $qry = $this->getEntityManager()->createNativeQuery($sql, $rsm);
         $dtIni->setTime(0, 0, 0, 0);
         $qry->setParameter('dtIni', $dtIni);
         $dtFim->setTime(23, 59, 59, 999999);
         $qry->setParameter('dtFim', $dtFim);
+
+        if ($codVendedorIni !== null and $codVendedorFim !== null) {
+            $qry->setParameter('codVendedorIni', $codVendedorIni);
+            $qry->setParameter('codVendedorFim', $codVendedorFim);
+        }
+
         $qry->getSQL();
         $qry->getParameters();
+        $rsm->addScalarResult('vendedor_id', 'vendedor_id');
         $rsm->addScalarResult('total', 'total');
-        $r = $qry->getResult();
+        $results = $qry->getResult();
 
+        $rc = [];
+
+        $total = 0.0;
+
+        $rc['rs'] = [];
+
+        foreach ($results as $r) {
+            $rc['rs'][] = ['vendedor' => $this->getEntityManager()->getRepository(Funcionario::class)->find($r['vendedor_id']),
+                'total' => $r['total']];
+            $total = bcadd($total, $r['total'], 2);
+        }
+
+        $rc['total'] = $total;
+
+        return $rc;
     }
+
 
     public function getEntityClass()
     {

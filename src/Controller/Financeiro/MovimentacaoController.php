@@ -11,12 +11,34 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Class MovimentacaoController
+ * Class MovimentacaoController.
+ *
+ *
+ *
  * @package App\Controller\Financeiro
  * @author Carlos Eduardo Pauluk
  */
 class MovimentacaoController extends MovimentacaoBaseController
 {
+
+    /**
+     *
+     * @Route("/fin/movimentacao/formIni", name="fin_movimentacao_formIni")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function ini(Request $request)
+    {
+        if ($request->get('tipoLancto')) {
+            $tiposLanctos = $this->getBusiness()->getTiposLancto();
+            $tipoLancto = $tiposLanctos[$request->get('tipoLancto')];
+            $rota = $tipoLancto['route'];
+            return $this->redirectToRoute($rota);
+        }
+        $parameters['page_title'] = 'Nova Movimentação';
+        $parameters['tiposLancto'] = $this->getBusiness()->getTiposLancto();
+        return $this->render('Financeiro/movimentacaoFormIni.html.twig', $parameters);
+    }
 
     /**
      *

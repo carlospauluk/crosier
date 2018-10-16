@@ -3,34 +3,52 @@
 {% block page_content %}
 
     <div class="card">
-        <form action="{{ url('fin_movimentacao_extrato') }}" method="get" id="formPesquisar">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="card-header">
 
-                <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
-                        type="button" id="btn_ante"
-                        data-ante-periodoi="{{ antePeriodoI }}" data-ante-periodof="{{ antePeriodoF }}"><i
-                            class="fas fa-chevron-left"></i></button>
-                <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
-                        type="button" id="btn_prox"
-                        data-prox-periodoi="{{ proxPeriodoI }}" data-prox-periodof="{{ proxPeriodoF }}"><i
-                            class="fas fa-chevron-right"></i></button>
+            <div class="row">
+                <div class="col-2">
+                    <h3>Vendas por Período</h3>
+                </div>
 
+                <div class="col-10">
 
-                <input type="date" size="15" class="form-control" id="filter_dtVenda_i"
-                       name="filter[dtVenda][i]"
-                       style="width: 150px; float: left"
-                       value="{{ filter.dtVenda.i|default('') }}">
-                <input type="date" size="15" class="form-control mr-1" id="filter_dtVenda_f"
-                       name="filter[dtVenda][f]"
-                       style="width: 150px; float: left"
-                       value="{{ filter.dtVenda.f|default('') }}">
+                    <form action="{{ url('ven_vendasResults_vendasPorPeriodo') }}" method="get" id="formPesquisar">
+                        <nav class="navbar navbar-expand-lg navbar-light bg-light float-right">
 
-                <button class="btn btn-outline-success my-2 my-sm-0 mr-1" type="submit">Pesquisar</button>
-                <button class="btn btn-outline-dark my-2 my-sm-0" type="button" id="btn_hoje">Hoje</button>
+                            <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
+                                    type="button" id="btn_ante"
+                                    data-ante-periodoi="{{ antePeriodoI }}" data-ante-periodof="{{ antePeriodoF }}"><i
+                                        class="fas fa-chevron-left"></i></button>
+                            <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
+                                    type="button" id="btn_prox"
+                                    data-prox-periodoi="{{ proxPeriodoI }}" data-prox-periodof="{{ proxPeriodoF }}"><i
+                                        class="fas fa-chevron-right"></i></button>
 
 
-            </nav>
-        </form>
+                            <input type="date" size="15" class="form-control" id="dtVenda_i"
+                                   name="dtVenda[i]"
+                                   style="width: 150px; float: left"
+                                   value="{{ dtVenda.i|default('') }}">
+                            <input type="date" size="15" class="form-control mr-1" id="dtVenda_f"
+                                   name="dtVenda[f]"
+                                   style="width: 150px; float: left"
+                                   value="{{ dtVenda.f|default('') }}">
+
+                            <label>Vendedor</label>
+                            <input type="number" name="codVendedor[i]" class="form-control" style="width: 80px" min="0" max="999" value="{{ codVendedor.i }}" />
+                            <input type="number" name="codVendedor[f]" class="form-control" style="width: 80px" min="0" max="999" value="{{ codVendedor.f }}" />
+
+                            <button class="btn btn-outline-success my-2 my-sm-0 mr-1" type="submit">Pesquisar</button>
+
+                            <button class="btn btn-outline-dark my-2 my-sm-0" type="submit" id="btnHoje" name="btnHoje" value="1">Hoje</button>
+
+
+                        </nav>
+                    </form>
+                </div>
+            </div>
+
+        </div>
 
         <div class="card-body">
 
@@ -38,57 +56,35 @@
 
                 <thead>
                 <tr>
-                    <th scope="col">Id</th>
-                    <th scope="col">Categoria<br/>Modo</th>
-                    <th scope="col">Descrição</th>
-                    <th scope="col">Dt Vencto<br/>Dt Pagto</th>
-                    <th scope="col">Valor Total</th>
-                    <th scope="col"></th>
+                    <th scope="col">Vendedor</th>
+                    <th scope="col">Total</th>
                 </tr>
                 </thead>
 
                 <tbody>
-                {% for item in anteriores.movs %}
-                    <tr style="color: {{ item.categoria.codigo[0:1] == '1' ? 'blue' : 'red' }}">
-                        <td>{{ item.id }}</td>
-                        <td>
-                            {{ item.categoria.descricaoMontada }}<br/>
-                            {{ "%02d"|format(item.modo.codigo) }}
-                            - {{ item.modo.descricao|default('') }}
-                        </td>
-                        <td>
-                            <div style="float: left">
-                                {{ item.descricaoMontada|nl2br }}
-                            </div>
-                            {% if item.parcelamento %}
-                                <div class="text-right">
-                                    <button type="button" class="btn btn-primary"
-                                            onclick="window.location.href='{{ url('fin_movimentacao_listParcelamento', {parcelamento: item.parcelamento.id}) }}'">
-                                        <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ item.dtVencto|date('d/m/Y') }}<br/>
-                            {{ item.dtPagto|date('d/m/Y') }}
-                        </td>
-                        <td class="text-right">{{ item.valorTotal|number_format(2,',','.') }}</td>
-                        <td class="text-right">
-                            <button type="button" class="btn btn-primary"
-                                    onclick="window.location.href='{{ url('fin_movimentacao_form', {id: item.id}) }}'">
-                                <i class="fas fa-wrench" aria-hidden="true"></i>
-                            </button>
-                            <br/>
-                            <span class="badge badge-secondary">{{ item.updated|date('d/m/Y H:i:s') }}</span>
-                        </td>
+                {% for item in dados.rs %}
+                    <tr>
+                        <td>{{ "%02d"|format(item.vendedor.codigo) }} - {{ item.vendedor.pessoa.nome }}</td>
+                        <td class="text-right">{{ item.total|number_format(2,',','.') }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td class="text-right"></td>
+                        <td class="text-right">Total: {{ dados.total|number_format(2,',','.') }}</td>
+                    </tr>
+                </tfoot>
 
             </table>
 
         </div>
     </div>
 
+{% endblock %}
+
+
+{% block down_scripts %}
+    <script src="{{ asset('build/ven/vendasPorPeriodo.js') }}"></script>
 {% endblock %}

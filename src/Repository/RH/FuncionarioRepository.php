@@ -53,4 +53,6 @@ class FuncionarioRepository extends ServiceEntityRepository
 
         return count($results) == 1 ? $results[0] : null;
     }
+
+
 }

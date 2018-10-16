@@ -208,9 +208,10 @@ class VendaBusiness
      *
      * @param Venda $venda
      * @return \App\Entity\Vendas\Venda
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public
-    function finalizarVenda(Venda $venda)
+    public function finalizarVenda(Venda $venda)
     {
         $venda->setStatus('FINALIZADA');
         $this->doctrine->getEntityManager()->persist($venda);
@@ -222,9 +223,10 @@ class VendaBusiness
      *
      * @param Venda $venda
      * @return \App\Entity\Vendas\Venda
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public
-    function recalcularTotais(Venda $venda)
+    public function recalcularTotais(Venda $venda)
     {
         $bdTotalItens = 0.0;
         foreach ($venda->getItens() as $item) {
@@ -246,8 +248,7 @@ class VendaBusiness
      * @return boolean
      * @throws \Exception
      */
-    public
-    function permiteReimpressao(Venda $venda)
+    public function permiteReimpressao(Venda $venda)
     {
         $notaFiscal = $this->doctrine->getRepository(NotaFiscalVenda::class)->findNotaFiscalByVenda($venda);
 

@@ -60,6 +60,8 @@ Encore
     .addEntry('fin/movimentacaoImport', './assets/js/fin/movimentacaoImport.js')
     .addEntry('fin/movimentacaoForm', './assets/js/fin/movimentacaoForm.js')
 
+    .addEntry('ven/vendasPorPeriodo', './assets/js/ven/vendasPorPeriodo.js')
+
 
     /*
      * FEATURE CONFIG

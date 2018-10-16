@@ -1,0 +1,41 @@
+{% extends 'index.html.twig' %}
+
+{% block page_content %}
+
+<div class="card">
+	<div class="card-header">
+
+		<div class="row">
+			<div class="col-8">
+				<h3>Novo Lançamento</h3>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="card-body">
+
+		<form action="{{ url('fin_movimentacao_formIni') }}" method="get" id="formMovimentacaoIni" name="formMovimentacaoIni">
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2 form-control-label required" for="instituicao">Tipo de Lançamento</label>
+			<div class="col-sm-8">
+				<select id="tipoLancto" name="tipoLancto" class="form-control">
+					{% for tipoLancto, label in tiposLancto %}
+						<option value="{{ tipoLancto }}">{{ label.title }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-sm-2 text-right">
+				<button type="submit" value="Iniciar" class="btn btn-warning">
+					<i class="fas fa-forward" aria-hidden="true"></i> Prosseguir
+				</button>
+			</div>
+
+
+		</div>
+
+	</div>
+</div>
+
+{% endblock %}

@@ -398,4 +398,20 @@ class MovimentacaoBusiness
         return $taxaCartao;
     }
 
+
+    /**
+     * Possíveis tipos de lançamentos.
+     * FIXME: mais tarde criar uma tabela para isto.
+     * @return array
+     */
+    public function getTiposLancto() {
+        $tipos = [];
+        $tipos['MOVIMENTACAO'] = ['title' => 'Movimentação', 'route' => 'fin_movimentacao_form'];
+        $tipos['PARCELAMENTO'] = ['title' => 'Parcelamento', 'route' => 'fin_movimentacao_formParcelamento'];
+        $tipos['CHEQUE_PROPRIO'] = ['title' => 'Cheque Próprio', 'route' => 'fin_movimentacao_formChequeProprio'];
+        $tipos['CHEQUE_TERCEIROS'] = ['title' => 'Cheque de Terceiros', 'route' => 'fin_movimentacao_formChequeTerceiros'];
+        $tipos['TRANSF_PROPRIA'] = ['title' => 'Transf Própria', 'route' => 'fin_movimentacao_formTransfPropria'];
+        return $tipos;
+    }
+
 }
