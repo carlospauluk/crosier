@@ -59,6 +59,7 @@ Encore
     .addEntry('fin/movimentacaoExtratoList', './assets/js/fin/movimentacaoExtratoList.js')
     .addEntry('fin/movimentacaoImport', './assets/js/fin/movimentacaoImport.js')
     .addEntry('fin/movimentacaoForm', './assets/js/fin/movimentacaoForm.js')
+    .addEntry('fin/parcelamentoForm', './assets/js/fin/parcelamentoForm.js')
 
     .addEntry('ven/vendasPorPeriodo', './assets/js/ven/vendasPorPeriodo.js')
 

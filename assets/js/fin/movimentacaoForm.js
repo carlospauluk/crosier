@@ -5,10 +5,22 @@ import $ from "jquery";
 import routes from '../../static/fos_js_routes.json';
 import Routing from '../../../vendor/friendsofsymfony/jsrouting-bundle/Resources/public/js/router.min.js';
 
+import Moment from 'moment';
+
+
 Routing.setRoutingData(routes)
 
 
 $(document).ready(function () {
+
+    $("#movimentacao_carteira").select2();
+
+    $("#movimentacao_modo").select2();
+
+    $("#movimentacao_categoria").select2();
+
+    $("#movimentacao_centroCusto").select2();
+
     $("#movimentacao_documentoBanco").select2();
 
     $("#movimentacao_pessoa").select2({
@@ -51,13 +63,23 @@ $(document).ready(function () {
     });
 
 
+    $("#movimentacao_dtMoviment").focus(function (){
+        if ($("#movimentacao_dtMoviment").val() == '') {
+            $("#movimentacao_dtMoviment").val(Moment().format('DD/MM/YYYY'));
+        }
+    });
+
+    let dtVenctoS = null;
     $("#movimentacao_dtVenctoEfetiva").focus(
         function () {
-            $.get(
-                "{{ url('findProximoDiaUtilFinanceiro') }}/?dia=" + encodeURIComponent($("#movimentacao_dtVencto").val()),
-                function (data) {
-                    $("#movimentacao_dtVenctoEfetiva").val(data);
-                });
+            if ($("#movimentacao_dtVencto").val() != '' && (!dtVenctoS || dtVenctoS != $("#movimentacao_dtVencto").val())) {
+                dtVenctoS = $("#movimentacao_dtVencto").val();
+                $.getJSON(Routing.generate('findProximoDiaUtilFinanceiro') + '/?dia=' + encodeURIComponent($("#movimentacao_dtVencto").val()))
+                    .done(
+                    function (data) {
+                        $("#movimentacao_dtVenctoEfetiva").val(data.dia);
+                    });
+            }
         });
 
 });

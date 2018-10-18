@@ -29,6 +29,8 @@ import 'datatables';
 import 'select2/dist/css/select2.css';
 import 'select2';
 
+import 'select2-bootstrap-theme/dist/select2-bootstrap.css';
+
 import 'jquery-mask-plugin';
 import 'jquery-maskmoney/dist/jquery.maskMoney.js';
 
@@ -59,6 +61,9 @@ $(document).ready(function () {
         Pace.restart();
     });
 
+
+    // **************** confirmationModal ****************
+
     $('#confirmationModal').on('show.bs.modal', function (e) {
         $('#btnConfirmationModalYes', this)
             .data('form', $(e.relatedTarget).data('form'))
@@ -66,8 +71,23 @@ $(document).ready(function () {
             .data('function', $(e.relatedTarget).data('function'))
             .data('name', $(e.relatedTarget).attr('name'))
             .data('value', $(e.relatedTarget).attr('value'))
-            .data('token', $(e.relatedTarget).data('token'));
+            .data('token', $(e.relatedTarget).data('token'))
+            .data('jsfunction', $(e.relatedTarget).data('jsfunction'))
+            .data('jsfunction-args', $(e.relatedTarget).data('jsfunction-args'));
     });
+
+
+    // Função auxiliar para o confirmationModal poder chamar uma função javascript
+    // https://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
+    function executeFunctionByName(functionName, context /*, args */) {
+        var args = Array.prototype.slice.call(arguments, 2);
+        var namespaces = functionName.split(".");
+        var func = namespaces.pop();
+        for(var i = 0; i < namespaces.length; i++) {
+            context = context[namespaces[i]];
+        }
+        return context[func].apply(context, args);
+    }
 
 
     $('#confirmationModal').on(
@@ -87,9 +107,12 @@ $(document).ready(function () {
                     .attr("type", "hidden")
                     .attr("name", $(this).data("name"))
                     .attr("value", $(this).data("value"))).submit();
+            } else if ($(this).data('jsfunction')) {
+                executeFunctionByName($(this).data('jsfunction'), window, $(this).data('jsfunction-args'));
             }
 
         });
+    // ***************************************************
 
     $('.FLASHMESSAGE').each(function () {
         if ($(this).hasClass('FLASHMESSAGE_SUCCESS')) {
@@ -143,6 +166,7 @@ $(document).ready(function () {
             }
         );
     });
+    $.fn.select2.defaults.set( "theme", "bootstrap" );
 
     $('[data-toggle="tooltip"]').tooltip();
 

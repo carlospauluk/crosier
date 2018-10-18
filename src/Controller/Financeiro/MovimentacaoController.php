@@ -47,6 +47,7 @@ class MovimentacaoController extends MovimentacaoBaseController
      * @param Movimentacao|null $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
     {
@@ -55,7 +56,7 @@ class MovimentacaoController extends MovimentacaoBaseController
 
     /**
      *
-     * @Route("/fin/movimentacao/list/", name="fin_movimentacao_list")
+     * @Route("/fin/movimentacao/list", name="fin_movimentacao_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException

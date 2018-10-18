@@ -86,7 +86,6 @@ abstract class FormListController extends Controller
      * @param Request $request
      * @param EntityId|null $entityId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \ReflectionException
      * @throws \Exception
      */
     public function doForm(Request $request, EntityId $entityId = null)
@@ -104,10 +103,15 @@ abstract class FormListController extends Controller
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $entity = $form->getData();
-                $this->getEntityHandler()->save($entity);
-                $this->addFlash('success', 'Registro salvo com sucesso!');
-                return $this->redirectToRoute($this->getFormRoute(), array('id' => $entityId->getId()));
+                try {
+                    $entity = $form->getData();
+                    $this->getEntityHandler()->save($entity);
+                    $this->addFlash('success', 'Registro salvo com sucesso!');
+                    return $this->redirectToRoute($this->getFormRoute(), array('id' => $entityId->getId()));
+                } catch (\Exception $e) {
+                    $this->addFlash('error', $e->getMessage());
+                    $this->addFlash('error', 'Erro ao salvar!');
+                }
             } else {
                 $form->getErrors(true, false);
             }

@@ -159,7 +159,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         if (!$movimentacao->getDtPagto()) {
-            if ($movimentacao->getModo()->getDescricao()->contains("CHEQUE")) {
+            if (strpos($movimentacao->getModo()->getDescricao(),'CHEQUE') !== FALSE) {
                 $movimentacao->setStatus('A_COMPENSAR');
             } else {
                 $movimentacao->setStatus('ABERTA');
@@ -220,7 +220,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $movimentacao->setDtUtil(!$movimentacao->getDtPagto() ? $movimentacao->getDtVenctoEfetiva() : $movimentacao->getDtPagto());
 
         if (($movimentacao->getStatus() == 'ABERTA' or $movimentacao->getStatus() == 'A_COMPENSAR')
-            and ($movimentacao->getCarteira()->getAbertas() == 'FALSE')) {
+            and ($movimentacao->getCarteira()->getAbertas() == FALSE)) {
             throw new \Exception("Esta carteira não pode conter movimentações abertas.");
         }
         return $movimentacao;

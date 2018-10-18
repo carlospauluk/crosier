@@ -68,4 +68,9 @@ class CentroCusto extends EntityId
         $this->descricao = $descricao;
     }
 
+    public function getDescricaoMontada()
+    {
+        return str_pad($this->codigo, 2, '0', STR_PAD_LEFT) . ' - ' . $this->descricao;
+    }
+
 }

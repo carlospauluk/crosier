@@ -1,0 +1,96 @@
+<div class="tab-pane fade" id="parcelas" role="tabpanel" aria-labelledby="parcelas-tab">
+
+    <div class="form-group row">
+        <label class="col-form-label col-sm-2 required" for="parcelamento_qtdeParcelas">Qtde</label>
+        <div class="col-sm-10">
+            <input type="number" id="parcelamento_qtdeParcelas" min="1" name="parcelamento[qtdeParcelas]"
+                   required="required"
+                   class="form-control">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-form-label col-sm-2" for="parcelamento_valorTotal">Valor Total</label>
+        <div class="col-sm-10">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">R$ </span>
+                </div>
+                <input type="text" id="parcelamento_valorTotal" name="parcelamento[valorTotal]"
+                       class="crsr-money form-control">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-form-label col-sm-2" for="parcelamento_valorParcela">Valor Parcela</label>
+        <div class="col-sm-10">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">R$ </span>
+                </div>
+                <input type="text" id="parcelamento_valorParcela" name="parcelamento[valorParcela]"
+                       class="crsr-money form-control">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col text-right">
+            <button type="submit" name="parcelamento_btnGerar" class="btn btn-primary" value="Gerar">
+                <i class="fas fa-save" aria-hidden="true"></i> Gerar
+            </button>
+
+            <button type="button" value="Apagar" class="btn btn-secondary"
+                    data-jsfunction="alert" data-jsfunction-args="balble"
+                    data-target="#confirmationModal" data-toggle="modal">
+                <i class="fas fa-undo" aria-hidden="true"></i> Apagar
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">&NonBreakingSpace;</div>
+    </div>
+
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-12">
+                    <h5>Parcelas</h5>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive-sm">
+                <table class="table table-striped table-hover">
+
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Dt Vencto</th>
+                        <th scope="col">Dt Vencto Efet</th>
+                        <th scope="col">Núm Documento</th>
+                        <th scope="col">Valor</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tbody_parcelas">
+
+                    </tbody>
+
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+
+
+</div>
+

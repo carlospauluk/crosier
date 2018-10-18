@@ -11,11 +11,15 @@ use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Form\ChoiceLoader;
 use App\Utils\Repository\WhereBuilder;
+use IntlDateFormatter;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToLocalizedStringTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -41,6 +45,13 @@ class MovimentacaoType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+
+        $builder->add('id', IntegerType::class, array(
+            'label' => 'Id',
+            'required' => false,
+            'disabled' => true
+        ));
+
         $builder->add('carteira', EntityType::class, array(
             'label' => 'Carteira',
             'class' => Carteira::class,
@@ -61,13 +72,12 @@ class MovimentacaoType extends AbstractType
             }
         ));
 
-        $repoCategoria = $this->doctrine->getRepository(Categoria::class);
-        $categorias = $repoCategoria->findAll();
+        $categorias = $this->doctrine->getRepository(Categoria::class)->findAll(WhereBuilder::buildOrderBy('codigoOrd'));
         $builder->add('categoria', EntityType::class, array(
             'label' => 'Categoria',
             'class' => Categoria::class,
             'choices' => $categorias,
-            'choice_label' => 'descricaoMontada'
+            'choice_label' => 'descricaoMontadaTree'
         ));
 
         $repo = $this->doctrine->getRepository(CentroCusto::class);
@@ -75,12 +85,16 @@ class MovimentacaoType extends AbstractType
         $builder->add('centroCusto', EntityType::class, array(
             'class' => CentroCusto::class,
             'choices' => $centrosCusto,
-            'choice_label' => 'descricao'
+            'choice_label' => 'descricaoMontada'
         ));
 
-//        $builder->add('status', ChoiceType::class, array(
-//            'choices' => Status::getChoices()
-//        ));
+        $builder->add('status', HiddenType::class, array(
+            'data' => 'A_PAGAR_RECEBER'
+        ));
+
+        $builder->add('tipoLancto', HiddenType::class, array(
+            'data' => 'GERAL' // deixo 'GERAL' como padrão, alterando posteriormente
+        ));
 
         $builder->add('dtMoviment', DateType::class, array(
             'label' => 'Dt Moviment',
@@ -120,6 +134,21 @@ class MovimentacaoType extends AbstractType
                 'class' => 'crsr-date'
             )
         ));
+
+        // Adiciono o dtUtil mas como Hidden para evitar os erros do @Assert/NotNull do Doctrine
+        $builder->add(
+            $builder->create('dtUtil', HiddenType::class, array(
+                'data' => new \DateTime(),
+                'data_class' => null
+            ))->addViewTransformer(
+                new DateTimeToLocalizedStringTransformer(
+                    null,
+                    null,
+                    null,
+                    null,
+                    IntlDateFormatter::GREGORIAN,
+                    'dd/MM/yyyy')));
+
 
         $builder->add('pessoa', ChoiceType::class, array(
             'choice_loader' => new ChoiceLoader($builder, $this->doctrine->getRepository(Pessoa::class), 'getPessoa', function ($pessoa) {

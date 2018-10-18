@@ -258,6 +258,17 @@ class Categoria extends EntityId
         return $this->getCodigoM() . " - " . $this->getDescricao();
     }
 
+    /**
+     * Retorna a descrição de uma Categoria no formato codigo + descricao (Ex.:
+     * 2.01 - DESPESAS PESSOAIS).
+     *
+     * @return
+     */
+    public function getDescricaoMontadaTree()
+    {
+        return str_pad('', strlen($this->getCodigo())-1, '.') . " " . $this->getCodigoM() . " - " . $this->getDescricao();
+    }
+
     public function getCodigoM()
     {
         return StringUtils::mascarar($this->getCodigo(), Categoria::MASK);

@@ -1,0 +1,32 @@
+<div class="tab-pane fade show active" id="dadosMovimentacao" role="tabpanel" aria-labelledby="dadosMovimentacao-tab">
+
+
+    {# Removo os campos que não fazem sentido aqui #}
+    {% do movimentacaoForm.dtVenctoEfetiva.setRendered() %}
+    {% do movimentacaoForm.dtPagto.setRendered() %}
+
+    {% do movimentacaoForm.valor.setRendered() %}
+    {% do movimentacaoForm.descontos.setRendered() %}
+    {% do movimentacaoForm.acrescimos.setRendered() %}
+    {% do movimentacaoForm.valor_total.setRendered() %}
+
+    {{ form_widget(movimentacaoForm) }}
+
+    <div class="row">
+        <div class="col text-right">
+            <button type="submit" name="movimentacaoForm_btnSubmit" class="btn btn-primary btn-lg" value="Salvar">
+                <i class="fas fa-save" aria-hidden="true"></i> Salvar
+            </button>
+
+            <button type="button" value="Resetar" class="btn btn-secondary"
+                    data-url="{{ url('fin_parcelamento_movimentacaoForm') }}"
+                    data-target="#confirmationModal" data-toggle="modal">
+                <i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+            </button>
+        </div>
+    </div>
+
+
+
+</div>
+

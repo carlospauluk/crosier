@@ -26,7 +26,7 @@ function getDatatablesColumns() {
         },
         {
             name: 'e.id',
-            data: 'e.id',
+            data: 'e',
             title: '',
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
