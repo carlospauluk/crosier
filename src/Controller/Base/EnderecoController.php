@@ -50,7 +50,7 @@ class EnderecoController extends Controller
             if ($formEndereco->isValid()) {
                 $endereco = $formEndereco->getData();
                 $ref->addEndereco($endereco);
-                $controller->getEntityHandler()->persist($ref);
+                $controller->getEntityHandler()->save($ref);
                 $controller->addFlash('success', 'Registro salvo com sucesso!');
                 return $controller->redirectToRoute($this->getRouteToRedirect(), array('id' => $ref->getId(), '_fragment' => 'enderecos'));
             } else {
