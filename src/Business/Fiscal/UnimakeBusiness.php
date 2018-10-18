@@ -42,7 +42,9 @@ class UnimakeBusiness
 
         $exemploNFe = file_get_contents($pastaXMLExemplos . "/exemplo-nfe.xml");
         $nfe = simplexml_load_string($exemploNFe);
-
+        if (!$nfe) {
+            throw new \Exception("Não foi possível obter o template XML da NFe");
+        }
         $nfe->infNFe->ide->nNF = $notaFiscal->getNumero();
 
         $nfe->infNFe->ide->cNF = $notaFiscal->getCnf();
