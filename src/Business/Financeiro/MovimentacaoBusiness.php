@@ -9,8 +9,11 @@ use App\Entity\Financeiro\Grupo;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\OperadoraCartao;
+use App\Entity\Financeiro\Parcelamento;
 use App\EntityHandler\Financeiro\GrupoEntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
+use App\Utils\ExceptionUtils;
+use NumberFormatter;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class MovimentacaoBusiness
@@ -120,86 +123,70 @@ class MovimentacaoBusiness
     }
 
     /**
-     * Gera parcelamentos de movimentações.
+     * Salva um parcelamento.
+     *
+     * @param Movimentacao $primeiraParcela
+     * @param $parcelas
+     * @return Parcelamento
+     * @throws \Exception
      */
-    public function gerarParcelas(Movimentacao $primeiraParcela, $qtdeParcelas, $diaFixo)
+    public function salvarParcelas(Movimentacao $primeiraParcela, $parcelas)
     {
-        $parcelamento = $primeiraParcela->getParcelamento();
+        $this->doctrine->getEntityManager()->beginTransaction();
 
-        $valorTotal = $primeiraParcela->getParcelamento()->getValorTotal();
+        $parcelamento = new Parcelamento();
+        $this->doctrine->getEntityManager()->persist($parcelamento);
 
-        if ($valorTotal > 0) {
-            $valorParcela = (round(bcdiv($valorTotal, $qtdeParcelas, 4), 2));
-        } else {
-            $valorParcela = $primeiraParcela->getValorTotal();
-        }
 
-        $primeiraParcela->setNumParcela(1);
-        $primeiraParcela->setValor($valorParcela);
-        $primeiraParcela->setValorTotal($valorParcela);
+        $i=1;
+        $valorTotal = 0.0;
+        foreach ($parcelas as $parcela) {
+            $movimentacao = clone $primeiraParcela;
+            $movimentacao->setParcelamento($parcelamento);
+            $movimentacao->setNumParcela($i++);
+            $movimentacao->setQtdeParcelas(count($parcelas));
 
-        $parcelamento->getParcelas()->add($primeiraParcela);
+            $valor = (new NumberFormatter( 'pt_BR', NumberFormatter::DECIMAL ))->parse($parcela['valor']);
+            $movimentacao->setValor($valor);
+            $valorTotal = bcadd($valor, $valorTotal);
 
-        $dt = $primeiraParcela->getDtVencto();
+            $dtVencto = \DateTime::createFromFormat('d/m/Y',$parcela['dtVencto']);
+            $movimentacao->setDtVencto($dtVencto);
 
-        $numCheque = null;
-        if ($primeiraParcela->getChequeNumCheque() != null) {
-            $numCheque = intval($primeiraParcela->getChequeNumCheque());
-        }
+            $dtVenctoEfetiva = \DateTime::createFromFormat('d/m/Y',$parcela['dtVenctoEfetiva']);
+            $movimentacao->setDtVenctoEfetiva($dtVenctoEfetiva);
 
-        // Em casos de grupos de itens...
-        $giAtual = $primeiraParcela->getGrupoItem();
-        if ($giAtual) {
-            if ($giAtual->getProximo() != null) {
-                $proximoId = $giAtual->getProximo()->getId();
+            $documentoNum = $parcela['documentoNum'];
+            $movimentacao->setDocumentoNum($documentoNum);
 
-                $giAtual = $this->doctrine->getRepository(Grupo::class)->find($proximoId); // já "incrementa" pois o for abaixo já começa na segunda parcela...
-            } else {
-                $giAtual = $this->getGrupoEntityHandler()->gerarProximo($giAtual->getPai());
-            }
-        }
-
-        $bdValorTotalSoma = $valorParcela;
-
-        for ($i = 1; $i < $qtdeParcelas; $i++) {
-
-            if ($diaFixo) {
-                $dt->setDate($dt->format('Y'), $dt->format('m') + 1, $dt->format('d'));
-            } else {
-                $dt->setDate($dt->format('Y'), $dt->format('m'), $dt->format('d') + 30);
-            }
-
-            $p = clone $primeiraParcela;
-            $p->setUnqControle(null);
-
+            // Em casos de grupos de itens...
+            $giAtual = $movimentacao->getGrupoItem();
             if ($giAtual) {
-                $p->setGrupoItem($giAtual);
-
                 if ($giAtual->getProximo() != null) {
-                    $giAtual = $giAtual->getProximo();
+                    $proximoId = $giAtual->getProximo()->getId();
+                    $giAtual = $this->doctrine->getRepository(Grupo::class)->find($proximoId);
                 } else {
                     $giAtual = $this->getGrupoEntityHandler()->gerarProximo($giAtual->getPai());
                 }
+                $movimentacao->setGrupoItem($giAtual);
             }
 
-            $p->setParcelamento($parcelamento);
-            $p->setNumParcela($i + 1);
-            $p->setId(null);
-            $p->setDtVencto($dt);
-            $p->setDtVenctoEfetiva($this->getEntityManager()->getRepository(DiaUtil::class)->findProximoDiaUtilFinanceiro($dt));
-            $p->setValor($valorParcela);
-            $p->setValorTotal(null);
-
-            if (is_int($numCheque)) {
-                $p->setChequeNumCheque(++$numCheque);
+            try {
+                $this->getMovimentacaoEntityHandler()->save($movimentacao);
+            } catch (\Exception $e) {
+                $msg = ExceptionUtils::treatException($e);
+                $this->doctrine->getEntityManager()->rollback();
+                throw new \Exception('Erro ao salvar parcelas (' . $msg . ')',0);
             }
-
-            $bdValorTotalSoma += $valorParcela;
-
-            $parcelamento->getParcelas()->add($p);
         }
+        $parcelamento->setValorTotal($valorTotal);
+        $this->doctrine->getEntityManager()->flush();
 
-        $parcelamento->setValorTotal($bdValorTotalSoma);
+        $this->doctrine->getEntityManager()->commit();
+
+        return $parcelamento;
+
+
     }
 
     /**
