@@ -23,6 +23,10 @@ $(document).ready(function () {
 
     $("#movimentacao_documentoBanco").select2();
 
+    $("#movimentacao_chequeBanco").select2();
+
+
+
     $("#movimentacao_pessoa").select2({
         ajax: {
             delay: 250,
@@ -63,7 +67,7 @@ $(document).ready(function () {
     });
 
 
-    $("#movimentacao_dtMoviment").focus(function (){
+    $("#movimentacao_dtMoviment").focus(function () {
         if ($("#movimentacao_dtMoviment").val() == '') {
             $("#movimentacao_dtMoviment").val(Moment().format('DD/MM/YYYY'));
         }
@@ -76,10 +80,76 @@ $(document).ready(function () {
                 dtVenctoS = $("#movimentacao_dtVencto").val();
                 $.getJSON(Routing.generate('findProximoDiaUtilFinanceiro') + '/?dia=' + encodeURIComponent($("#movimentacao_dtVencto").val()))
                     .done(
-                    function (data) {
-                        $("#movimentacao_dtVenctoEfetiva").val(data.dia);
-                    });
+                        function (data) {
+                            $("#movimentacao_dtVenctoEfetiva").val(data.dia);
+                        });
             }
         });
+
+
+    /**
+     *
+     */
+    function loadCarteiras(cheque) {
+        $.getJSON(
+            Routing.generate('fin_carteira_select2json') + (cheque ? '?cheque=true' : ''),
+            function (results) {
+                results.unshift({"id": "", "text": "Selecione..."});
+                $('#movimentacao_carteira').empty().trigger("change");
+                $("#movimentacao_carteira").select2({
+                        data: results,
+                        width: '100%'
+                    }
+                );
+                // Se veio o valor do PHP...
+                if ($('#movimentacao_carteira').data('val')) {
+                    $('#movimentacao_carteira').val($('#movimentacao_carteira').data('val')).trigger('change').trigger('select2:select');
+                }
+            });
+    }
+
+    $("#movimentacao_tipoLancto").select2();
+
+    $('#movimentacao_tipoLancto').on('select2:select', function (e) {
+        if (!e || !e.params || !e.params.data) return;
+        let tipoLancto = e.params.data.id;
+        console.log('tipoLancto = ' + tipoLancto);
+        if (tipoLancto) {
+            if (tipoLancto.includes('CHEQUE')) {
+                $('#divCamposCheque').css('display', '');
+            } else {
+                $('#divCamposCheque').css('display', 'none');
+            }
+
+            if (tipoLancto === 'CHEQUE_PROPRIO') {
+                // recarrega o campo somente com carteiras que tenham cheque
+                loadCarteiras(true);
+            } else {
+                // recarrega com todas
+                loadCarteiras(false);
+                $('#movimentacao_chequeBanco').val('').trigger('change');
+                $('#movimentacao_chequeAgencia').val('');
+                $('#movimentacao_chequeConta').val('');
+            }
+        }
+    });
+
+    $('#movimentacao_tipoLancto').trigger('select2:select', { data: {id :'GERAL'} });
+
+
+
+
+    $('#movimentacao_carteira').on('select2:select', function (e) {
+        if (!e || !e.params || !e.params.data) return;
+        let carteira = e.params.data;
+        if ($('#movimentacao_tipoLancto').val() === 'CHEQUE_PROPRIO') {
+            let bancoId = carteira.bancoId;
+
+            $('#movimentacao_chequeBanco').val(carteira.bancoId).trigger('change');
+            $('#movimentacao_chequeAgencia').val(carteira.agencia);
+            $('#movimentacao_chequeConta').val(carteira.conta);
+        }
+    });
+
 
 });

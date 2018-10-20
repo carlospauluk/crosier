@@ -52,6 +52,15 @@ class MovimentacaoType extends AbstractType
             'disabled' => true
         ));
 
+        $builder->add('tipoLancto', ChoiceType::class, array(
+            'label' => 'Tipo Lancto',
+            'choices' => array(
+                'MOVIMENTAÇÃO' => 'GERAL',
+                'CHEQUE PRÓPRIO' => 'CHEQUE_PROPRIO',
+                'CHEQUE TERCEIROS' => 'CHEQUE_TERCEIROS'
+            )
+        ));
+
         $builder->add('carteira', EntityType::class, array(
             'label' => 'Carteira',
             'class' => Carteira::class,
@@ -90,10 +99,6 @@ class MovimentacaoType extends AbstractType
 
         $builder->add('status', HiddenType::class, array(
             'data' => 'A_PAGAR_RECEBER'
-        ));
-
-        $builder->add('tipoLancto', HiddenType::class, array(
-            'data' => 'GERAL' // deixo 'GERAL' como padrão, alterando posteriormente
         ));
 
         $builder->add('dtMoviment', DateType::class, array(
@@ -213,15 +218,57 @@ class MovimentacaoType extends AbstractType
             )
         ));
 
-        $builder->add('valor_total', MoneyType::class, array(
+        $builder->add('valorTotal', MoneyType::class, array(
             'label' => 'Valor Total',
             'currency' => 'BRL',
             'grouping' => 'true',
             'required' => false,
             'attr' => array(
                 'class' => 'crsr-money'
+            ),
+            'disabled' => true
+        ));
+
+        // Cheque
+
+        $builder->add('chequeBanco', EntityType::class, array(
+            'required' => false,
+            'label' => 'Banco',
+            'class' => Banco::class,
+            'choices' => $this->doctrine->getRepository(Banco::class)
+                ->findAll(),
+            'choice_label' => function (Banco $banco) {
+                return sprintf("%03d", $banco->getCodigoBanco()) . " - " . $banco->getNome();
+            },
+            'attr' => array(
+                'class' => 'CAMPOS_CHEQUE'
             )
         ));
+
+        $builder->add('chequeAgencia', TextType::class, array(
+            'label' => 'Agência',
+            'required' => false,
+            'attr' => array(
+                'class' => 'CAMPOS_CHEQUE'
+            )
+        ));
+
+        $builder->add('chequeConta', TextType::class, array(
+            'label' => 'Conta',
+            'required' => false,
+            'attr' => array(
+                'class' => 'CAMPOS_CHEQUE'
+            )
+        ));
+
+        $builder->add('chequeNumCheque', TextType::class, array(
+            'label' => 'Núm Cheque',
+            'required' => false,
+            'attr' => array(
+                'class' => 'CAMPOS_CHEQUE'
+            )
+        ));
+
 
     }
 
