@@ -335,7 +335,7 @@ class NotaFiscal extends EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="NotaFiscalItem",
-     *      cascade={"persist"},
+     *      cascade={"all"},
      *      mappedBy="notaFiscal",
      *      orphanRemoval=true
      * )

@@ -355,6 +355,7 @@ class EmissaoNFeController extends FormListController
      * @param NotaFiscalItem|null $item
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @ParamConverter("item", class="App\Entity\Fiscal\NotaFiscalItem", options={"mapping": {"item": "id"}})
+     * @throws \Doctrine\ORM\ORMException
      */
     public function formItem(Request $request, NotaFiscal $notaFiscal, NotaFiscalItem $item = null)
     {
@@ -373,14 +374,10 @@ class EmissaoNFeController extends FormListController
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                // $form->getData() holds the submitted values
-                // but, the original `$task` variable has also been updated
                 $item = $form->getData();
-
-                // ... perform some action, such as saving the task to the database
-                // for example, if Task is a Doctrine entity, save it!
-                $entityManager = $this->notaFiscalItemEntityHandler->save($item);
+                $this->notaFiscalItemEntityHandler->save($item);
                 $this->addFlash('success', 'Registro salvo com sucesso!');
+                $this->notaFiscalEntityHandler->getEntityManager()->refresh($notaFiscal);
                 return $this->redirectToRoute('fis_emissaonfe_form', array(
                     'notaFiscal' => $notaFiscal->getId(),
                     '_fragment' => 'itens'

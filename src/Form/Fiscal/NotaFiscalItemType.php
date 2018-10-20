@@ -36,6 +36,8 @@ class NotaFiscalItemType extends AbstractType
         ));
         $builder->add('icmsAliquota', NumberType::class, array(
             'label' => 'ICMS Aliq',
+            'scale' => 2,
+            'help' => 'Em %',
             'grouping' => 'true',
             'required' => false,
             'attr' => array(
