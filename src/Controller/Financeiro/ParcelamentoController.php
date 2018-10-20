@@ -2,14 +2,15 @@
 
 namespace App\Controller\Financeiro;
 
+use App\Business\Financeiro\MovimentacaoBusiness;
 use App\Business\Security\SecurityBusiness;
-use App\Entity\Financeiro\Movimentacao;
+use App\Entity\Base\DiaUtil;
+use App\Entity\Financeiro\Parcelamento;
 use App\Form\Financeiro\MovimentacaoType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * Class ParcelamentoController.
@@ -24,23 +25,8 @@ class ParcelamentoController extends Controller
 
     private $securityBusiness;
 
-    /**
-     *
-     * @required
-     * @param SecurityBusiness $securityBusiness
-     */
-    public function setSecurityBusiness(SecurityBusiness $securityBusiness)
-    {
-        $this->securityBusiness = $securityBusiness;
-    }
+    private $movimentacaoBusiness;
 
-    /**
-     * @return mixed
-     */
-    public function getSecurityBusiness()
-    {
-        return $this->securityBusiness;
-    }
 
     /**
      *
@@ -56,8 +42,13 @@ class ParcelamentoController extends Controller
 
         $movimentacaoForm = $this->createForm(MovimentacaoType::class);
 
-        if ($request->get('movimentacaoForm_btnSubmit')) {
-            $movimentacao = $request->request->get('movimentacao');
+        $movimentacao = $request->get('movimentacao');
+        if ($movimentacao and !is_array($movimentacao)) {
+            // quando eu redireciono o $request pelo redirectToRoute com status 307, ele manda o array como json.
+            parse_str(urldecode($request->get('movimentacao')), $movimentacao);
+            $movimentacao = $movimentacao['movimentacao'];
+        }
+        if ($movimentacao) {
             $movimentacao['valor'] = 0.0;
             $movimentacao['descontos'] = 0.0;
             $movimentacao['acrescimos'] = 0.0;
@@ -72,7 +63,7 @@ class ParcelamentoController extends Controller
             if ($movimentacaoForm->isValid()) {
                 try {
                     $entity = $movimentacaoForm->getData();
-                    $this->addFlash('success', 'Registro salvo com sucesso!');
+                    $this->addFlash('info', 'Movimentação preparada.');
                 } catch (\Exception $e) {
                     $this->addFlash('error', $e->getMessage());
                     $this->addFlash('error', 'Erro ao salvar!');
@@ -89,35 +80,151 @@ class ParcelamentoController extends Controller
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono movimentacaoForm e foi-se.
         $parameters['movimentacaoForm'] = $movimentacaoForm->createView();
         $parameters['page_title'] = 'Lançamento de Parcelamento';
+        $parameters['parcelamento'] = $request->get('parcelamento');
+        $parameters['parcelas'] = $request->get('parcela');
         return $this->render('Financeiro/parcelamentoForm.html.twig', $parameters);
     }
 
     /**
-     *
-     * @Route("/fin/parcelamento/list/", name="fin_parcelamento_list")
+     * @Route("/fin/parcelamento/gerarParcelas", name="fin_parcelamento_gerarParcelas")
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \ReflectionException
+     * @return JsonResponse
      * @throws \Exception
      */
-    public function list(Request $request)
+    public function gerarParcelas(Request $request)
     {
-//        $parameters['filterChoices'] = $this->getFilterChoices();
-//        return $this->doList($request, $parameters);
-        return new Response();
+        $qtdeParcelas = $request->get('qtdeParcelas');
+//        $valorTotal = $request->get('valorTotal');
+        $valorParcela = $request->get('valorParcela');
+        $diaFixo = $request->get('diaFixo');
+
+        parse_str(urldecode($request->get('movimentacao')), $movimentacao);
+
+        // burlando o esquema para poder avaliar a entidade no handleRequest
+        $request->request->set('movimentacao', $movimentacao['movimentacao']);
+        $movimentacaoForm = $this->createForm(MovimentacaoType::class);
+        $movimentacaoForm->handleRequest($request);
+        $movimentacao = $movimentacaoForm->getData();
+
+        $dtVenctoAux = $movimentacao->getDtVencto();
+        $documentoNumAux = $movimentacao->getDocumentoNum();
+
+        $parcelas = [];
+
+        for ($i = 0; $i < $qtdeParcelas; $i++) {
+            $parcela = [];
+            $parcela['numParcela'] = $i + 1;
+            $parcela['valor'] = $valorParcela;
+
+            if ($i > 0) {
+                if ($diaFixo) {
+                    $dtVenctoAux->setDate($dtVenctoAux->format('Y'), ($dtVenctoAux->format('m') + 1), $dtVenctoAux->format('d'));
+                } else {
+                    $dtVenctoAux->add(new \DateInterval('P30D'));
+                }
+            }
+            $parcela['dtVencto'] = $dtVenctoAux->format('d/m/Y');
+            $dtVenctoEfetiva = $this->getDoctrine()->getManager()->getRepository(DiaUtil::class)->findProximoDiaUtilFinanceiro($dtVenctoAux);
+            $parcela['dtVenctoEfetiva'] = $dtVenctoEfetiva->format('d/m/Y');
+
+            $parcela['documentoNum'] = ctype_digit($documentoNumAux) ? (intval($documentoNumAux) + $i) : $documentoNumAux;
+
+            $parcelas[] = $parcela;
+        }
+
+
+        return new JsonResponse($parcelas);
+    }
+
+    /**
+     * @Route("/fin/parcelamento/salvarParcelas", name="fin_parcelamento_salvarParcelas")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @throws \ReflectionException
+     */
+    public function salvarParcelas(Request $request)
+    {
+        parse_str(urldecode($request->get('movimentacao')), $movimentacao);
+
+        $movimentacao = $movimentacao['movimentacao'];
+        $movimentacao['valor'] = 0.0;
+        $movimentacao['descontos'] = 0.0;
+        $movimentacao['acrescimos'] = 0.0;
+        $movimentacao['valor_total'] = 0.0;
+        $movimentacao['dtVenctoEfetiva'] = '01/01/1900';
+        $request->request->set('movimentacao', $movimentacao);
+        $movimentacaoForm = $this->createForm(MovimentacaoType::class);
+        $movimentacaoForm->handleRequest($request);
+        if (!$movimentacaoForm->isValid()) {
+            return $this->redirectToRoute('fin_parcelamento_movimentacaoForm',['request' => $request], 307);
+        }
+        $movimentacao = $movimentacaoForm->getData();
+
+        $parcelas = $request->get('parcela');
+        if (!is_array($parcelas)) {
+            $this->addFlash('error', 'Parcelas não geradas?');
+            return $this->redirectToRoute('fin_parcelamento_movimentacaoForm',['request' => $request], 307);
+        }
+
+        try {
+            $parcelamento = $this->getMovimentacaoBusiness()->salvarParcelas($movimentacao, $parcelas);
+            if (!$parcelamento) {
+                throw new \Exception('Erro ao gerar parcelamento');
+            }
+            return $this->redirectToRoute('fin_movimentacao_list', ['filter' => ['parcelamento' => $parcelamento->getId()]]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+            return $this->redirectToRoute('fin_parcelamento_movimentacaoForm',['request' => $request], 307);
+        }
+
+    }
+
+    /**
+     *
+     * @Route("/fin/parcelamento/delete/{id}/", name="fin_parcelamento_delete", requirements={"id"="\d+"})
+     * @param Request $request
+     * @param Parcelamento $parcelamento
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function delete(Request $request, Parcelamento $parcelamento)
+    {
+        return $this->doDelete($request, $parcelamento);
     }
 
 
     /**
      *
-     * @Route("/fin/movimentacao/delete/{id}/", name="fin_movimentacao_delete", requirements={"id"="\d+"})
-     * @param Request $request
-     * @param Movimentacao $movimentacao
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @required
+     * @param SecurityBusiness $securityBusiness
      */
-    public function delete(Request $request, Movimentacao $movimentacao)
+    public function setSecurityBusiness(SecurityBusiness $securityBusiness)
     {
-        return $this->doDelete($request, $movimentacao);
+        $this->securityBusiness = $securityBusiness;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSecurityBusiness(): SecurityBusiness
+    {
+        return $this->securityBusiness;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMovimentacaoBusiness(): MovimentacaoBusiness
+    {
+        return $this->movimentacaoBusiness;
+    }
+
+    /**
+     * @required
+     * @param mixed $movimentacaoBusiness
+     */
+    public function setMovimentacaoBusiness(MovimentacaoBusiness $movimentacaoBusiness): void
+    {
+        $this->movimentacaoBusiness = $movimentacaoBusiness;
     }
 
 }

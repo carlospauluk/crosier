@@ -1,5 +1,8 @@
 <div class="tab-pane fade show active" id="dadosMovimentacao" role="tabpanel" aria-labelledby="dadosMovimentacao-tab">
 
+    {% form_theme movimentacaoForm 'bootstrap_4_horizontal_layout.html.twig' %}
+
+    {{ form_start(movimentacaoForm) }}
 
     {# Removo os campos que não fazem sentido aqui #}
     {% do movimentacaoForm.dtVenctoEfetiva.setRendered() %}
@@ -26,7 +29,7 @@
         </div>
     </div>
 
-
+    {{ form_end(movimentacaoForm) }}
 
 </div>
 

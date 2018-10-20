@@ -9,6 +9,7 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\CarteiraEntityHandler;
 use App\Form\Financeiro\CarteiraType;
 use App\Utils\Repository\FilterData;
+use App\Utils\Repository\WhereBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -77,6 +78,7 @@ class CarteiraController extends FormListController
      * @param Carteira|null $carteira
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function form(Request $request, Carteira $carteira = null)
     {
@@ -89,6 +91,7 @@ class CarteiraController extends FormListController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function list(Request $request)
     {
@@ -144,12 +147,24 @@ class CarteiraController extends FormListController
      */
     public function carteiraSelect2json(Request $request)
     {
-        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy(['concreta' => true], ['codigo' => 'ASC']);
+
+        $params = [];
+        $params['concreta'] = true;
+
+        if ($request->get('cheque')) {
+            $params['cheque'] = true;
+        }
+
+        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy($params,['codigo' => 'asc']);
 
         $rs = array();
         foreach ($itens as $item) {
             $r['id'] = $item->getId();
             $r['text'] = $item->getDescricaoMontada();
+            // Adiciono estes campos para no casos de movimentacaoForm, onde os campos do cheque devem ser preenchidos no onChange da carteira
+            $r['bancoId'] = $item->getBanco() ? $item->getBanco()->getId() : null;
+            $r['agencia'] = $item->getAgencia();
+            $r['conta'] = $item->getConta();
             $rs[] = $r;
         }
 
