@@ -81,19 +81,16 @@ class MovimentacaoType extends AbstractType
             }
         ));
 
-        $categorias = $this->doctrine->getRepository(Categoria::class)->findAll(WhereBuilder::buildOrderBy('codigoOrd'));
         $builder->add('categoria', EntityType::class, array(
             'label' => 'Categoria',
             'class' => Categoria::class,
-            'choices' => $categorias,
+            'choices' => $this->doctrine->getRepository(Categoria::class)->findAll(WhereBuilder::buildOrderBy('codigoOrd')),
             'choice_label' => 'descricaoMontadaTree'
         ));
 
-        $repo = $this->doctrine->getRepository(CentroCusto::class);
-        $centrosCusto = $repo->findAll();
         $builder->add('centroCusto', EntityType::class, array(
             'class' => CentroCusto::class,
-            'choices' => $centrosCusto,
+            'choices' => $this->doctrine->getRepository(CentroCusto::class)->findAll(),
             'choice_label' => 'descricaoMontada'
         ));
 

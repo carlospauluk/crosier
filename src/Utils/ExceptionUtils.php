@@ -13,16 +13,18 @@ class ExceptionUtils
 
     public static function treatException(\Exception $e)
     {
-        $message = $e->getMessage();
-        $code = $e->getErrorCode();
+        if ($e instanceof \Doctrine\DBAL\Exception\DriverException) {
+            $message = $e->getMessage();
+            $code = $e->getErrorCode();
 
-        $regex = '/(?:.*)(?:SQLSTATE)(?:.*)(?:' . $code . ')(?<msg>.*)/';
-        preg_match($regex, $message, $matches);
-        if (isset($matches['msg'])) {
-            return $matches['msg'];
-        } else {
-            return $e->getMessage();
+            $regex = '/(?:.*)(?:SQLSTATE)(?:.*)(?:' . $code . ')(?<msg>.*)/';
+            preg_match($regex, $message, $matches);
+            if (isset($matches['msg'])) {
+                return $matches['msg'];
+            }
         }
+
+        return $e->getMessage();
 
     }
 

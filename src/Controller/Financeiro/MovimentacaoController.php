@@ -5,6 +5,8 @@ namespace App\Controller\Financeiro;
 use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Parcelamento;
+use App\Form\Financeiro\MovimentacaoTransfPropriaType;
+use App\Utils\ExceptionUtils;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +24,8 @@ class MovimentacaoController extends MovimentacaoBaseController
 {
 
     /**
+     *
+     * Exibe a seleção para os tipos de lançamento possíveis.
      *
      * @Route("/fin/movimentacao/formIni", name="fin_movimentacao_formIni")
      * @param Request $request
@@ -46,7 +50,6 @@ class MovimentacaoController extends MovimentacaoBaseController
      * @param Request $request
      * @param Movimentacao|null $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \ReflectionException
      * @throws \Exception
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
@@ -56,10 +59,61 @@ class MovimentacaoController extends MovimentacaoBaseController
 
     /**
      *
+     * @Route("/fin/movimentacao/formTransfPropria", name="fin_movimentacao_formTransfPropria")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
+     */
+    public function formTransfPropria(Request $request)
+    {
+        $this->getSecurityBusiness()->checkAccess('fin_movimentacao_form');
+
+        $movimentacao = $request->get('movimentacao_transf_propria');
+        if ($movimentacao) {
+            $movimentacao['valorTotal'] = 0.0;
+            $movimentacao['dtVencto'] = $movimentacao['dtMoviment'];
+            $movimentacao['dtVenctoEfetiva'] = $movimentacao['dtMoviment'];
+            $movimentacao['dtPagto'] = $movimentacao['dtMoviment'];
+            $movimentacao['dtUtil'] = '01/01/1900';
+            $movimentacao['centroCusto'] = 1;
+            $request->request->set('movimentacao_transf_propria', $movimentacao);
+        }
+
+        $form = $this->createForm(MovimentacaoTransfPropriaType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $entity = $form->getData();
+                    $entity = $this->getEntityHandler()->save($entity);
+                    $cadeia = $entity->getCadeia();
+                    $this->addFlash('success', 'Registro salvo com sucesso!');
+                    return $this->redirectToRoute('fin_movimentacao_list', ['filter' => ['cadeia' => $cadeia->getId()]]);
+                } catch (\Exception $e) {
+                    $msg = ExceptionUtils::treatException($e);
+                    $this->addFlash('error', $msg);
+                    $this->addFlash('error', 'Erro ao salvar!');
+                }
+            } else {
+                $errors = $form->getErrors(true, true);
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+            }
+        }
+
+        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
+        $parameters['form'] = $form->createView();
+        $parameters['page_title'] = 'Transferência Própria';
+        return $this->render('Financeiro/movimentacaoFormTransfPropria.html.twig', $parameters);
+    }
+
+    /**
+     *
      * @Route("/fin/movimentacao/list", name="fin_movimentacao_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \ReflectionException
      * @throws \Exception
      */
     public function list(Request $request)
