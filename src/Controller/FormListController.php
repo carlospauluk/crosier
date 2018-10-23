@@ -7,6 +7,7 @@ use App\Business\Config\StoredViewInfoBusiness;
 use App\Business\Security\SecurityBusiness;
 use App\Entity\Base\EntityId;
 use App\EntityHandler\EntityHandler;
+use App\Utils\ExceptionUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -85,10 +86,11 @@ abstract class FormListController extends Controller
      *
      * @param Request $request
      * @param EntityId|null $entityId
+     * @param null $parameters
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
-    public function doForm(Request $request, EntityId $entityId = null)
+    public function doForm(Request $request, EntityId $entityId = null, $parameters = [])
     {
         $this->securityBusiness->checkAccess($this->getFormRoute());
 
@@ -109,7 +111,8 @@ abstract class FormListController extends Controller
                     $this->addFlash('success', 'Registro salvo com sucesso!');
                     return $this->redirectToRoute($this->getFormRoute(), array('id' => $entityId->getId()));
                 } catch (\Exception $e) {
-                    $this->addFlash('error', $e->getMessage());
+                    $msg = ExceptionUtils::treatException($e);
+                    $this->addFlash('error', $msg);
                     $this->addFlash('error', 'Erro ao salvar!');
                 }
             } else {

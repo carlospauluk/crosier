@@ -26,6 +26,8 @@
 
             {% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 
+            {% do form.dtUtil.setRendered() %}
+
             {{ form_start(form) }}
 
             {{ form_row(form._token) }}
@@ -75,6 +77,22 @@
                     {{ form_row(form.descontos) }}
                     {{ form_row(form.acrescimos) }}
                     {{ form_row(form.valorTotal) }}
+                </div>
+            </div>
+
+
+
+            <div class="card" id="divRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
+                <h5 class="card-header">Recorrência</h5>
+                <div class="card-body">
+                    {{ form_row(form.recorrente) }}
+
+                    <div id="camposRecorrente" style="display: none">
+                    {{ form_row(form.recorrDia) }}
+                    {{ form_row(form.recorrTipoRepet) }}
+                    {{ form_row(form.recorrFrequencia) }}
+                    {{ form_row(form.recorrVariacao) }}
+                    </div>
                 </div>
             </div>
 

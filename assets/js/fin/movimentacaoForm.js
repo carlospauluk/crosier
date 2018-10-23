@@ -26,7 +26,6 @@ $(document).ready(function () {
     $("#movimentacao_chequeBanco").select2();
 
 
-
     $("#movimentacao_pessoa").select2({
         ajax: {
             delay: 250,
@@ -134,9 +133,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#movimentacao_tipoLancto').trigger('select2:select', { data: {id :'GERAL'} });
-
-
+    $('#movimentacao_tipoLancto').trigger('select2:select', {data: {id: 'GERAL'}});
 
 
     $('#movimentacao_carteira').on('select2:select', function (e) {
@@ -150,6 +147,22 @@ $(document).ready(function () {
             $('#movimentacao_chequeConta').val(carteira.conta);
         }
     });
+
+
+    function checkExibirCamposRecorrente() {
+        let selected = $( "#movimentacao_recorrente option:selected" ).val();
+        if (selected === true || selected > 0) {
+            $('#camposRecorrente').css('display','');
+        } else {
+            $('#camposRecorrente').css('display','none');
+        }
+    }
+
+    $('#movimentacao_recorrente').on('change', function () {
+        checkExibirCamposRecorrente();
+    });
+
+    checkExibirCamposRecorrente();
 
 
 });

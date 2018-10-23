@@ -399,4 +399,22 @@ class MovimentacaoBusiness
         return $tipos;
     }
 
+    /**
+     * Verifica se pode exibir os campos para setar/alterar a recorrência da movimentação.
+     * Regras: somente se...
+     *  - Ainda não for recorrente.
+     *  - É recorrente, porém é a última da cadeia.
+     * @param Movimentacao $movimentacao
+     * @return bool
+     */
+    public function exibirRecorrente(?Movimentacao $movimentacao) {
+
+        if (!$movimentacao or !$movimentacao->getId() or $movimentacao->getRecorrente() == false) {
+            return true;
+        } else {
+            $cadeia = $movimentacao->getCadeia();
+            return !$cadeia or $cadeia->getMovimentacoes()->last()->getId() == $movimentacao->getId();
+        }
+    }
+
 }

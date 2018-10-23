@@ -48,13 +48,21 @@ class MovimentacaoController extends MovimentacaoBaseController
      *
      * @Route("/fin/movimentacao/form/{id}", name="fin_movimentacao_form", defaults={"id"=null}, requirements={"id"="\d+"})
      * @param Request $request
-     * @param Movimentacao|null $movimentacao
+     * @param Movimentacao|null $movimentacaoForm
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
     {
-        return $this->doForm($request, $movimentacao);
+        $movimentacaoForm = $request->request->get('movimentacao');
+        if ($movimentacaoForm) {
+            $movimentacaoForm['valorTotal'] = 0.0;
+            $movimentacaoForm['dtUtil'] = '01/01/1900';
+            $movimentacaoForm['centroCusto'] = 1;
+            $request->request->set('movimentacao', $movimentacaoForm);
+        }
+        $exibirRecorrente = $this->getBusiness()->exibirRecorrente($movimentacao);
+        return $this->doForm($request, $movimentacao, ['exibirRecorrente' => $exibirRecorrente]);
     }
 
     /**
