@@ -402,8 +402,9 @@ class MovimentacaoBusiness
     /**
      * Verifica se pode exibir os campos para setar/alterar a recorrência da movimentação.
      * Regras: somente se...
+     *  - É um registro novo.
      *  - Ainda não for recorrente.
-     *  - É recorrente, porém é a última da cadeia.
+     *  - É recorrente, mas é a última da cadeia.
      * @param Movimentacao $movimentacao
      * @return bool
      */

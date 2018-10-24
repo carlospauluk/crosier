@@ -203,7 +203,7 @@ abstract class FormListController extends Controller
                 $this->storedViewInfoBusiness->clear($this->getListRoute());
             } else {
                 $storedViewInfo = $this->storedViewInfoBusiness->retrieve($this->getListRoute());
-                if ($storedViewInfo) {
+                if (false and $storedViewInfo) { //FIXME: problema no caso do grupoItemList. Não estava aceitando nova url com novo pai.
                     $blob = stream_get_contents($storedViewInfo->getViewInfo());
                     $unserialized = unserialize($blob);
                     $formPesquisar = isset($unserialized['formPesquisar']) ? $unserialized['formPesquisar'] : null;

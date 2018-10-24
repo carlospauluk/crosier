@@ -9,13 +9,10 @@ use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
-use App\Form\ChoiceLoader;
 use App\Utils\Repository\WhereBuilder;
-use IntlDateFormatter;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToLocalizedStringTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -306,7 +303,6 @@ class MovimentacaoType extends AbstractType
                 'required' => false
             ));
         });
-
 
 
     }

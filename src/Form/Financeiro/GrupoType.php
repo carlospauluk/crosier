@@ -2,6 +2,11 @@
 
 namespace App\Form\Financeiro;
 
+use App\Entity\Financeiro\Carteira;
+use App\Entity\Financeiro\Categoria;
+use App\Entity\Financeiro\Grupo;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -11,6 +16,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class GrupoType extends AbstractType
 {
+
+    private $doctrine;
+
+    public function __construct(RegistryInterface $doctrine)
+    {
+        $this->doctrine = $doctrine;
+    }
+
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -60,7 +73,7 @@ class GrupoType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => Banco::class
+            'data_class' => Grupo::class
         ));
     }
 }

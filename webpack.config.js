@@ -49,6 +49,7 @@ Encore
     .addEntry('fin/carteiraList', './assets/js/fin/carteiraList.js')
     .addEntry('fin/bancoList', './assets/js/fin/bancoList.js')
     .addEntry('fin/grupoList', './assets/js/fin/grupoList.js')
+    .addEntry('fin/grupoItemList', './assets/js/fin/grupoItemList.js')
     .addEntry('fin/centroCustoList', './assets/js/fin/centroCustoList.js')
     .addEntry('fin/modoList', './assets/js/fin/modoList.js')
     .addEntry('fin/bandeiraCartaoList', './assets/js/fin/bandeiraCartaoList.js')

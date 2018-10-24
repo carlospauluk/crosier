@@ -77,6 +77,7 @@ class GrupoController extends FormListController
      * @param Request $request
      * @param Grupo|null $grupo
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function form(Request $request, Grupo $grupo = null)
     {
@@ -88,6 +89,7 @@ class GrupoController extends FormListController
      * @Route("/fin/grupo/list/", name="fin_grupo_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function list(Request $request)
     {
@@ -159,34 +161,5 @@ class GrupoController extends FormListController
         return new Response($json);
 
     }
-
-    /**
-     *
-     * @Route("/fin/grupoItem/select2json/{grupo}", name="fin_grupoItem_select2json", methods={"GET"}, options = { "expose" = true }, defaults={"grupo"=null}, requirements={"grupo"="\d+"})
-     * @param Request $request
-     * @param Grupo $item
-     * @return Response
-     */
-    public function grupoItemSelect2json(Request $request, Grupo $grupo)
-    {
-        $itens = $this->getDoctrine()->getRepository(GrupoItem::class)->findBy(['pai' => $grupo, 'fechado' => false]);
-
-        $rs = array();
-        foreach ($itens as $item) {
-            $r['id'] = $item->getId();
-            $r['text'] = $item->getDescricao();
-            $rs[] = $r;
-        }
-
-        $normalizer = new ObjectNormalizer();
-        $encoder = new JsonEncoder();
-
-        $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($rs, 'json');
-
-        return new Response($json);
-
-    }
-
 
 }

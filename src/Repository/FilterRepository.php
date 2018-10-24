@@ -73,6 +73,16 @@ abstract class FilterRepository extends ServiceEntityRepository
         return $count[0][1];
     }
 
+    /**
+     *
+     *
+     * @param $filters
+     * @param null $orders (no padrão do datatables.js)
+     * @param int $start
+     * @param int $limit
+     * @return mixed
+     * @throws \Exception
+     */
     public function findByFilters($filters, $orders = null, $start = 0, $limit = 10)
     {
         $em = $this->getEntityManager();

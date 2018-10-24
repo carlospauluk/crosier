@@ -11,11 +11,11 @@
 
 		<div class="row">
 			<div class="col-8">
-				<h3>Grupo de Movimentação</h3>
+				<h3>Item de Grupo de Movimentação</h3>
 			</div>
 			<div class="col-4 text-right">
 				<button type="button" class="btn btn-secondary"
-					onclick="window.location.href='{{ url('fin_grupo_list') }}'">
+					onclick="window.location.href='{{ url('fin_grupoItem_list', {'pai': pai.id}) }}'">
 					<i class="fas fa-sync" aria-hidden="true"></i> Listar
 				</button>
 			</div>
@@ -56,5 +56,3 @@
 
 
 {% endblock %}
-
-

@@ -8,7 +8,7 @@ import Routing from '../../../vendor/friendsofsymfony/jsrouting-bundle/Resources
 import Moment from 'moment';
 
 
-Routing.setRoutingData(routes)
+Routing.setRoutingData(routes);
 
 
 $(document).ready(function () {
