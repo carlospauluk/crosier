@@ -54,6 +54,10 @@
                                         onclick="window.location.href='{{ url('fin_grupoItem_form', {id: item.id}) }}'">
                                     <i class="fas fa-wrench" aria-hidden="true"></i>
                                 </button>
+                                <a class="btn btn-secondary" href="{{ url('fin_grupoItem_listMovs', {grupoItem: item.id}) }}" role="button"
+                                    title="Movimentações">
+                                    <i class="fas fa-list-alt" aria-hidden="true"></i>
+                                </a>
                                 <br/>
                                 <span class="badge badge-secondary">{{ item.updated|date('d/m/Y H:i:s') }}</span>
                             </td>

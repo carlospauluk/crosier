@@ -7,6 +7,7 @@ use App\Business\Financeiro\GrupoBusiness;
 use App\Controller\FormListController;
 use App\Entity\Financeiro\Grupo;
 use App\Entity\Financeiro\GrupoItem;
+use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\GrupoItemEntityHandler;
 use App\Form\Financeiro\GrupoItemType;
@@ -138,7 +139,7 @@ class GrupoItemController extends FormListController
 
         $orders = WhereBuilder::buildOrderBy('dtVencto DESC');
 
-        $dados = $repo->findByFilters($filterDatas, $orders,0,null);
+        $dados = $repo->findByFilters($filterDatas, $orders, 0, null);
 
         $vParams = [];
         $vParams['dados'] = $dados;
@@ -169,7 +170,7 @@ class GrupoItemController extends FormListController
      * @param Request $request
      * @return Response
      */
-    public function grupoSelect2json(Request $request)
+    public function grupoItemSelect2json(Request $request)
     {
         $paiId = $request->get('pai');
         if (!$paiId) {
@@ -180,7 +181,7 @@ class GrupoItemController extends FormListController
         if ($request->get('fechados')) {
             $where['fechado'] = true;
         }
-        $itens = $this->getDoctrine()->getRepository(GrupoItem::class)->findBy($where, WhereBuilder::buildOrderBy('dtVencto DESC'));
+        $itens = $this->getDoctrine()->getRepository(GrupoItem::class)->findBy($where, ['dtVencto' => 'DESC']);
 
         $rs = array();
         foreach ($itens as $item) {
@@ -198,5 +199,37 @@ class GrupoItemController extends FormListController
         return new Response($json);
 
     }
+
+
+    /**
+     *
+     * @Route("/fin/grupoItem/listMovs/{grupoItem}", name="fin_grupoItem_listMovs", requirements={"grupoItem"="\d+"})
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
+     */
+    public function listMovs(Request $request, GrupoItem $grupoItem)
+    {
+        $this->getSecurityBusiness()->checkAccess($this->getListRoute());
+
+
+        $defaultFilters = ['filter' => ['grupoItem' => $grupoItem]];
+
+        $repo = $this->getDoctrine()->getRepository(Movimentacao::class);
+        $orders = WhereBuilder::buildOrderBy('dtVencto');
+
+        $filterDatas = [new FilterData('grupoItem', 'EQ', $grupoItem)];
+        $dados = $repo->findByFilters($filterDatas, $orders, 0, null);
+
+        $vParams = [];
+        $vParams['dados'] = $dados;
+        $vParams['grupoItem'] = $grupoItem;
+        $vParams['page_title'] = $grupoItem->getDescricao();
+
+
+        return $this->render('Financeiro/grupoItemListMovs.html.twig', $vParams);
+
+    }
+
 
 }
