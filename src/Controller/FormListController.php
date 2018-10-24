@@ -116,7 +116,10 @@ abstract class FormListController extends Controller
                     $this->addFlash('error', 'Erro ao salvar!');
                 }
             } else {
-                $form->getErrors(true, false);
+                $errors = $form->getErrors(true, true);
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
             }
         }
 

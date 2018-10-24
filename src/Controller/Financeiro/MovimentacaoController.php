@@ -3,8 +3,10 @@
 namespace App\Controller\Financeiro;
 
 use App\Entity\Financeiro\Cadeia;
+use App\Entity\Financeiro\GrupoItem;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Parcelamento;
+use App\Form\Financeiro\MovimentacaoGrupoItemType;
 use App\Form\Financeiro\MovimentacaoTransfPropriaType;
 use App\Utils\ExceptionUtils;
 use App\Utils\Repository\FilterData;
@@ -48,7 +50,7 @@ class MovimentacaoController extends MovimentacaoBaseController
      *
      * @Route("/fin/movimentacao/form/{id}", name="fin_movimentacao_form", defaults={"id"=null}, requirements={"id"="\d+"})
      * @param Request $request
-     * @param Movimentacao|null $movimentacaoForm
+     * @param Movimentacao|null $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
@@ -119,6 +121,69 @@ class MovimentacaoController extends MovimentacaoBaseController
 
     /**
      *
+     * @Route("/fin/movimentacao/formGrupoItem/{grupoItem}/{movimentacao}", name="fin_movimentacao_formGrupoItem", defaults={"movimentacao"=null}, requirements={"grupoItem"="\d+","movimentacao"="\d+"})
+     *
+     * @param Request $request
+     * @param GrupoItem $grupoItem
+     * @param Movimentacao $movimentacao
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
+     */
+    public function formGrupoItem(Request $request, GrupoItem $grupoItem, Movimentacao $movimentacao = null)
+    {
+        $this->getSecurityBusiness()->checkAccess('fin_movimentacao_form');
+
+        $movimentacaoForm = $request->request->get('movimentacao');
+        if ($movimentacaoForm) {
+            $movimentacaoForm['valorTotal'] = 0.0;
+            $movimentacaoForm['dtUtil'] = '01/01/1900';
+            $movimentacaoForm['dtVencto'] = '01/01/1900';
+            $movimentacaoForm['dtVenctoEfetiva'] = '01/01/1900';
+            $movimentacaoForm['centroCusto'] = 1;
+            $request->request->set('movimentacao', $movimentacaoForm);
+        }
+        $exibirRecorrente = $this->getBusiness()->exibirRecorrente($movimentacao);
+        $parameters = [];
+        $parameters['exibirRecorrente'] = $exibirRecorrente;
+        $parameters['grupoItem'] = $grupoItem;
+
+        if (!$movimentacao) {
+            $movimentacao = new Movimentacao();
+            $movimentacao->setGrupoItem($grupoItem);
+        }
+
+        $form = $this->createForm(MovimentacaoGrupoItemType::class, $movimentacao, ['block_name' => 'movimentacao']);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $entity = $form->getData();
+                    $this->getEntityHandler()->save($entity);
+                    $this->addFlash('success', 'Registro salvo com sucesso!');
+                    return $this->redirectToRoute('fin_movimentacao_formGrupoItem', array('grupoItem' => $grupoItem->getId(), 'movimentacao' => $movimentacao->getId()));
+                } catch (\Exception $e) {
+                    $msg = ExceptionUtils::treatException($e);
+                    $this->addFlash('error', $msg);
+                    $this->addFlash('error', 'Erro ao salvar!');
+                }
+            } else {
+                $errors = $form->getErrors(true, true);
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+            }
+        }
+
+        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
+        $parameters['form'] = $form->createView();
+        $parameters['page_title'] = $grupoItem->getDescricao();
+        return $this->render('Financeiro/movimentacaoFormGrupoItem.html.twig', $parameters);
+    }
+
+    /**
+     *
      * @Route("/fin/movimentacao/list", name="fin_movimentacao_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
@@ -159,6 +224,7 @@ class MovimentacaoController extends MovimentacaoBaseController
      * @Route("/fin/movimentacao/listParcelamento/{parcelamento}", name="fin_movimentacao_listParcelamento", requirements={"parcelamento"="\d+"})
      * @param Parcelamento $parcelamento
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function listParcelamento(Parcelamento $parcelamento)
     {
@@ -190,7 +256,7 @@ class MovimentacaoController extends MovimentacaoBaseController
     {
         $movs = $this->getDoctrine()->getRepository(Movimentacao::class)->findBy(['cadeia' => $cadeia]);
 
-        return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', $vParams);
+        return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', ['movs' => $movs]);
     }
 
     /**

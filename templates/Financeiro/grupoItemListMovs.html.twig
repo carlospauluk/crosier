@@ -10,34 +10,50 @@
         <div class="card-header">
 
             <div class="row">
-                <div class="col-2">
-                    <h3>Extrato</h3>
+                <div class="col-4">
+                    <h3>Extrato - {{ page_title }}</h3>
                 </div>
-                <div class="col-10 text-right">
+                <div class="col-8 text-right">
 
-                    <form action="{{ url('fin_grupoItem_listMovs', {'grupoItem': grupoItem.id}) }}" method="get" id="formPesquisar">
+                    <form action="{{ url('fin_grupoItem_listMovs', {'grupoItem': grupoItem.id}) }}" method="get"
+                          id="formPesquisar">
                         <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
 
                             <ul class="navbar-nav mr-auto">
                                 <li class="nav-item active">
-                                    <select style="width: 800px" id="filter_grupoItem" name="filter[grupoItem]" class="form-control" data-grupoItem="{{ grupoItem.id }}" data-grupo="{{ grupoItem.pai.id }}">
+                                    <select style="width: 800px" id="filter_grupoItem" name="filter[grupoItem]"
+                                            class="form-control" data-grupoItem="{{ grupoItem.id }}"
+                                            data-grupo="{{ grupoItem.pai.id }}">
                                     </select>
                                 </li>
                             </ul>
 
-                            <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
-                                    type="submit" id="btn_ante" name="btn_ante">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
-                                    type="submit" id="btn_prox" name="btn_prox">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
+                            <form action="{{ url('fin_grupoItem_listMovs', {'grupoItem': grupoItem.id}) }}"
+                                  method="post">
 
-                            <button class="btn btn-outline-success my-2 my-sm-0 mr-1" type="submit">Pesquisar</button>
-                            <button class="btn btn-outline-dark my-2 my-sm-0" type="button" id="btn_atual"
-                                    name="btn_atual">Atual
-                            </button>
+                                <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top"
+                                        title="Novo registro"
+                                        onclick="window.location.href='{{ url('fin_movimentacao_formGrupoItem', {'grupoItem' : grupoItem.id}) }}'">
+                                    <i class="fas fa-file" aria-hidden="true"></i> Novo
+                                </button>
+
+                                <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
+                                        type="submit" id="btn_ante" name="btn_ante">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-outline-success my-2 my-sm-0 mr-1"
+                                        type="submit" id="btn_prox" name="btn_prox">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+
+                                <button class="btn btn-outline-success my-2 my-sm-0 mr-1" type="submit">Pesquisar
+                                </button>
+                                <button class="btn btn-outline-dark my-2 my-sm-0" type="button" id="btn_atual"
+                                        name="btn_atual">Atual
+                                </button>
+
+                            </form>
 
 
                         </nav>

@@ -396,6 +396,7 @@ class MovimentacaoBusiness
         $tipos['MOVIMENTACAO'] = ['title' => 'Movimentação', 'route' => 'fin_movimentacao_form'];
         $tipos['PARCELAMENTO'] = ['title' => 'Parcelamento', 'route' => 'fin_parcelamento_movimentacaoForm'];
         $tipos['TRANSF_PROPRIA'] = ['title' => 'Transferência Própria', 'route' => 'fin_movimentacao_formTransfPropria'];
+        $tipos['GRUPO_ITEM'] = ['title' => 'Movimentação de Grupo', 'route' => 'fin_movimentacao_formGrupoItem'];
         return $tipos;
     }
 

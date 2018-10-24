@@ -48,6 +48,7 @@ class MovimentacaoTransfPropriaType extends AbstractType
             'choice_label' => 'descricaoMontada'
         ));
 
+        // FIXO: sempre será uma 299
         $builder->add('categoria', EntityType::class, array(
             'label' => 'Categoria',
             'class' => Categoria::class,
