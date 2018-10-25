@@ -259,36 +259,6 @@ class MovimentacaoController extends MovimentacaoBaseController
         return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', ['movs' => $movs]);
     }
 
-    /**
-     *
-     * @Route("/fin/movimentacao/aPagarReceber", name="fin_movimentacao_aPagarReceber")
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function aPagarReceber(Request $request)
-    {
-        return new Response();
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/recorrentes", name="fin_movimentacao_recorrentes")
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function recorrentes(Request $request)
-    {
-        return new Response();
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/caixa", name="fin_movimentacao_caixa")
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function caixa(Request $request)
-    {
-        return new Response();
-    }
-
     public function getListPageTitle()
     {
         return "Movimentações";

@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Class MovimentacaoController
+ * Class MovimentacaoCaixaController
  * @package App\Controller\Financeiro
  * @author Carlos Eduardo Pauluk
  */
-class MovimentacaoExtratoController extends MovimentacaoBaseController
+class MovimentacaoCaixaController extends MovimentacaoBaseController
 {
 
     private $diaUtilBusiness;
@@ -30,7 +30,7 @@ class MovimentacaoExtratoController extends MovimentacaoBaseController
 
     /**
      *
-     * @Route("/fin/movimentacao/extrato", name="fin_movimentacao_extrato")
+     * @Route("/fin/movimentacao/caixa", name="fin_movimentacao_caixa")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception

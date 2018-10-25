@@ -27,10 +27,10 @@ class DiaUtilBusiness
     public function incPeriodo($proFuturo, $ini, $fim)
     {
         // Como a alteração será nas referências do objeto, é necessário clonar para não alterar o original passado.
-        $ini = clone $ini;
-        $fim = clone $fim;
         try {
             if ($ini instanceof \DateTime) {
+                $ini = clone $ini;
+                $fim = clone $fim;
                 $dtIni = $ini->setTime(0,0,0,0);
                 $dtFim = $fim->setTime(23,59,59,999999);
             } else {

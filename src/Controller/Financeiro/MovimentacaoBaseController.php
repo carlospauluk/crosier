@@ -14,7 +14,6 @@ use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use App\Form\Financeiro\MovimentacaoType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -29,15 +28,27 @@ class MovimentacaoBaseController extends FormListController
 
     private $business;
 
-    public function __construct(MovimentacaoEntityHandler $entityHandler, MovimentacaoBusiness $business)
+    /**
+     * @required
+     * @param MovimentacaoEntityHandler $entityHandler
+     */
+    public function setEntityHandler(MovimentacaoEntityHandler $entityHandler)
     {
         $this->entityHandler = $entityHandler;
-        $this->business = $business;
     }
 
-    public function getEntityHandler(): ?EntityHandler
+    public function getEntityHandler(): EntityHandler
     {
         return $this->entityHandler;
+    }
+
+    /**
+     * @required
+     * @param MovimentacaoBusiness $business
+     */
+    public function setBusiness(MovimentacaoBusiness $business)
+    {
+        $this->business = $business;
     }
 
     public function getBusiness(): MovimentacaoBusiness
@@ -81,12 +92,12 @@ class MovimentacaoBaseController extends FormListController
             'attributes' => array(
                 'id',
                 'descricao',
-                'categoria' => ['id','codigoSuper','descricaoMontada'],
+                'categoria' => ['id', 'codigoSuper', 'descricaoMontada'],
                 'carteira' => ['id', 'descricaoMontada'],
                 'dtUtil' => ['timestamp'],
                 'valorTotal',
                 'updated' => ['timestamp'],
-                'userUpdated' => ['id','nome'],
+                'userUpdated' => ['id', 'nome'],
                 'pessoa' => ['id', 'nome', 'nome_fantasia']
             )
         );
@@ -115,6 +126,7 @@ class MovimentacaoBaseController extends FormListController
             new FilterData('modo', 'IN', isset($params['filter']['modo']) ? $params['filter']['modo'] : null),
             new FilterData('cadeia', 'EQ', isset($params['filter']['cadeia']) ? $params['filter']['cadeia'] : null),
             new FilterData('parcelamento', 'EQ', isset($params['filter']['parcelamento']) ? $params['filter']['parcelamento'] : null),
+            new FilterData('recorrente', 'EQ', isset($params['filter']['recorrente']) ? $params['filter']['recorrente'] : null),
             new FilterData('categoria', 'IN', isset($params['filter']['categoria']) ? $params['filter']['categoria'] : null)
         );
 

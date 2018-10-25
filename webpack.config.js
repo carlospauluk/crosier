@@ -59,6 +59,7 @@ Encore
     .addEntry('fin/regraImportacaoLinhaList', './assets/js/fin/regraImportacaoLinhaList.js')
     .addEntry('fin/movimentacaoList', './assets/js/fin/movimentacaoList.js')
     .addEntry('fin/movimentacaoExtratoList', './assets/js/fin/movimentacaoExtratoList.js')
+    .addEntry('fin/movimentacaoRecorrentesList', './assets/js/fin/movimentacaoRecorrentesList.js')
     .addEntry('fin/movimentacaoImport', './assets/js/fin/movimentacaoImport.js')
     .addEntry('fin/movimentacaoForm', './assets/js/fin/movimentacaoForm.js')
     .addEntry('fin/movimentacaoFormTransfPropria', './assets/js/fin/movimentacaoFormTransfPropria.js')
