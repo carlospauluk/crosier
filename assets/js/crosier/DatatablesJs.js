@@ -6,10 +6,11 @@ import CrosierMasks from './CrosierMasks';
 
 class DatatablesJs {
 
-    static makeDatatableJs(listId, columns) {
+    static makeDatatableJs(listId, columns, params) {
         $(document).ready(function () {
 
-            let datatable = $(listId).DataTable({
+            // declaro antes para poder sobreescrever ali com o extent, no caso de querer mudar alguma coisa (ex.: movimentacaoRecorrentesList.js)
+            let defaultParams = {
                 paging: true,
                 serverSide: true,
                 stateSave: true,
@@ -19,14 +20,17 @@ class DatatablesJs {
                     'data': function (data) {
                         data.formPesquisar = $('#formPesquisar').serialize()
                     }
-
                 },
                 searching: false,
                 columns: columns,
                 "language": {
                     "url": "/build/static/datatables-Portuguese-Brasil.json"
                 }
-            });
+            };
+
+            $.extend(defaultParams, params);
+
+            let datatable = $(listId).DataTable(defaultParams);
 
             datatable.on('draw', function () {
                 $('[data-toggle="tooltip"]').tooltip();

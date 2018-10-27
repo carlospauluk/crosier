@@ -2,13 +2,16 @@
 
 namespace App\Form\Financeiro;
 
+use App\Business\Financeiro\MovimentacaoBusiness;
 use App\Entity\Base\Pessoa;
 use App\Entity\Financeiro\Banco;
+use App\Entity\Financeiro\BandeiraCartao;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
+use App\Entity\Financeiro\OperadoraCartao;
 use App\Utils\Repository\WhereBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -37,16 +40,36 @@ class MovimentacaoType extends AbstractType
 
     private $doctrine;
 
+    private $movimentacaoBusiness;
+
     public function __construct(RegistryInterface $doctrine)
     {
         $this->doctrine = $doctrine;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getMovimentacaoBusiness(): MovimentacaoBusiness
+    {
+        return $this->movimentacaoBusiness;
+    }
+
+    /**
+     * @required
+     * @param mixed $movimentacaoBusiness
+     */
+    public function setMovimentacaoBusiness(MovimentacaoBusiness $movimentacaoBusiness): void
+    {
+        $this->movimentacaoBusiness = $movimentacaoBusiness;
+    }
+
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
-            $data = $event->getData();
+            $movimentacao = $event->getData();
             $builder = $event->getForm();
 
             $builder->add('id', IntegerType::class, array(
@@ -55,13 +78,15 @@ class MovimentacaoType extends AbstractType
                 'disabled' => true
             ));
 
+            // Adiciono este por default, sabendo que será alterado no beforeSave
+            $builder->add('status', HiddenType::class, array(
+                'data' => 'A_PAGAR_RECEBER'
+            ));
+
+            // Já retorna os valores dentro das regras
             $builder->add('tipoLancto', ChoiceType::class, array(
                 'label' => 'Tipo Lancto',
-                'choices' => array(
-                    'MOVIMENTAÇÃO' => 'GERAL',
-                    'CHEQUE PRÓPRIO' => 'CHEQUE_PROPRIO',
-                    'CHEQUE TERCEIROS' => 'CHEQUE_TERCEIROS'
-                )
+                'choices' => []
             ));
 
             $builder->add('carteira', EntityType::class, array(
@@ -73,22 +98,71 @@ class MovimentacaoType extends AbstractType
                 }
             ));
 
-            $repoModo = $this->doctrine->getRepository(Modo::class);
-            $modos = $repoModo->findAll(WhereBuilder::buildOrderBy('codigo'));
+            // Monta o campo de Categoria conforme as regras
+            $categoriaChoices = null;
+            $categoriaData = null;
+            if ($movimentacao and $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA') {
+                $categoriaChoices = [$this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299])];
+                $categoriaData = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
+            } else {
+                $categoriaChoices = $this->doctrine->getRepository(Categoria::class)->findAll(WhereBuilder::buildOrderBy('codigoOrd'));
+            }
+            $categoriaParams = array(
+                'label' => 'Categoria',
+                'class' => Categoria::class,
+                'choices' => $categoriaChoices,
+                'choice_label' => 'descricaoMontadaTree'
+            );
+            if ($categoriaData) {
+                $categoriaParams['data'] = $categoriaData;
+            }
+            $builder->add('categoria', EntityType::class, $categoriaParams);
+
+
+            // só é obrigatório nos casos de tipoLancto = 'TRANSF_PROPRIA'
+            $builder->add('carteiraDestino', EntityType::class, array(
+                'label' => 'Destino',
+                'class' => Carteira::class,
+                'choices' => array_merge([null], $this->doctrine->getRepository(Carteira::class)->findAll(WhereBuilder::buildOrderBy('codigo'))),
+                'choice_label' => function ($carteira) {
+                    if ($carteira) {
+                        return $carteira->getDescricaoMontada();
+                    }
+                },
+                'required' => $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA'
+            ));
+
             $builder->add('modo', EntityType::class, array(
                 'label' => 'Modo',
                 'class' => Modo::class,
-                'choices' => $modos,
+                'choices' => $this->doctrine->getRepository(Modo::class)->findAll(WhereBuilder::buildOrderBy('codigo')),
                 'choice_label' => function (Modo $modo) {
                     return $modo->getDescricaoMontada();
                 }
             ));
 
-            $builder->add('categoria', EntityType::class, array(
-                'label' => 'Categoria',
-                'class' => Categoria::class,
-                'choices' => $this->doctrine->getRepository(Categoria::class)->findAll(WhereBuilder::buildOrderBy('codigoOrd')),
-                'choice_label' => 'descricaoMontadaTree'
+            $builder->add('bandeiraCartao', EntityType::class, array(
+                'label' => 'Bandeira',
+                'class' => BandeiraCartao::class,
+                'choices' => array_merge([null], $this->doctrine->getRepository(BandeiraCartao::class)->findAll(WhereBuilder::buildOrderBy('descricao'))),
+                'choice_label' => function (?BandeiraCartao $bandeiraCartao) {
+                    return $bandeiraCartao ? $bandeiraCartao->getDescricao() : '';
+                },
+                'attr' => array(
+                    'class' => 'CAMPOS_CARTAO'
+                )
+            ));
+
+            $builder->add('operadoraCartao', EntityType::class, array(
+                'label' => 'Operadora',
+                'class' => OperadoraCartao::class,
+                'choices' => array_merge([null], $this->doctrine->getRepository(OperadoraCartao::class)->findAll(WhereBuilder::buildOrderBy('descricao'))),
+                'choice_label' => function (?OperadoraCartao $operadoraCartao) {
+                    return $operadoraCartao ? $operadoraCartao->getDescricao() : '';
+                },
+                'attr' => array(
+                    'class' => 'CAMPOS_CARTAO'
+                )
             ));
 
             $builder->add('centroCusto', EntityType::class, array(
@@ -97,9 +171,6 @@ class MovimentacaoType extends AbstractType
                 'choice_label' => 'descricaoMontada'
             ));
 
-            $builder->add('status', HiddenType::class, array(
-                'data' => 'A_PAGAR_RECEBER'
-            ));
 
             $builder->add('dtMoviment', DateType::class, array(
                 'label' => 'Dt Moviment',
@@ -136,7 +207,8 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Dt Pagto',
                 'attr' => array(
                     'class' => 'crsr-date'
-                )
+                ),
+                'required' => false
             ));
 
             $builder->add('dtUtil', DateType::class, array(

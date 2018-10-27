@@ -32,7 +32,8 @@ import 'jquery-mask-plugin';
 import 'jquery-maskmoney/dist/jquery.maskMoney.js';
 
 import toastr from 'toastr';
-import 'toastr/build/toastr.css';
+import 'toastr/build/toastr.css'
+
 
 import Moment from 'moment';
 import 'moment/locale/pt-br';
@@ -117,7 +118,7 @@ $(document).ready(function () {
 
     $('.FLASHMESSAGE').each(function () {
         if ($(this).hasClass('FLASHMESSAGE_SUCCESS')) {
-            toastr.success($(this).html());
+            toastr.success($(this).html(),'', 'trustedHtml');
         } else if ($(this).hasClass('FLASHMESSAGE_WARNING')) {
             toastr.warning($(this).html());
         } else if ($(this).hasClass('FLASHMESSAGE_INFO')) {

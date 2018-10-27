@@ -13,6 +13,32 @@ Routing.setRoutingData(routes);
 
 $(document).ready(function () {
 
+    // ----------------------  TIPO_LANCTO
+
+    let $movimentacao_id = $('#movimentacao_id');
+
+    $.getJSON(
+        Routing.generate('fin_movimentacao_getTiposLanctos') + ($movimentacao_id.val() ? $movimentacao_id.val() : ''),
+        function (results) {
+            let $tipoLancto = $('#movimentacao_tipoLancto');
+
+            results = $.map(results.tiposLanctos, function(o,i) {
+                return { id: i, text: o.title, route: o.route };
+            })
+
+            $tipoLancto.empty().trigger("change");
+            $tipoLancto.select2({
+                    data: results,
+                    width: '100%'
+                }
+            );
+            // Se veio o valor do PHP...
+            if ($tipoLancto.data('val')) {
+                $tipoLancto.val($tipoLancto.data('val')).trigger('change').trigger('select2:select');
+            }
+        });
+
+
     $("#movimentacao_carteira").select2();
 
     $("#movimentacao_modo").select2();
@@ -107,7 +133,6 @@ $(document).ready(function () {
             });
     }
 
-    $("#movimentacao_tipoLancto").select2();
 
     $('#movimentacao_tipoLancto').on('select2:select', function (e) {
         if (!e || !e.params || !e.params.data) return;
@@ -130,6 +155,10 @@ $(document).ready(function () {
                 $('#movimentacao_chequeAgencia').val('');
                 $('#movimentacao_chequeConta').val('');
             }
+
+            if (tipoLancto == 'TRANSF_PROPRIA') {
+                window.location.href = Routing
+            }
         }
     });
 
@@ -150,11 +179,11 @@ $(document).ready(function () {
 
 
     function checkExibirCamposRecorrente() {
-        let selected = $( "#movimentacao_recorrente option:selected" ).val();
+        let selected = $("#movimentacao_recorrente option:selected").val();
         if (selected === true || selected > 0) {
-            $('#camposRecorrente').css('display','');
+            $('#camposRecorrente').css('display', '');
         } else {
-            $('#camposRecorrente').css('display','none');
+            $('#camposRecorrente').css('display', 'none');
         }
     }
 

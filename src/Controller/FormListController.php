@@ -256,7 +256,8 @@ abstract class FormListController extends Controller
         $formPesquisar = null;
         if ($rParams) {
             $start = $rParams['start'];
-            $limit = $rParams['length'];
+            $limit = $rParams['length'] != '-1' ? $rParams['length'] : null;
+
             $orders = array();
             foreach ($rParams['order'] as $pOrder) {
                 $order['column'] = $rParams['columns'][$pOrder['column']]['name'];
@@ -313,7 +314,7 @@ abstract class FormListController extends Controller
      */
     public function doDelete(Request $request, EntityId $entityId)
     {
-        $this->checkAccess();
+//        $this->checkAccess();
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {

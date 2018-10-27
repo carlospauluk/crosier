@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Class MovimentacaoController
+ * Class MovimentacaoAPagarReceberController
  * @package App\Controller\Financeiro
  * @author Carlos Eduardo Pauluk
  */
-class MovimentacaoExtratoController extends MovimentacaoBaseController
+class MovimentacaoAPagarReceberController extends MovimentacaoBaseController
 {
 
     private $diaUtilBusiness;
@@ -30,7 +30,7 @@ class MovimentacaoExtratoController extends MovimentacaoBaseController
 
     /**
      *
-     * @Route("/fin/movimentacao/extrato", name="fin_movimentacao_extrato")
+     * @Route("/fin/movimentacao/aPagarReceberList", name="fin_movimentacao_aPagarReceber")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
@@ -98,12 +98,10 @@ class MovimentacaoExtratoController extends MovimentacaoBaseController
     {
         $saldos = array();
 
-
         $saldoPosterior = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($data, $carteira, 'SALDO_POSTERIOR_REALIZADAS');
         $saldoPosteriorComCheques = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($data, $carteira, 'SALDO_POSTERIOR_COM_CHEQUES');
         $saldos['SALDO_POSTERIOR_REALIZADAS'] = $saldoPosterior;
         $saldos['SALDO_POSTERIOR_COM_CHEQUES'] = $saldoPosteriorComCheques;
-
 
 //if (carteira.getLimite() != null) {
 //BigDecimal disponivel = BigDecimal.ZERO;
