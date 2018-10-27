@@ -98,12 +98,10 @@ class MovimentacaoAPagarReceberController extends MovimentacaoBaseController
     {
         $saldos = array();
 
-
         $saldoPosterior = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($data, $carteira, 'SALDO_POSTERIOR_REALIZADAS');
         $saldoPosteriorComCheques = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($data, $carteira, 'SALDO_POSTERIOR_COM_CHEQUES');
         $saldos['SALDO_POSTERIOR_REALIZADAS'] = $saldoPosterior;
         $saldos['SALDO_POSTERIOR_COM_CHEQUES'] = $saldoPosteriorComCheques;
-
 
 //if (carteira.getLimite() != null) {
 //BigDecimal disponivel = BigDecimal.ZERO;

@@ -154,6 +154,9 @@ class CarteiraController extends FormListController
         if ($request->get('cheque')) {
             $params['cheque'] = true;
         }
+        if ($request->get('caixa')) {
+            $params['caixa'] = true;
+        }
 
         $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy($params,['codigo' => 'asc']);
 

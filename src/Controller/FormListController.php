@@ -314,7 +314,7 @@ abstract class FormListController extends Controller
      */
     public function doDelete(Request $request, EntityId $entityId)
     {
-        $this->checkAccess();
+//        $this->checkAccess();
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             $this->addFlash('error', 'Erro interno do sistema.');
         } else {

@@ -5,8 +5,11 @@ namespace App\Controller\Financeiro;
 use App\Business\Base\DiaUtilBusiness;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\GrupoItem;
+use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
+use App\Form\Financeiro\MovimentacaoType;
+use App\Utils\ExceptionUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -35,111 +38,156 @@ class MovimentacaoCaixaController extends MovimentacaoBaseController
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
-    public function extrato(Request $request)
+    public function movimentacoesCaixa(Request $request)
     {
         $parameters = $request->query->all();
         if (!array_key_exists('filter', $parameters)) {
             // inicializa para evitar o erro
             $parameters['filter'] = array();
-            $parameters['filter']['dtUtil']['i'] = date('Y-m-d');
-            $parameters['filter']['dtUtil']['f'] = date('Y-m-d');
-            $parameters['filter']['carteira'] = 1;
         }
 
-        $filterDatas = $this->getFilterDatas($parameters);
+        if (!isset($parameters['filter']['dtMoviment']) or !$parameters['filter']['dtMoviment']) {
+            $parameters['filter']['dtMoviment'] = date('Y-m-d');
+        }
+
+        if (!isset($parameters['filter']['carteira']) or !$parameters['filter']['carteira']) {
+            $parameters['filter']['carteira'] = $this->getDoctrine()->getRepository(Carteira::class)->findOneBy(['caixa' => true])->getId();
+        }
+
+        $dtMoviment = \DateTime::createFromFormat('Y-m-d', $parameters['filter']['dtMoviment']);
+
+        // Já calculo pois vou utilizar no saldo anterior
+        $dtAnterior = (clone $dtMoviment)->setTime(12, 0, 0, 0)->modify('last day');
+
+        if (isset($parameters['btnAnterior'])) {
+            $dtMoviment = $dtAnterior;
+        } else if (isset($parameters['btnPosterior'])) {
+            $dtMoviment->setTime(12, 0, 0, 0)->modify('next day');
+        }
+
+        $dtMoviment->setTime(0,0,0,0);
+
+        $parameters['filter']['dtMoviment'] = $dtMoviment->format('Y-m-d');
+
 
         $carteira = $this->getDoctrine()->getRepository(Carteira::class)->find($parameters['filter']['carteira']);
 
-        $repo = $this->getDoctrine()->getRepository(Movimentacao::class);
-        $orders[] = ['column' => 'e.dtUtil', 'dir' => 'asc'];
-        $orders[] = ['column' => 'categ.codigo', 'dir' => 'asc'];
-        $dados = $repo->findByFilters($filterDatas, $orders, 0, null);
+        $listMovs = $this->getDoctrine()->getRepository(Movimentacao::class)->findBy(['dtMoviment' => $dtMoviment, 'carteira' => $carteira], ['valor' => 'ASC']);
 
-        $dtIni = $parameters['filter']['dtUtil']['i'];
-        $dtFim = $parameters['filter']['dtUtil']['f'];
+        $listCartoesDebito = [];
+        $listDespesas = [];
+        $listRetiradas = [];
+        $listEntradas = [];
+        $listOutras = [];
 
-        $dtAnterior = \DateTime::createFromFormat('Y-m-d', $dtIni)->setTime(12, 0, 0, 0)->modify('last day');
-
-
-        $parameters['anteriores']['movs'] = $repo->findAbertasAnteriores($dtAnterior, $carteira);
-        $parameters['anteriores']['saldos'] = $this->calcularSaldos($dtAnterior, $carteira);
-
-        $dia = null;
-        $dias = array();
-        $i = -1;
-        foreach ($dados as $movimentacao) {
-            if ($movimentacao->getDtUtil()->format('d/m/Y') != $dia) {
-                $i++;
-                $dia = $movimentacao->getDtUtil()->format('d/m/Y');
-                $dias[$i]['dtUtil'] = $movimentacao->getDtUtil();
-                $dias[$i]['saldos'] = $this->calcularSaldos($movimentacao->getDtUtil(), $carteira);
+        foreach ($listMovs as $mov) {
+            if ($mov->getModo()->getCodigo() == 10) {
+                $listCartoesDebito[] = $mov;
+            } else if ($mov->getCategoria()->getCodigoSuper() == 2 and $mov->getCategoria()->getCodigo() != 299) {
+                // DESPESAS
+                // tudo o que for categoria 2XXXX mas não 2.99
+                $listDespesas[] = $mov;
+            } else if ($mov->getCategoria()->getCodigo() == 299) {
+                // RETIRADA
+                // tudo o que for categoria 2.99
+                $listRetiradas[] = $mov;
+            } else if ($mov->getCategoria()->getCodigoSuper() == 1 and $mov->getCategoria()->getCodigo() != 199) {
+                // ENTRADAS
+                // tudo o que for categoria 1XXXX (exceto os 199)
+                $listEntradas[] = $mov;
+            } else {
+                // OUTROS
+                $listOutras[] = $mov;
             }
-            $dias[$i]['movs'][] = $movimentacao;
         }
 
+        $parameters['lists']['listCartoesDebito']['titulo'] = "Cartões de Débito";
+        $parameters['lists']['listCartoesDebito']['ents'] = $listCartoesDebito;
+        $parameters['lists']['listCartoesDebito']['total'] = $this->getBusiness()->somarMovimentacoes($listCartoesDebito);
 
-        $parameters['dias'] = $dias;
-        $parameters['carteira']['options'] = $this->getFilterCarteiraOptions($filterDatas);
+        $parameters['lists']['listEntradas']['titulo'] = 'Entradas';
+        $parameters['lists']['listEntradas']['ents'] = $listEntradas;
+        $parameters['lists']['listEntradas']['total'] = $this->getBusiness()->somarMovimentacoes($listEntradas);
+
+        $parameters['lists']['listDespesas']['titulo'] = 'Despesas';
+        $parameters['lists']['listDespesas']['ents'] = $listDespesas;
+        $parameters['lists']['listDespesas']['total'] = $this->getBusiness()->somarMovimentacoes($listDespesas);
+
+        $parameters['lists']['listRetiradas']['titulo'] = 'Retiradas';
+        $parameters['lists']['listRetiradas']['ents'] = $listRetiradas;
+        $parameters['lists']['listRetiradas']['total'] = $this->getBusiness()->somarMovimentacoes($listRetiradas);
+
+        $parameters['lists']['listOutras']['titulo'] = 'Outras Movimentações';
+        $parameters['lists']['listOutras']['ents'] = $listOutras;
+        $parameters['lists']['listOutras']['total'] = $this->getBusiness()->somarMovimentacoes($listOutras);
 
 
-        $prox = $this->diaUtilBusiness->incPeriodo(true, $dtIni, $dtFim);
-        $ante = $this->diaUtilBusiness->incPeriodo(false, $dtIni, $dtFim);
-        $parameters['antePeriodoI'] = $ante['dtIni'];
-        $parameters['antePeriodoF'] = $ante['dtFim'];
-        $parameters['proxPeriodoI'] = $prox['dtIni'];
-        $parameters['proxPeriodoF'] = $prox['dtFim'];
 
-        $parameters['page_title'] = "Extrato de Movimentações";
+        $parameters['saldoAnterior'] = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($dtAnterior, $carteira, 'SALDO_POSTERIOR_REALIZADAS');
+        $parameters['saldoPosterior'] = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($dtMoviment, $carteira, 'SALDO_POSTERIOR_REALIZADAS');
+        $parameters['page_title'] = "Movimentações de Caixa";
 
-        return $this->render('Financeiro/movimentacaoExtratoList.html.twig', $parameters);
+        return $this->render('Financeiro/movimentacaoCaixaList.html.twig', $parameters);
     }
 
-    public function calcularSaldos(\DateTime $data, Carteira $carteira)
+    /**
+     *
+     * @Route("/fin/movimentacao/formCaixa/{carteira}/{movimentacao}", name="fin_movimentacao_formCaixa", defaults={"movimentacao"=null}, requirements={"carteira"="\d+","movimentacao"="\d+"})
+     * @param Request $request
+     * @param Carteira $carteira
+     * @param Movimentacao|null $movimentacao
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function formCaixa(Request $request, Carteira $carteira, Movimentacao $movimentacao = null)
     {
-        $saldos = array();
+        $this->getSecurityBusiness()->checkAccess('fin_movimentacao_formCaixa');
 
+        $movimentacaoForm = $request->request->get('movimentacao');
+        if (is_array($movimentacaoForm)) {
+            $movimentacaoForm['tipoLancto'] = 'GERAL';
+            $movimentacaoForm['recorrente'] = '0';
+            $movimentacaoForm['valorTotal'] = 0.0;
+            $movimentacaoForm['dtVencto'] = $movimentacaoForm['dtMoviment'];
+            $movimentacaoForm['dtVenctoEfetiva'] = $movimentacaoForm['dtMoviment'];
+            $movimentacaoForm['dtPagto'] = $movimentacaoForm['dtMoviment'];
+            $movimentacaoForm['dtUtil'] = $movimentacaoForm['dtMoviment'];
+            $movimentacaoForm['centroCusto'] = 1;
+            $request->request->set('movimentacao', $movimentacaoForm);
+        }
 
-        $saldoPosterior = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($data, $carteira, 'SALDO_POSTERIOR_REALIZADAS');
-        $saldoPosteriorComCheques = $this->getDoctrine()->getRepository(Movimentacao::class)->findSaldo($data, $carteira, 'SALDO_POSTERIOR_COM_CHEQUES');
-        $saldos['SALDO_POSTERIOR_REALIZADAS'] = $saldoPosterior;
-        $saldos['SALDO_POSTERIOR_COM_CHEQUES'] = $saldoPosteriorComCheques;
+        $form = $this->createForm(MovimentacaoType::class, $movimentacao);
+        $form->handleRequest($request);
 
-
-//if (carteira.getLimite() != null) {
-//BigDecimal disponivel = BigDecimal.ZERO;
-//disponivel = saldoPosteriorComCheques.subtract(carteira.getLimite().negate());
-//disponivel = disponivel == null ? BigDecimal.ZERO : disponivel;
-//getTotalizacoes().put("SUMARIO_SALDO_DISPONIVEL", disponivel);
-//}
-
-        return $saldos;
-    }
-
-
-    public function getFilterCarteiraOptions($params)
-    {
-        $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
-        $carteiras = $repoCarteira->findAll('e.codigo');
-
-        $param = null;
-        foreach ($params as $p) {
-            if ($p->field == 'carteira') {
-                $param = $p;
-                break;
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $entity = $form->getData();
+                    $entity = $this->getEntityHandler()->save($entity);
+                    $this->addFlash('success', 'Registro salvo com sucesso!');
+                    return $this->redirectToRoute('fin_movimentacao_caixa', ['filter' => ['dtMoviment' => $entity->getDtMoviment()->format('Y-m-d')]]);
+                } catch (\Exception $e) {
+                    $msg = ExceptionUtils::treatException($e);
+                    $this->addFlash('error', $msg);
+                    $this->addFlash('error', 'Erro ao salvar!');
+                }
+            } else {
+                $errors = $form->getErrors(true, true);
+                foreach ($errors as $error) {
+                    $errMsg = $error->getMessage();
+                    if ($error->getMessageParameters()) {
+                        foreach ($error->getMessageParameters() as $key => $p) {
+                            $errMsg .= $p ? " (" . $p . ")" : '';
+                        }
+                    }
+                    $this->addFlash('error', $errMsg);
+                }
             }
         }
 
-        $str = "";
-        $selected = "";
-        foreach ($carteiras as $carteira) {
-            if ($param->val) {
-                $selected = $carteira->getId() == $param->val ? 'selected="selected"' : '';
-            }
-            $str .= "<option value=\"" . $carteira->getId() . "\"" . $selected . ">" . $carteira->getCodigo(true) . " - " . $carteira->getDescricao() . "</option>";
-        }
-        return $str;
+        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
+        $parameters['form'] = $form->createView();
+        $parameters['page_title'] = 'Movimentação de Caixa';
+        return $this->render('Financeiro/movimentacaoFormCaixa.html.twig', $parameters);
     }
-
-
 
 }

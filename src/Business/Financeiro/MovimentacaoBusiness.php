@@ -3,7 +3,6 @@
 namespace App\Business\Financeiro;
 
 use App\Entity\Base\DiaUtil;
-use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\Grupo;
@@ -401,14 +400,40 @@ class MovimentacaoBusiness
      * FIXME: mais tarde criar uma tabela para isto.
      * @return array
      */
-    public static function getTiposLancto()
+    public function getTiposLanctos(?Movimentacao $movimentacao = null)
     {
         $tipos = [];
-        $tipos['MOVIMENTACAO'] = ['title' => 'Movimentação', 'route' => 'fin_movimentacao_form'];
-        $tipos['PARCELAMENTO'] = ['title' => 'Parcelamento', 'route' => 'fin_parcelamento_movimentacaoForm'];
+        $tipos['GERAL'] = ['title' => 'Movimentação', 'route' => 'fin_movimentacao_form'];
+        $tipos['CHEQUE_PROPRIO'] = ['title' => 'Cheque Próprio', 'route' => 'fin_movimentacao_form'];
+        $tipos['CHEQUE_TERCEIROS'] = ['title' => 'Cheque de Terceiros', 'route' => 'fin_movimentacao_form'];
+
         $tipos['TRANSF_PROPRIA'] = ['title' => 'Transferência Própria', 'route' => 'fin_movimentacao_formTransfPropria'];
-        $tipos['GRUPO_ITEM'] = ['title' => 'Movimentação de Grupo', 'route' => 'fin_movimentacao_formGrupoItem'];
-        return $tipos;
+
+        $tipos['CAIXA'] = ['title' => 'Movimentação de Caixa', 'route' => 'fin_movimentacao_formCaixa'];
+
+        $tipos['MOVIMENTACAO_DE_GRUPO'] = ['title' => 'Movimentação de Grupo', 'route' => 'fin_movimentacao_formGrupoItem'];
+
+        $tipos['PARCELAMENTO'] = ['title' => 'Parcelamento', 'route' => 'fin_parcelamento_movimentacaoForm'];
+
+        // Se é nova, pode todos
+        if (!$movimentacao or !$movimentacao->getId()) {
+            return $tipos;
+        } else {
+            if ($movimentacao->getCategoria()->getCodigo() == 299) {
+                // Se for uma 299, retorna apenas...
+                return ['TRANSF_PROPRIA' => $tipos['TRANSF_PROPRIA']];
+            } else if ($movimentacao->getGrupoItem()) {
+                // Se tiver grupoItem...
+                return ['MOVIMENTACAO_DE_GRUPO' => $tipos['MOVIMENTACAO_DE_GRUPO']];
+            } else {
+                // Qualquer outro caso, retorna todas menos...
+                unset($tipos['TRANSF_PROPRIA']);
+                unset($tipos['MOVIMENTACAO_DE_GRUPO']);
+                unset($tipos['PARCELAMENTO']);
+                unset($tipos['CAIXA']);
+                return $tipos;
+            }
+        }
     }
 
     /**

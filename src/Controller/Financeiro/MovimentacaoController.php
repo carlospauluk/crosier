@@ -6,10 +6,10 @@ use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\GrupoItem;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\Parcelamento;
-use App\Form\Financeiro\MovimentacaoGrupoItemType;
-use App\Form\Financeiro\MovimentacaoTransfPropriaType;
+use App\Form\Financeiro\MovimentacaoType;
 use App\Utils\ExceptionUtils;
 use App\Utils\Repository\FilterData;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,27 +24,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class MovimentacaoController extends MovimentacaoBaseController
 {
-
-    /**
-     *
-     * Exibe a seleção para os tipos de lançamento possíveis.
-     *
-     * @Route("/fin/movimentacao/formIni", name="fin_movimentacao_formIni")
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     */
-    public function ini(Request $request)
-    {
-        if ($request->get('tipoLancto')) {
-            $tiposLanctos = $this->getBusiness()->getTiposLancto();
-            $tipoLancto = $tiposLanctos[$request->get('tipoLancto')];
-            $rota = $tipoLancto['route'];
-            return $this->redirectToRoute($rota);
-        }
-        $parameters['page_title'] = 'Nova Movimentação';
-        $parameters['tiposLancto'] = $this->getBusiness()->getTiposLancto();
-        return $this->render('Financeiro/movimentacaoFormIni.html.twig', $parameters);
-    }
 
     /**
      *
@@ -89,7 +68,7 @@ class MovimentacaoController extends MovimentacaoBaseController
             $request->request->set('movimentacao_transf_propria', $movimentacao);
         }
 
-        $form = $this->createForm(MovimentacaoTransfPropriaType::class);
+        $form = $this->createForm(MovimentacaoType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -152,7 +131,7 @@ class MovimentacaoController extends MovimentacaoBaseController
             $movimentacao->setGrupoItem($grupoItem);
         }
 
-        $form = $this->createForm(MovimentacaoGrupoItemType::class, $movimentacao, ['block_name' => 'movimentacao']);
+        $form = $this->createForm(MovimentacaoType::class, $movimentacao);
 
         $form->handleRequest($request);
 
@@ -181,6 +160,7 @@ class MovimentacaoController extends MovimentacaoBaseController
         $parameters['page_title'] = $grupoItem->getDescricao();
         return $this->render('Financeiro/movimentacaoFormGrupoItem.html.twig', $parameters);
     }
+
 
     /**
      *
@@ -217,6 +197,20 @@ class MovimentacaoController extends MovimentacaoBaseController
     public function delete(Request $request, Movimentacao $movimentacao)
     {
         return $this->doDelete($request, $movimentacao);
+    }
+
+    /**
+     *
+     * @Route("/fin/movimentacao/getTiposLanctos/{movimentacao}", name="fin_movimentacao_getTiposLanctos", requirements={"movimentacao"="\d+"}, defaults={"movimentacao"="\d+"})
+     * @param Request $request
+     * @param Movimentacao $movimentacao
+     * @return JsonResponse
+     */
+    public function getTiposLanctos(Request $request, Movimentacao $movimentacao = null)
+    {
+        $tiposLanctos = $this->getBusiness()->getTiposLanctos($movimentacao);
+        $response = new JsonResponse(array('tiposLanctos' => $tiposLanctos));
+        return $response;
     }
 
     /**
