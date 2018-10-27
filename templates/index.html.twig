@@ -5,6 +5,10 @@
 
     <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
 
+    <div id="preloader" style="display: none; position: fixed; left: 0; top: 0; z-index: 1999; width: 100%; height: 100%; overflow: visible; background:rgba(255,255,255,0.5); blur(8px);"></div>
+
+    <div id="blurred">
+
     {{ include('header.html.twig') }}
 
     <div class="app-body">
@@ -34,7 +38,7 @@
     {{ include('Util/confirmationModal.html.twig') }}
 
     {{ include('footer.html.twig') }}
-
+    </div>
 
     </body>
 

@@ -6,9 +6,6 @@ import 'bootstrap';
 
 import 'popper.js';
 
-import 'pace-progress/themes/black/pace-theme-barber-shop.css';
-import Pace from 'pace-progress';
-
 import 'perfect-scrollbar';
 
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -57,10 +54,14 @@ $(document).ready(function () {
     CrosierMasks.maskAll();
 
 
-    $(document).ajaxStart(function () {
+    $('form').submit(function(e) {
         Pace.restart();
+
     });
 
+    // $(document).ajaxStart(function () {
+    //      Pace.restart();
+    // });
 
     // **************** confirmationModal ****************
 
