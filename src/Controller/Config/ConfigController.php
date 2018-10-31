@@ -132,7 +132,7 @@ class ConfigController extends FormListController
 
     /**
      *
-     * @Route("/cfg/config/select2json", name="cfg_config_select2json", methods={"GET"}, options = { "expose" = true })
+     * @Route("/cfg/config/select2json", name="cfg_config_select2json")
      * @param Request $request
      * @return Response
      */

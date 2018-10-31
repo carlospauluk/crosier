@@ -137,14 +137,21 @@ class CategoriaController extends FormListController
 
     /**
      *
-     * @Route("/fin/categoria/select2json", name="fin_categoria_select2json", methods={"GET"}, options = { "expose" = true })
+     * @Route("/fin/categoria/select2json", name="fin_categoria_select2json")
      * @param Request $request
      * @param Grupo $item
      * @return Response
      */
     public function categoriaSelect2json(Request $request)
     {
-        $itens = $this->getDoctrine()->getRepository(Categoria::class)->findBy([], ['codigoOrd' => 'ASC']);
+        $params = [];
+
+        // regra: para TRANSF_PROPRIA, a categoria deve ser sempre 299
+        if ($request->get('tipoLancto') === 'TRANSF_PROPRIA') {
+            $params['codigo'] = 299;
+        }
+
+        $itens = $this->getDoctrine()->getRepository(Categoria::class)->findBy($params, ['codigoOrd' => 'ASC']);
 
         $rs = array();
         foreach ($itens as $item) {

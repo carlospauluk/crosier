@@ -398,42 +398,52 @@ class MovimentacaoBusiness
     /**
      * Possíveis tipos de lançamentos.
      * FIXME: mais tarde criar uma tabela para isto.
+     * @param Movimentacao|null $movimentacao
      * @return array
      */
-    public function getTiposLanctos(?Movimentacao $movimentacao = null)
+    public function getTiposLanctos($formMovimentacao = null)
     {
-        $tipos = [];
-        $tipos['GERAL'] = ['title' => 'Movimentação', 'route' => 'fin_movimentacao_form'];
-        $tipos['CHEQUE_PROPRIO'] = ['title' => 'Cheque Próprio', 'route' => 'fin_movimentacao_form'];
-        $tipos['CHEQUE_TERCEIROS'] = ['title' => 'Cheque de Terceiros', 'route' => 'fin_movimentacao_form'];
+        $tipo_GERAL = ['title' => 'GERAL', 'val' => 'GERAL', 'route' => 'fin_movimentacao_form'];
 
-        $tipos['TRANSF_PROPRIA'] = ['title' => 'Transferência Própria', 'route' => 'fin_movimentacao_formTransfPropria'];
+        $tipo_TRANSF_PROPRIA = ['title' => 'TRANSFERÊNCIA PRÓPRIA', 'val' => 'TRANSF_PROPRIA', 'route' => 'fin_movimentacao_formTransfPropria'];
 
-        $tipos['CAIXA'] = ['title' => 'Movimentação de Caixa', 'route' => 'fin_movimentacao_formCaixa'];
+        $tipo_PARCELAMENTO = ['title' => 'PARCELAMENTO', 'val' => 'PARCELAMENTO', 'route' => 'fin_parcelamento_movimentacaoForm'];
 
-        $tipos['MOVIMENTACAO_DE_GRUPO'] = ['title' => 'Movimentação de Grupo', 'route' => 'fin_movimentacao_formGrupoItem'];
+        $tipo_CAIXA = ['title' => 'MOVIMENTAÇÃO DE CAIXA', 'val' => 'CAIXA', 'route' => 'fin_movimentacao_formCaixa'];
 
-        $tipos['PARCELAMENTO'] = ['title' => 'Parcelamento', 'route' => 'fin_parcelamento_movimentacaoForm'];
+        $tipo_MOVIMENTACAO_DE_GRUPO = ['title' => 'MOVIMENTAÇÃO DE GRUPO', 'val' => 'GRUPO', 'route' => 'fin_movimentacao_formGrupoItem'];
 
-        // Se é nova, pode todos
-        if (!$movimentacao or !$movimentacao->getId()) {
-            return $tipos;
-        } else {
-            if ($movimentacao->getCategoria()->getCodigo() == 299) {
+
+//        // Se é nova, pode todos
+        if ($formMovimentacao) {
+
+
+            if (isset($formMovimentacao['categoria']) and $formMovimentacao['categoria'] == 299) {
                 // Se for uma 299, retorna apenas...
-                return ['TRANSF_PROPRIA' => $tipos['TRANSF_PROPRIA']];
-            } else if ($movimentacao->getGrupoItem()) {
+                return [$tipo_TRANSF_PROPRIA];
+
+            } else if (isset($formMovimentacao['grupoItem'])) {
                 // Se tiver grupoItem...
-                return ['MOVIMENTACAO_DE_GRUPO' => $tipos['MOVIMENTACAO_DE_GRUPO']];
-            } else {
-                // Qualquer outro caso, retorna todas menos...
-                unset($tipos['TRANSF_PROPRIA']);
-                unset($tipos['MOVIMENTACAO_DE_GRUPO']);
-                unset($tipos['PARCELAMENTO']);
-                unset($tipos['CAIXA']);
-                return $tipos;
+                return [$tipo_MOVIMENTACAO_DE_GRUPO, $tipo_PARCELAMENTO];
+
+            } else if (isset($formMovimentacao['carteira'])) {
+
+                if ($this->doctrine->getRepository(Carteira::class)->find($formMovimentacao['carteira'])->getCaixa()) {
+                    // Se for de algum caixa
+                    return [$tipo_CAIXA, $tipo_TRANSF_PROPRIA];
+                }
             }
+
         }
+
+        // outros casos, retorna tudo
+        return [
+            $tipo_GERAL,
+            $tipo_TRANSF_PROPRIA,
+            $tipo_PARCELAMENTO,
+            $tipo_CAIXA,
+            $tipo_MOVIMENTACAO_DE_GRUPO
+        ];
     }
 
     /**

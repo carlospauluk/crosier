@@ -75,27 +75,41 @@ class MovimentacaoType extends AbstractType
             $builder->add('id', IntegerType::class, array(
                 'label' => 'Id',
                 'required' => false,
-                'disabled' => true
+                'disabled' => true,
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
             // Adiciono este por default, sabendo que será alterado no beforeSave
             $builder->add('status', HiddenType::class, array(
-                'data' => 'A_PAGAR_RECEBER'
+                'data' => 'A_PAGAR_RECEBER',
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
             // Já retorna os valores dentro das regras
             $builder->add('tipoLancto', ChoiceType::class, array(
                 'label' => 'Tipo Lancto',
-                'choices' => []
+                'choices' => [
+                    'GERAL' => 'GERAL',
+                    'CHEQUE PRÓPRIO' => 'CHEQUE_PROPRIO',
+                    'CHEQUE TERCEIROS' => 'CHEQUE_TERCEIROS',
+                    'TRANSFERÊNCIA PRÓPRIA' => 'TRANSF_PROPRIA',
+                    'PARCELAMENTO' => 'PARCELAMENTO',
+                    'MOVIMENTAÇÃO DE CAIXA' => 'CAIXA',
+                    'MOVIMENTAÇÃO DE GRUPO' => 'MOVIMENT_GRUPO',
+                ],
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
+            // Para que o campo select seja montado já com o valor selecionado (no $('#movimentacao_carteira').val())
             $builder->add('carteira', EntityType::class, array(
                 'label' => 'Carteira',
                 'class' => Carteira::class,
-                'choices' => $this->doctrine->getRepository(Carteira::class)->findAll(WhereBuilder::buildOrderBy('codigo')),
-                'choice_label' => function (Carteira $carteira) {
-                    return $carteira->getDescricaoMontada();
-                }
+                'choices' => (null !== $movimentacao and null !== $movimentacao->getCarteira()) ? [$movimentacao->getCarteira()] : [],
+                'choice_label' => 'descricaoMontada',
+                'data' => (null !== $movimentacao and null !== $movimentacao->getCarteira()) ? $movimentacao->getCarteira() : null,
+                'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteira() and null !== $movimentacao->getCarteira()->getId()) ? $movimentacao->getCarteira()->getId() : '',
+                    'class' => 'tipoLancto-TODOS'],
+
             ));
 
             // Monta o campo de Categoria conforme as regras
@@ -111,7 +125,8 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Categoria',
                 'class' => Categoria::class,
                 'choices' => $categoriaChoices,
-                'choice_label' => 'descricaoMontadaTree'
+                'choice_label' => 'descricaoMontadaTree',
+                'attr' => ['class' => 'tipoLancto-TODOS']
             );
             if ($categoriaData) {
                 $categoriaParams['data'] = $categoriaData;
@@ -129,16 +144,18 @@ class MovimentacaoType extends AbstractType
                         return $carteira->getDescricaoMontada();
                     }
                 },
-                'required' => $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA'
+                'required' =>  $movimentacao and $movimentacao->getTipoLancto() and $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA',
+                'attr' => ['class' => 'tipoLancto-TRANSF_PROPRIA']
             ));
 
             $builder->add('modo', EntityType::class, array(
                 'label' => 'Modo',
                 'class' => Modo::class,
-                'choices' => $this->doctrine->getRepository(Modo::class)->findAll(WhereBuilder::buildOrderBy('codigo')),
-                'choice_label' => function (Modo $modo) {
-                    return $modo->getDescricaoMontada();
-                }
+                'choices' => array_merge([null],$this->doctrine->getRepository(Modo::class)->findAll(WhereBuilder::buildOrderBy('codigo'))),
+                'choice_label' => function (?Modo $modo) {
+                    return $modo ? $modo->getDescricaoMontada() : null;
+                },
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
             $builder->add('bandeiraCartao', EntityType::class, array(
@@ -150,7 +167,9 @@ class MovimentacaoType extends AbstractType
                 },
                 'attr' => array(
                     'class' => 'CAMPOS_CARTAO'
-                )
+                ),
+                'required' => false,
+                'attr' => ['class' => 'tipoLancto-CAIXA']
             ));
 
             $builder->add('operadoraCartao', EntityType::class, array(
@@ -162,13 +181,16 @@ class MovimentacaoType extends AbstractType
                 },
                 'attr' => array(
                     'class' => 'CAMPOS_CARTAO'
-                )
+                ),
+                'required' => false,
+                'attr' => ['class' => 'tipoLancto-CAIXA']
             ));
 
             $builder->add('centroCusto', EntityType::class, array(
                 'class' => CentroCusto::class,
                 'choices' => $this->doctrine->getRepository(CentroCusto::class)->findAll(),
-                'choice_label' => 'descricaoMontada'
+                'choice_label' => 'descricaoMontada',
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
 
@@ -178,7 +200,8 @@ class MovimentacaoType extends AbstractType
                 'format' => 'dd/MM/yyyy',
                 'attr' => array(
                     'class' => 'crsr-date'
-                )
+                ),
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
             $builder->add('dtVencto', DateType::class, array(
@@ -187,7 +210,8 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Dt Vencto',
                 'attr' => array(
                     'class' => 'crsr-date'
-                )
+                ),
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
             $builder->add('dtVenctoEfetiva', DateType::class, array(
@@ -197,7 +221,8 @@ class MovimentacaoType extends AbstractType
                 'attr' => array(
                     'class' => 'crsr-date'
                 ),
-                'required' => false
+                'required' => false,
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
             $builder->add('dtPagto', DateType::class, array(
@@ -208,29 +233,33 @@ class MovimentacaoType extends AbstractType
                 'attr' => array(
                     'class' => 'crsr-date'
                 ),
-                'required' => false
+                'required' => false,
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
-            $builder->add('dtUtil', DateType::class, array(
-                'widget' => 'single_text',
-                'format' => 'dd/MM/yyyy',
-                'label' => 'Dt Útil',
-                'attr' => array(
-                    'class' => 'crsr-date'
-                ),
-                'required' => false
-            ));
+//            $builder->add('dtUtil', DateType::class, array(
+//                'widget' => 'single_text',
+//                'format' => 'dd/MM/yyyy',
+//                'label' => 'Dt Útil',
+//                'attr' => array(
+//                    'class' => 'crsr-date'
+//                ),
+//                'required' => false,
+//                'attr' => ['class' => 'tipoLancto-GERAL']
+//            ));
 
 
             $builder->add('pessoa', EntityType::class, array(
                 'label' => 'Pessoa',
                 'class' => Pessoa::class,
                 'choices' => [],
-                'choice_label' => 'nome'
+                'choice_label' => 'nome',
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
             $builder->add('descricao', TextType::class, array(
-                'label' => 'Descrição'
+                'label' => 'Descrição',
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
             $builder->add('documentoBanco', EntityType::class, array(
@@ -241,17 +270,20 @@ class MovimentacaoType extends AbstractType
                     ->findAll(),
                 'choice_label' => function (Banco $banco) {
                     return sprintf("%03d", $banco->getCodigoBanco()) . " - " . $banco->getNome();
-                }
+                },
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
             $builder->add('documentoNum', TextType::class, array(
                 'label' => 'Núm Documento',
-                'required' => false
+                'required' => false,
+                'attr' => ['class' => 'tipoLancto-GERAL']
             ));
 
             $builder->add('obs', TextareaType::class, array(
                 'label' => 'Obs',
-                'required' => false
+                'required' => false,
+                'attr' => ['class' => 'tipoLancto-TODOS']
             ));
 
             $builder->add('valor', MoneyType::class, array(
@@ -260,7 +292,7 @@ class MovimentacaoType extends AbstractType
                 'grouping' => 'true',
                 'required' => false,
                 'attr' => array(
-                    'class' => 'crsr-money'
+                    'class' => 'crsr-money tipoLancto-TODOS'
                 )
             ));
 
@@ -270,7 +302,7 @@ class MovimentacaoType extends AbstractType
                 'currency' => 'BRL',
                 'grouping' => 'true',
                 'attr' => array(
-                    'class' => 'crsr-money'
+                    'class' => 'crsr-money tipoLancto-TODOS'
                 )
             ));
 
@@ -280,7 +312,7 @@ class MovimentacaoType extends AbstractType
                 'currency' => 'BRL',
                 'grouping' => 'true',
                 'attr' => array(
-                    'class' => 'crsr-money'
+                    'class' => 'crsr-money tipoLancto-TODOS'
                 )
             ));
 
@@ -290,7 +322,7 @@ class MovimentacaoType extends AbstractType
                 'grouping' => 'true',
                 'required' => false,
                 'attr' => array(
-                    'class' => 'crsr-money'
+                    'class' => 'crsr-money tipoLancto-TODOS'
                 ),
                 'disabled' => true
             ));
@@ -307,7 +339,7 @@ class MovimentacaoType extends AbstractType
                     return sprintf("%03d", $banco->getCodigoBanco()) . " - " . $banco->getNome();
                 },
                 'attr' => array(
-                    'class' => 'CAMPOS_CHEQUE'
+                    'class' => 'CAMPOS_CHEQUE tipoLancto-GERAL tipoLancto-CAIXA'
                 )
             ));
 
@@ -315,7 +347,7 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Agência',
                 'required' => false,
                 'attr' => array(
-                    'class' => 'CAMPOS_CHEQUE'
+                    'class' => 'CAMPOS_CHEQUE tipoLancto-GERAL tipoLancto-CAIXA'
                 )
             ));
 
@@ -323,7 +355,7 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Conta',
                 'required' => false,
                 'attr' => array(
-                    'class' => 'CAMPOS_CHEQUE'
+                    'class' => 'CAMPOS_CHEQUE tipoLancto-GERAL tipoLancto-CAIXA'
                 )
             ));
 
@@ -331,7 +363,7 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Núm Cheque',
                 'required' => false,
                 'attr' => array(
-                    'class' => 'CAMPOS_CHEQUE'
+                    'class' => 'CAMPOS_CHEQUE tipoLancto-GERAL tipoLancto-CAIXA'
                 )
             ));
 
@@ -343,12 +375,16 @@ class MovimentacaoType extends AbstractType
                     'SIM' => true,
                     'NÃO' => false
                 ),
-                'required' => true
+                'required' => true,
+                'attr' => array(
+                    'class' => 'tipoLancto-GERAL tipoLancto-GRUPO'
+                )
             ));
 
             $builder->add('recorrDia', IntegerType::class, array(
                 'label' => 'Dia',
-                'attr' => ['min' => 1, 'max' => 31],
+                'attr' => ['min' => 1, 'max' => 31,
+                    'class' => 'tipoLancto-GERAL tipoLancto-GRUPO'],
                 'required' => false
             ));
 
@@ -358,7 +394,10 @@ class MovimentacaoType extends AbstractType
                     'DIA FIXO' => 'DIA_FIXO',
                     'DIA ÚTIL' => 'DIA_UTIL'
                 ),
-                'required' => false
+                'required' => false,
+                'attr' => array(
+                    'class' => 'tipoLancto-GERAL tipoLancto-GRUPO'
+                )
             ));
 
             $builder->add('recorrFrequencia', ChoiceType::class, array(
@@ -367,12 +406,18 @@ class MovimentacaoType extends AbstractType
                     'MENSAL' => 'MENSAL',
                     'ANUAL' => 'ANUAL'
                 ),
-                'required' => false
+                'required' => false,
+                'attr' => array(
+                    'class' => 'tipoLancto-GERAL tipoLancto-GRUPO'
+                )
             ));
 
             $builder->add('recorrVariacao', IntegerType::class, array(
                 'label' => 'Variação',
-                'required' => false
+                'required' => false,
+                'attr' => array(
+                    'class' => 'tipoLancto-GERAL tipoLancto-GRUPO'
+                )
             ));
         });
 

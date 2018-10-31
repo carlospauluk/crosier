@@ -86,7 +86,7 @@ class MovimentacaoImportController extends Controller
 
     /**
      *
-     * @Route("/fin/movimentacao/import", name="fin_movimentacao_import", options = { "expose" = true })
+     * @Route("/fin/movimentacao/import", name="fin_movimentacao_import")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
@@ -202,7 +202,7 @@ class MovimentacaoImportController extends Controller
 
     /**
      *
-     * @Route("/fin/movimentacao/import/tiposExtratos", name="fin_movimentacao_import_tiposExtratos", methods={"GET"}, options = { "expose" = true })
+     * @Route("/fin/movimentacao/import/tiposExtratos", name="fin_movimentacao_import_tiposExtratos")
      * @param Request $request
      * @return Response
      */

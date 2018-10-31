@@ -24,7 +24,7 @@ class PessoaController extends Controller
 
     /**
      *
-     * @Route("/bse/pessoa/findByNome/{str}", name="bse_pessoa_findByNome", methods={"GET"}, options = { "expose" = true })
+     * @Route("/bse/pessoa/findByNome/{str}", name="bse_pessoa_findByNome", methods={"GET"})
      *
      */
     public function findByNome($str = null)

@@ -26,8 +26,6 @@
 
             {% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 
-            {% do form.dtUtil.setRendered() %}
-
             {{ form_start(form) }}
 
             {{ form_row(form._token) }}
@@ -35,9 +33,13 @@
             {{ form_row(form.id) }}
 
             {{ form_row(form.tipoLancto) }}
-            {{ form_row(form.carteira) }}
 
-            <div class="card" id="divCamposCheque" style="display: none;">
+            {{ form_row(form.modo) }}
+
+            {{ form_row(form.carteira) }}
+            {{ form_row(form.carteiraDestino) }}
+
+            <div class="card divCampos" id="divCamposCheque" style="display: none;">
                 <h5 class="card-header">Cheque</h5>
                 <div class="card-body">
                     {{ form_row(form.chequeBanco) }}
@@ -47,7 +49,7 @@
                 </div>
             </div>
 
-            {{ form_row(form.modo) }}
+
             {{ form_row(form.categoria) }}
             {{ form_row(form.centroCusto) }}
             {{ form_row(form.status) }}
@@ -56,13 +58,13 @@
             {{ form_row(form.dtVencto) }}
             {{ form_row(form.dtVenctoEfetiva) }}
             {{ form_row(form.dtPagto) }}
-            {{ form_row(form.dtUtil) }}
+
 
             {{ form_row(form.pessoa) }}
             {{ form_row(form.descricao) }}
 
 
-            <div class="card">
+            <div class="card divCampos">
                 <h5 class="card-header">Documento</h5>
                 <div class="card-body">
                     {{ form_row(form.documentoBanco) }}
@@ -70,7 +72,7 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card divCampos">
                 <h5 class="card-header">Valores</h5>
                 <div class="card-body">
                     {{ form_row(form.valor) }}
@@ -82,7 +84,7 @@
 
 
 
-            <div class="card" id="divRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
+            <div class="card divCampos" id="divRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
                 <h5 class="card-header">Recorrência</h5>
                 <div class="card-body">
                     {{ form_row(form.recorrente) }}

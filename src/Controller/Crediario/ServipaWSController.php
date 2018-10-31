@@ -18,7 +18,7 @@ class ServipaWSController extends Controller
 
     /**
      *
-     * @Route("/crd/servipaWS/teste", name="crd_servipaWS_teste", methods={"GET"}, options = { "expose" = true })
+     * @Route("/crd/servipaWS/teste", name="crd_servipaWS_teste", methods={"GET"})
      * @param Request $request
      * @return Response
      */

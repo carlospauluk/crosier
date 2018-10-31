@@ -9,18 +9,22 @@
 
     <script src="{{ asset('build/static/pace.min.js') }}"></script>
     <script>
-        Pace.on('start', function(e) {
+        Pace.on('start', function (e) {
             document.getElementById('preloader').style.display = '';
-            document.getElementById('blurred').style.filter = 'blur(3px)';
-            //$('preloader');
+
+            for (let i = 0; i < document.getElementsByClassName("blur-on-pace").length; i++) {
+                document.getElementsByClassName("blur-on-pace")[i].style.filter = 'blur(3px)';
+            }
         });
 
-        Pace.on('hide', function(e) {
+        Pace.on('hide', function (e) {
             document.getElementById('preloader').style.display = 'none';
-            document.getElementById('blurred').style.filter = '';
+            for (let i = 0; i < document.getElementsByClassName("blur-on-pace").length; i++) {
+                document.getElementsByClassName("blur-on-pace")[i].style.filter = '';
+            }
         });
     </script>
-    <link href="{{ asset('build/static/pace-theme-loading-bar.css') }}" rel="stylesheet" />
+    <link href="{{ asset('build/static/pace-theme-loading-bar.css') }}" rel="stylesheet"/>
 
     <title>{{ page_title is defined ? page_title ~ ' - Crosier v.0.0.1' : 'Crosier v.0.0.1' }} </title>
 
@@ -37,6 +41,7 @@
 
 {% block body %}
 {% endblock %}
+
 
 
 <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>

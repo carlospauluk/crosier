@@ -137,7 +137,7 @@ class GrupoController extends FormListController
 
     /**
      *
-     * @Route("/fin/grupo/select2json", name="fin_grupo_select2json", methods={"GET"}, options = { "expose" = true })
+     * @Route("/fin/grupo/select2json", name="fin_grupo_select2json", methods={"GET"})
      * @param Request $request
      * @return Response
      */

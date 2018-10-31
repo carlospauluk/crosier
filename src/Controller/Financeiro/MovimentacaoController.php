@@ -43,6 +43,7 @@ class MovimentacaoController extends MovimentacaoBaseController
             $request->request->set('movimentacao', $movimentacaoForm);
         }
         $exibirRecorrente = $this->getBusiness()->exibirRecorrente($movimentacao);
+
         return $this->doForm($request, $movimentacao, ['exibirRecorrente' => $exibirRecorrente]);
     }
 
@@ -201,14 +202,15 @@ class MovimentacaoController extends MovimentacaoBaseController
 
     /**
      *
-     * @Route("/fin/movimentacao/getTiposLanctos/{movimentacao}", name="fin_movimentacao_getTiposLanctos", requirements={"movimentacao"="\d+"}, defaults={"movimentacao"="\d+"})
+     * @Route("/fin/movimentacao/getTiposLanctos", name="fin_movimentacao_getTiposLanctos")
      * @param Request $request
      * @param Movimentacao $movimentacao
      * @return JsonResponse
      */
-    public function getTiposLanctos(Request $request, Movimentacao $movimentacao = null)
+    public function getTiposLanctos(Request $request)
     {
-        $tiposLanctos = $this->getBusiness()->getTiposLanctos($movimentacao);
+        parse_str(urldecode($request->get('formMovimentacao')), $formMovimentacao);
+        $tiposLanctos = $this->getBusiness()->getTiposLanctos($formMovimentacao['movimentacao']);
         $response = new JsonResponse(array('tiposLanctos' => $tiposLanctos));
         return $response;
     }
@@ -251,6 +253,10 @@ class MovimentacaoController extends MovimentacaoBaseController
         $movs = $this->getDoctrine()->getRepository(Movimentacao::class)->findBy(['cadeia' => $cadeia]);
 
         return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', ['movs' => $movs]);
+    }
+
+    public function getFormPageTitle() {
+        return "Movimentação";
     }
 
     public function getListPageTitle()

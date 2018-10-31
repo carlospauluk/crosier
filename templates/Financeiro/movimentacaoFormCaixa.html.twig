@@ -24,27 +24,34 @@
             {% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 
             {{ form_start(form) }}
+            {{ form_row(form._token) }}
 
-            {% do form.centroCusto.setRendered() %}
-            {% do form.dtVencto.setRendered() %}
-            {% do form.dtVenctoEfetiva.setRendered() %}
-            {% do form.dtPagto.setRendered() %}
-            {% do form.dtUtil.setRendered() %}
-            {% do form.descontos.setRendered() %}
-            {% do form.acrescimos.setRendered() %}
-            {% do form.valorTotal.setRendered() %}
-            {% do form.documentoBanco.setRendered() %}
-            {% do form.chequeBanco.setRendered() %}
-            {% do form.chequeAgencia.setRendered() %}
-            {% do form.chequeNumCheque.setRendered() %}
-            {% do form.chequeConta.setRendered() %}
-            {% do form.recorrente.setRendered() %}
-            {% do form.recorrDia.setRendered() %}
-            {% do form.recorrFrequencia.setRendered() %}
-            {% do form.recorrTipoRepet.setRendered() %}
-            {% do form.recorrVariacao.setRendered() %}
+            {{ form_row(form.id) }}
 
-            {{ form_widget(form) }}
+            {{ form_row(form.tipoLancto) }}
+
+            {{ form_row(form.modo) }}
+
+            {{ form_row(form.carteira) }}
+
+            {{ form_row(form.categoria) }}
+
+            {{ form_row(form.status) }}
+
+            {{ form_row(form.descricao) }}
+
+            {{ form_row(form.dtMoviment) }}
+
+            {{ form_row(form.valor) }}
+
+            <div class="card" id="divCamposCartao" style="display: none;">
+                <h5 class="card-header">Cartão</h5>
+                <div class="card-body">
+                    {{ form_row(form.bandeiraCartao) }}
+                    {{ form_row(form.operadoraCartao) }}
+                </div>
+            </div>
+
 
             <div class="row">
                 <div class="col text-right">
@@ -75,5 +82,5 @@
 
 
 {% block down_scripts %}
-    <script src="{{ asset('build/fin/movimentacaoFormCaixa.js') }}"></script>
+    <script src="{{ asset('build/fin/movimentacaoForm.js') }}"></script>
 {% endblock %}

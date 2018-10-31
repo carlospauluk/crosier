@@ -140,7 +140,7 @@ class CarteiraController extends FormListController
 
     /**
      *
-     * @Route("/fin/carteira/select2json", name="fin_carteira_select2json", methods={"GET"}, options = { "expose" = true })
+     * @Route("/fin/carteira/select2json", name="fin_carteira_select2json")
      * @param Request $request
      * @param Grupo $item
      * @return Response
@@ -168,6 +168,7 @@ class CarteiraController extends FormListController
             $r['bancoId'] = $item->getBanco() ? $item->getBanco()->getId() : null;
             $r['agencia'] = $item->getAgencia();
             $r['conta'] = $item->getConta();
+            $r['cheque'] = $item->getCheque();
             $rs[] = $r;
         }
 

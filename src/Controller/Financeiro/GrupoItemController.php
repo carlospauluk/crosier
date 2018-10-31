@@ -166,7 +166,7 @@ class GrupoItemController extends FormListController
 
     /**
      *
-     * @Route("/fin/grupoItem/select2json", name="fin_grupoItem_select2json", methods={"GET"}, options = { "expose" = true })
+     * @Route("/fin/grupoItem/select2json", name="fin_grupoItem_select2json")
      * @param Request $request
      * @return Response
      */

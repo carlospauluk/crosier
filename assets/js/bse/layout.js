@@ -60,9 +60,9 @@ $(document).ready(function () {
 
     });
 
-    // $(document).ajaxStart(function () {
-    //      Pace.restart();
-    // });
+    $(document).ajaxStart(function () {
+         Pace.restart();
+    });
 
     // **************** confirmationModal ****************
 

@@ -10,6 +10,7 @@ use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use App\Form\Financeiro\MovimentacaoType;
 use App\Utils\ExceptionUtils;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -133,6 +134,9 @@ class MovimentacaoCaixaController extends MovimentacaoBaseController
     /**
      *
      * @Route("/fin/movimentacao/formCaixa/{carteira}/{movimentacao}", name="fin_movimentacao_formCaixa", defaults={"movimentacao"=null}, requirements={"carteira"="\d+","movimentacao"="\d+"})
+     * @ParamConverter("carteira", class="App\Entity\Financeiro\Carteira", options={"mapping": {"carteira": "id"}})
+     * @ParamConverter("movimentacao", class="App\Entity\Financeiro\Movimentacao", options={"mapping": {"movimentacao": "id"}})
+     *
      * @param Request $request
      * @param Carteira $carteira
      * @param Movimentacao|null $movimentacao
@@ -154,6 +158,11 @@ class MovimentacaoCaixaController extends MovimentacaoBaseController
             $movimentacaoForm['centroCusto'] = 1;
             $request->request->set('movimentacao', $movimentacaoForm);
         }
+
+        if (!$movimentacao) {
+            $movimentacao = new Movimentacao();
+        }
+        $movimentacao->setCarteira($carteira);
 
         $form = $this->createForm(MovimentacaoType::class, $movimentacao);
         $form->handleRequest($request);
@@ -187,6 +196,7 @@ class MovimentacaoCaixaController extends MovimentacaoBaseController
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
         $parameters['form'] = $form->createView();
         $parameters['page_title'] = 'Movimentação de Caixa';
+        $parameters['carteira'] = $carteira;
         return $this->render('Financeiro/movimentacaoFormCaixa.html.twig', $parameters);
     }
 
