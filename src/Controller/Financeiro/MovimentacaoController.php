@@ -35,6 +35,16 @@ class MovimentacaoController extends MovimentacaoBaseController
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
     {
+        // Se está tentando acessar uma url de uma movimentação que não existe
+        if ($request->get('id') !== null and $movimentacao == null) {
+            return $this->redirectToRoute('fin_movimentacao_form');
+        }
+        if ($movimentacao) {
+            $m = $this->getBusiness()->checkEditTransfPropria($movimentacao);
+            if ($m) {
+                return $this->redirectToRoute('fin_movimentacao_form', ['id' => $m->getId()]);
+            }
+        }
         $movimentacaoForm = $request->request->get('movimentacao');
         if ($movimentacaoForm) {
             $movimentacaoForm['valorTotal'] = 0.0;
@@ -189,18 +199,6 @@ class MovimentacaoController extends MovimentacaoBaseController
 
     /**
      *
-     * @Route("/fin/movimentacao/delete/{id}/", name="fin_movimentacao_delete", requirements={"id"="\d+"})
-     * @param Request $request
-     * @param Movimentacao $movimentacao
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
-     */
-    public function delete(Request $request, Movimentacao $movimentacao)
-    {
-        return $this->doDelete($request, $movimentacao);
-    }
-
-    /**
-     *
      * @Route("/fin/movimentacao/getTiposLanctos", name="fin_movimentacao_getTiposLanctos")
      * @param Request $request
      * @param Movimentacao $movimentacao
@@ -254,7 +252,8 @@ class MovimentacaoController extends MovimentacaoBaseController
         return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', ['movs' => $movs]);
     }
 
-    public function getFormPageTitle() {
+    public function getFormPageTitle()
+    {
         return "Movimentação";
     }
 

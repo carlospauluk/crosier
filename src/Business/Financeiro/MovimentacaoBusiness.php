@@ -408,6 +408,7 @@ class MovimentacaoBusiness
         $tipos['TRANSF_PROPRIA'] = ['title' => 'TRANSFERÊNCIA PRÓPRIA', 'val' => 'TRANSF_PROPRIA', 'route' => 'fin_movimentacao_form'];
         $tipos['PARCELAMENTO'] = ['title' => 'PARCELAMENTO', 'val' => 'PARCELAMENTO', 'route' => 'fin_parcelamento_movimentacaoForm'];
         $tipos['GRUPO'] = ['title' => 'MOVIMENTAÇÃO DE GRUPO', 'val' => 'GRUPO', 'route' => 'fin_movimentacao_form'];
+
         return $tipos;
     }
 
@@ -614,6 +615,31 @@ class MovimentacaoBusiness
         }
 
         return $result;
+    }
+
+
+    /**
+     * Verifica se está pedindo para editar uma 1.99. Neste caso, troca para a 2.99.
+     * @param Movimentacao $movimentacao
+     * @return null
+     * @throws \Exception
+     */
+    public function checkEditTransfPropria(Movimentacao $movimentacao)
+    {
+        if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getCodigo() == 199) {
+
+            $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
+            $cadeia = $movimentacao->getCadeia();
+            if ($cadeia == null) {
+                throw new \Exception('Movimentação de transferência própria sem cadeia');
+            }
+            $moviment299 = $this->doctrine->getRepository(Movimentacao::class)->findOneBy(['cadeia' => $cadeia, 'categoria' => $categ299]);
+            if (!$moviment299) {
+                throw new \Exception('Cadeia de transferência própria já existe, porém sem a 2.99');
+            }
+            return $moviment299;
+        }
+        return null;
     }
 
 

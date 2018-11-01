@@ -86,9 +86,13 @@ class MovimentacaoType extends AbstractType
 
             // Já retorna os valores dentro das regras
             // FIXME: transformar tipoLancto em entidade
+            $choices = null;
             if ($movimentacao and $movimentacao->getTipoLancto()) {
-                $tipoLancto = $this->getMovimentacaoBusiness()->getTiposLanctos()[$movimentacao->getTipoLancto()];
-                $choices = [$tipoLancto['title'] => $movimentacao->getTipoLancto()];
+                $tiposLanctos = $this->getMovimentacaoBusiness()->getTiposLanctos();
+                if (isset($tiposLanctos[$movimentacao->getTipoLancto()])) {
+                    $tipoLancto = $tiposLanctos[$movimentacao->getTipoLancto()];
+                    $choices = [$tipoLancto['title'] => $movimentacao->getTipoLancto()];
+                }
             } else {
                 $choices = [
                     'GERAL' => 'GERAL',
@@ -99,20 +103,23 @@ class MovimentacaoType extends AbstractType
             }
             $params = [
                 'label' => 'Tipo Lancto',
-                'choices' => $choices,
                 'attr' => ['data-val' => (null !== $movimentacao) ? $movimentacao->getTipoLancto() : '']
             ];
+            if ($choices) {
+                $params['choices'] = $choices;
+            }
             $builder->add('tipoLancto', ChoiceType::class, $params);
 
             // Para que o campo select seja montado já com o valor selecionado (no $('#movimentacao_carteira').val())
             $builder->add('carteira', EntityType::class, array(
                 'label' => 'Carteira',
                 'class' => Carteira::class,
-                'choice_label' => 'descricaoMontada',
-                'choices' => null,
+                'choice_label' => function (?Carteira $carteira) {
+                    return $carteira ? $carteira->getDescricaoMontada() : null;
+                },
+                'choices' => [null,$this->doctrine->getRepository(Carteira::class)->findAll()],
                 'data' => (null !== $movimentacao and null !== $movimentacao->getCarteira()) ? $movimentacao->getCarteira() : null,
-                'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteira() and null !== $movimentacao->getCarteira()->getId()) ? $movimentacao->getCarteira()->getId() : ''],
-
+                'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteira() and null !== $movimentacao->getCarteira()->getId()) ? $movimentacao->getCarteira()->getId() : '']
             ));
 
             // Também passo o data-valpai para poder selecionar o valor no campo 'grupo' que é somente um auxiliar na tela
@@ -145,7 +152,8 @@ class MovimentacaoType extends AbstractType
                 'class' => Carteira::class,
                 'choice_label' => 'descricaoMontada',
                 'choices' => null,
-                'required' =>  $movimentacao and $movimentacao->getTipoLancto() and $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA'
+                'required' =>  $movimentacao and $movimentacao->getTipoLancto() and $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA',
+                'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteiraDestino()) ? $movimentacao->getCarteiraDestino()->getId() : ''],
             ));
 
             $builder->add('modo', EntityType::class, array(
@@ -228,8 +236,11 @@ class MovimentacaoType extends AbstractType
             $builder->add('pessoa', EntityType::class, array(
                 'label' => 'Pessoa',
                 'class' => Pessoa::class,
-                'choices' => null,
-                'choice_label' => 'nome'
+                'choices' => [null],
+                'choice_label' => function (?Pessoa $pessoa) {
+                    return $pessoa ? $pessoa->getNome() : '';
+                },
+                'required' => false
             ));
 
             $builder->add('descricao', TextType::class, array(

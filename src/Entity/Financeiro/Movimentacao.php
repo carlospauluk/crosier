@@ -403,6 +403,18 @@ class Movimentacao extends EntityId
 
     public function getTipoLancto()
     {
+        // FIXME: depois que ajustar tudo, remover esta gambi
+        switch ($this->tipoLancto) {
+            case 'REALIZADA':
+            case 'A_PAGAR_RECEBER':
+            case 'CHEQUE_PROPRIO':
+            case 'CHEQUE_TERCEIROS':
+            case 'GERAL':
+            case 'ESTORNO_CORRECAO': $this->tipoLancto = 'GERAL'; break;
+            case 'TRANSF_CAIXA': $this->tipoLancto = 'TRANSF_PROPRIA'; break;
+            case 'MOVIMENTACAO_AGRUPADA': $this->tipoLancto = 'GRUPO'; break;
+        }
+
         return $this->tipoLancto;
     }
 
@@ -699,7 +711,7 @@ class Movimentacao extends EntityId
 
     public function setDescontos($descontos)
     {
-        $this->descontos = $descontos;
+        $this->descontos = -abs(floatval($descontos));
     }
 
     public function getAcrescimos()
@@ -709,7 +721,7 @@ class Movimentacao extends EntityId
 
     public function setAcrescimos($acrescimos)
     {
-        $this->acrescimos = $acrescimos;
+        $this->acrescimos = abs(floatval($acrescimos));
     }
 
     public function getValorTotal()

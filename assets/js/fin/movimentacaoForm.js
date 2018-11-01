@@ -208,6 +208,7 @@ $(document).ready(function () {
      * @returns {*}
      */
     function getCarteiraData(params) {
+        if (!params) params = {};
         // Para chamar por ajax apenas 1 vez
         if (!carteiraData) {
             $.ajax({
@@ -230,6 +231,8 @@ $(document).ready(function () {
      * @param params
      */
     function buildCarteira(params) {
+        if (!params) params = {};
+
         let $carteiraSelected = $carteira.find(':selected');
         let val = $carteiraSelected.val() ? $carteiraSelected.val() : $carteiraSelected.data('val');
 
@@ -261,8 +264,7 @@ $(document).ready(function () {
         // Se já estava setado ou se veio o valor do PHP...
         if (val) {
             $carteira.select2("val", val);
-            //$carteira.val(val).trigger('change').trigger('select2:select');
-            console.log('setei carteira');
+            $carteira.trigger('change');
         }
     }
 
@@ -273,27 +275,27 @@ $(document).ready(function () {
     function buildCarteiraDestino() {
         if (!$carteiraDestino.is(":visible")) return;
 
-        let carteira_data = getCarteiraData(null);
+        getCarteiraData(); // chamo para inicializar o carteiraData caso ainda não tenha sido
+        let carteiraDataDestino = [];
 
-        for (let i = carteira_data.length - 1; i >= 0; i--) {
-            if (carteira_data[i].id === $carteira.val()) {
-                carteira_data.splice(i, 1);
-                break;
+        for (let i = 0 ; i < carteiraData.length; i++) {
+            if (carteiraData[i].id && carteiraData[i].id !== $carteira.val()) {
+                carteiraDataDestino.push(carteiraData[i]);
             }
         }
-
-        carteira_data.unshift({"id": "", "text": ""});
+        carteiraDataDestino.unshift({"id": '', "text": ''})
 
         $carteiraDestino.empty().trigger("change");
         $carteiraDestino.select2({
                 placeholder: "Selecione...",
-                data: carteira_data,
+                data: carteiraDataDestino,
                 width: '100%'
             }
         );
 
         if ($carteiraDestino.data('val')) {
-            $carteiraDestino.val($carteiraDestino.data('val')).trigger('change');
+            $carteiraDestino.val($carteiraDestino.data('val'));
+            $carteiraDestino.trigger('change');
         }
     }
 

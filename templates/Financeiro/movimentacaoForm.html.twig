@@ -13,10 +13,27 @@
                     <h3>Movimentação</h3>
                 </div>
                 <div class="col-4 text-right">
+
+                    <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top"
+                            title="Novo registro"
+                            onclick="window.location.href='{{ url('fin_movimentacao_form') }}'">
+                        <i class="fas fa-file" aria-hidden="true"></i> Novo
+                    </button>
+
                     <button type="button" class="btn btn-secondary"
                             onclick="window.location.href='{{ url('fin_movimentacao_list') }}'">
                         <i class="fas fa-sync" aria-hidden="true"></i> Listar
                     </button>
+
+                    {% if e.id %}
+                    <button type="button" class="btn btn-danger"
+                            data-url="{{ url('fin_movimentacao_delete', {movimentacao: e.id}) }}"
+                            data-token="{{ csrf_token('delete') }}"
+                            data-target="#confirmationModal" data-toggle="modal">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                    </button>
+                    {% endif %}
+
                 </div>
             </div>
 
