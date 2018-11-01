@@ -232,7 +232,7 @@ class FornecedorController extends FormListController
 
     /**
      *
-     * @Route("/est/fornecedor/findByDocumento/{documento}", name="est_fornecedor_findByDocumento", methods={"GET"})
+     * @Route("/est/fornecedor/findByDocumento/{documento}", name="est_fornecedor_findByDocumento")
      * @param null $documento
      * @return Response|void
      * @throws \Exception

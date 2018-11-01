@@ -38,7 +38,6 @@ class MovimentacaoController extends MovimentacaoBaseController
         $movimentacaoForm = $request->request->get('movimentacao');
         if ($movimentacaoForm) {
             $movimentacaoForm['valorTotal'] = 0.0;
-            $movimentacaoForm['dtUtil'] = '01/01/1900';
             $movimentacaoForm['centroCusto'] = 1;
             $request->request->set('movimentacao', $movimentacaoForm);
         }

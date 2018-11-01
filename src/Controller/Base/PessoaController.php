@@ -24,7 +24,7 @@ class PessoaController extends Controller
 
     /**
      *
-     * @Route("/bse/pessoa/findByNome/{str}", name="bse_pessoa_findByNome", methods={"GET"})
+     * @Route("/bse/pessoa/findByNome/{str}", name="bse_pessoa_findByNome")
      *
      */
     public function findByNome($str = null)
@@ -46,7 +46,7 @@ class PessoaController extends Controller
 
     /**
      *
-     * @Route("/bse/pessoa/findByDocumento/{documento}", name="bse_pessoa_findByNome", methods={"GET"})
+     * @Route("/bse/pessoa/findByDocumento/{documento}", name="bse_pessoa_findByNome")
      *
      */
     public function findByDocumento($documento = null)

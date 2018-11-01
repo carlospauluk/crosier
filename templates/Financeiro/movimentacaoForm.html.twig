@@ -39,7 +39,25 @@
             {{ form_row(form.carteira) }}
             {{ form_row(form.carteiraDestino) }}
 
-            <div class="card divCampos" id="divCamposCheque" style="display: none;">
+
+            <div class="card" id="divCamposGrupo" style="display: none;">
+                <h5 class="card-header">Grupo</h5>
+                <div class="card-body">
+
+                    <div class="form-group row">
+                        <label class="col-form-label col-sm-2 form-control-label required" for="grupo">Grupo</label>
+                        <div class="col-sm-10">
+                            <select id="grupo" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    {{ form_row(form.grupoItem) }}
+                </div>
+            </div>
+
+            {{ form_row(form.grupoItem) }}
+
+            <div class="card" id="divCamposCheque" style="display: none;">
                 <h5 class="card-header">Cheque</h5>
                 <div class="card-body">
                     {{ form_row(form.chequeBanco) }}
@@ -64,7 +82,7 @@
             {{ form_row(form.descricao) }}
 
 
-            <div class="card divCampos">
+            <div class="card divCamposDocumento">
                 <h5 class="card-header">Documento</h5>
                 <div class="card-body">
                     {{ form_row(form.documentoBanco) }}
@@ -72,7 +90,7 @@
                 </div>
             </div>
 
-            <div class="card divCampos">
+            <div class="card divCamposValores">
                 <h5 class="card-header">Valores</h5>
                 <div class="card-body">
                     {{ form_row(form.valor) }}
@@ -84,7 +102,7 @@
 
 
 
-            <div class="card divCampos" id="divRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
+            <div class="card divCampos" id="divCamposRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
                 <h5 class="card-header">Recorrência</h5>
                 <div class="card-body">
                     {{ form_row(form.recorrente) }}

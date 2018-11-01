@@ -8,6 +8,7 @@ use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
+use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
 use Psr\Log\LoggerInterface;
@@ -81,6 +82,12 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     public function beforeSave($movimentacao)
     {
+        if ($movimentacao->getTipoLancto() == 'GRUPO') {
+            $modo50 = $this->getEntityManager()->getRepository(Modo::class)->findOneBy(['codigo' => 50]);
+            $movimentacao->setModo($modo50);
+        }
+
+
         if (!$movimentacao->getModo()) {
             throw new \Exception("Modo deve ser informado para a movimentação '" . $movimentacao->getDescricao() . "''");
         }
@@ -93,6 +100,9 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Salvando movimentação agrupada
         if ($movimentacao->getTipoLancto() == 'MOVIMENTACAO_AGRUPADA') {
+            $movimentacao->setTipoLancto('GRUPO');
+        }
+        if ($movimentacao->getTipoLancto() == 'GRUPO') {
             if (!$movimentacao->getGrupoItem()) {
                 throw new \Exception("GrupoItem deve ser informado.");
             } else {
@@ -119,9 +129,10 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         if (!$movimentacao->getCategoria()) {
             throw new \Exception("É necessário informar a categoria da movimentação.");
-        } else if ($movimentacao->getCategoria()->getCentroCustoDif() == FALSE) {
-            $movimentacao->setCentroCusto($this->getEntityManager()->getRepository(CentroCusto::class)->find(1));
         }
+//        else if ($movimentacao->getCategoria()->getCentroCustoDif() == FALSE) {
+//            $movimentacao->setCentroCusto($this->getEntityManager()->getRepository(CentroCusto::class)->find(1));
+//        }
 
         // Se não passar descrição, tenta montá-la a partir da bandeira do cartão.
         if (!trim($movimentacao->getDescricao())) {

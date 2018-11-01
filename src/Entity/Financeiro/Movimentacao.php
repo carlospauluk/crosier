@@ -33,8 +33,6 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="status", type="string", nullable=false, length=50)
-     * @Assert\NotBlank(message="O campo 'Status' deve ser informado")
-     *
      */
     private $status;
 
@@ -42,7 +40,6 @@ class Movimentacao extends EntityId
      * Tipo de lançamento que originou esta movimentação.
      *
      * @ORM\Column(name="tipo_lancto", type="string", nullable=false, length=50)
-     * @Assert\NotBlank(message="O campo 'Tipo de Lancto' deve ser informado")
      *
      * @var $tipoLancto
      */
@@ -52,7 +49,6 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Carteira")
      * @ORM\JoinColumn(name="carteira_id", nullable=false)
-     * @Assert\NotNull(message="O campo 'Carteira' deve ser informado")
      *
      * @var $carteira Carteira
      */
@@ -72,7 +68,6 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\CentroCusto")
      * @ORM\JoinColumn(name="centrocusto_id", nullable=false)
-     * @Assert\NotNull(message="O campo 'Centro de Custo' deve ser informado")
      *
      * @var $centroCusto CentroCusto
      */
@@ -82,7 +77,6 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Modo")
      * @ORM\JoinColumn(name="modo_id", nullable=false)
-     * @Assert\NotNull(message="O campo 'Modo' deve ser informado")
      *
      * @var $modo Modo
      */
@@ -115,7 +109,6 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=500)
-     * @Assert\NotBlank(message="O campo 'Descrição' deve ser informado")
      */
     private $descricao;
 
@@ -220,7 +213,6 @@ class Movimentacao extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
      * @ORM\JoinColumn(name="categoria_id", nullable=false)
-     * @Assert\NotNull(message="O campo 'Categoria' deve ser informado")
      * @var $categoria Categoria
      */
     private $categoria;
@@ -238,7 +230,6 @@ class Movimentacao extends EntityId
      * Data em que a movimentação efetivamente aconteceu.
      *
      * @ORM\Column(name="dt_moviment", type="datetime", nullable=false)
-     * @Assert\NotNull(message="O campo 'Dt Moviment' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtMoviment;
@@ -247,7 +238,6 @@ class Movimentacao extends EntityId
      * Data prevista para pagamento.
      *
      * @ORM\Column(name="dt_vencto", type="datetime", nullable=false)
-     * @Assert\NotNull(message="O campo 'Dt Vencto' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtVencto;
@@ -256,7 +246,6 @@ class Movimentacao extends EntityId
      * Data prevista (postergando para dia útil) para pagamento.
      *
      * @ORM\Column(name="dt_vencto_efetiva", type="datetime", nullable=false)
-     * @Assert\NotNull(message="O campo 'Dt Vencto Efet' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtVenctoEfetiva;
@@ -273,7 +262,6 @@ class Movimentacao extends EntityId
      * Se dtPagto != null ? dtPagto : dtVencto.
      *
      * @ORM\Column(name="dt_util", type="datetime", nullable=false)
-     * @Assert\NotNull(message="O campo 'Dt Util' deve ser informado")
      * @Assert\Type("\DateTime")
      */
     private $dtUtil;
@@ -282,7 +270,6 @@ class Movimentacao extends EntityId
      * Valor bruto da movimentação.
      *
      * @ORM\Column(name="valor", type="decimal", nullable=false, precision=15, scale=2)
-     * @Assert\NotNull(message="O campo 'Valor' deve ser informado")
      * @Assert\Type("numeric")
      */
     private $valor;
@@ -308,7 +295,6 @@ class Movimentacao extends EntityId
      * conta por algum motivo).
      *
      * @ORM\Column(name="valor_total", type="decimal", nullable=false, precision=15, scale=2)
-     * @Assert\NotNull(message="O campo 'Valor Total' deve ser informado")
      * @Assert\Type("numeric", message="O campo 'Valor Total' deve ser numérico")
      */
     private $valorTotal;
@@ -350,7 +336,6 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\Column(name="recorrente", type="boolean", nullable=false)
-     * @Assert\NotNull(message = "O campo 'Recorrente' deve ser informado")
      */
     private $recorrente = false;
 
@@ -862,7 +847,8 @@ class Movimentacao extends EntityId
         return $descricaoMontada;
     }
 
-    public function calcValorTotal() {
+    public function calcValorTotal()
+    {
         $valorTotal = $this->getValor() + $this->getDescontos() + $this->getAcrescimos();
         $this->setValorTotal($valorTotal);
     }
