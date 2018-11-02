@@ -87,7 +87,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             $movimentacao->setModo($modo50);
         }
 
-
         if (!$movimentacao->getModo()) {
             throw new \Exception("Modo deve ser informado para a movimentação '" . $movimentacao->getDescricao() . "''");
         }
@@ -183,6 +182,10 @@ class MovimentacaoEntityHandler extends EntityHandler
             if ($movimentacao->getDtMoviment() == null) {
                 $movimentacao->setDtMoviment($movimentacao->getDtPagto());
             }
+        }
+
+        if (!$movimentacao->getRecorrente()) {
+            $movimentacao->setRecorrente(false);
         }
 
         if (!$movimentacao->getRecorrFrequencia()) {

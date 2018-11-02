@@ -75,13 +75,14 @@ class MovimentacaoType extends AbstractType
 
             $builder->add('id', IntegerType::class, array(
                 'label' => 'Id',
-                'required' => false,
-                'disabled' => true
+                'disabled' => true,
+                'required' => false
             ));
 
             // Adiciono este por default, sabendo que será alterado no beforeSave
             $builder->add('status', HiddenType::class, array(
-                'data' => 'A_PAGAR_RECEBER'
+                'data' => 'A_PAGAR_RECEBER',
+                'required' => false
             ));
 
             // Já retorna os valores dentro das regras
@@ -103,7 +104,8 @@ class MovimentacaoType extends AbstractType
             }
             $params = [
                 'label' => 'Tipo Lancto',
-                'attr' => ['data-val' => (null !== $movimentacao) ? $movimentacao->getTipoLancto() : '']
+                'attr' => ['data-val' => (null !== $movimentacao) ? $movimentacao->getTipoLancto() : ''],
+                'required' => false
             ];
             if ($choices) {
                 $params['choices'] = $choices;
@@ -119,7 +121,8 @@ class MovimentacaoType extends AbstractType
                 },
                 'choices' => [null,$this->doctrine->getRepository(Carteira::class)->findAll()],
                 'data' => (null !== $movimentacao and null !== $movimentacao->getCarteira()) ? $movimentacao->getCarteira() : null,
-                'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteira() and null !== $movimentacao->getCarteira()->getId()) ? $movimentacao->getCarteira()->getId() : '']
+                'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteira() and null !== $movimentacao->getCarteira()->getId()) ? $movimentacao->getCarteira()->getId() : ''],
+                'required' => false
             ));
 
             // Também passo o data-valpai para poder selecionar o valor no campo 'grupo' que é somente um auxiliar na tela
@@ -133,6 +136,7 @@ class MovimentacaoType extends AbstractType
                     'data-val' => (null !== $movimentacao and null !== $movimentacao->getGrupoItem() and null !== $movimentacao->getGrupoItem()->getId()) ? $movimentacao->getGrupoItem()->getId() : '',
                     'data-valpai' => (null !== $movimentacao and null !== $movimentacao->getGrupoItem() and null !== $movimentacao->getGrupoItem()->getPai()) ? $movimentacao->getGrupoItem()->getPai()->getId() : ''
                 ],
+                'required' => false
             ));
 
 
@@ -143,6 +147,7 @@ class MovimentacaoType extends AbstractType
                 'choices' => null,
                 'data' => (null !== $movimentacao and null !== $movimentacao->getCategoria()) ? $movimentacao->getCategoria() : null,
                 'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCategoria() and null !== $movimentacao->getCategoria()->getId()) ? $movimentacao->getCategoria()->getId() : ''],
+                'required' => false
             ));
 
 
@@ -152,8 +157,8 @@ class MovimentacaoType extends AbstractType
                 'class' => Carteira::class,
                 'choice_label' => 'descricaoMontada',
                 'choices' => null,
-                'required' =>  $movimentacao and $movimentacao->getTipoLancto() and $movimentacao->getTipoLancto() == 'TRANSF_PROPRIA',
                 'attr' => ['data-val' => (null !== $movimentacao and null !== $movimentacao->getCarteiraDestino()) ? $movimentacao->getCarteiraDestino()->getId() : ''],
+                'required' => false
             ));
 
             $builder->add('modo', EntityType::class, array(
@@ -163,7 +168,7 @@ class MovimentacaoType extends AbstractType
                 'choice_label' => function (?Modo $modo) {
                     return $modo ? $modo->getDescricaoMontada() : null;
                 },
-                'required' => false,
+                'required' => false
             ));
 
             $builder->add('bandeiraCartao', EntityType::class, array(
@@ -189,7 +194,8 @@ class MovimentacaoType extends AbstractType
             $builder->add('centroCusto', EntityType::class, array(
                 'class' => CentroCusto::class,
                 'choices' => $this->doctrine->getRepository(CentroCusto::class)->findAll(),
-                'choice_label' => 'descricaoMontada'
+                'choice_label' => 'descricaoMontada',
+                'required' => false
             ));
 
 
@@ -199,7 +205,8 @@ class MovimentacaoType extends AbstractType
                 'format' => 'dd/MM/yyyy',
                 'attr' => array(
                     'class' => 'crsr-date'
-                )
+                ),
+                'required' => false
             ));
 
             $builder->add('dtVencto', DateType::class, array(
@@ -244,18 +251,19 @@ class MovimentacaoType extends AbstractType
             ));
 
             $builder->add('descricao', TextType::class, array(
-                'label' => 'Descrição'
+                'label' => 'Descrição',
+                'required' => false
             ));
 
             $builder->add('documentoBanco', EntityType::class, array(
-                'required' => false,
                 'label' => 'Banco do Documento',
                 'class' => Banco::class,
                 'choices' => $this->doctrine->getRepository(Banco::class)
                     ->findAll(WhereBuilder::buildOrderBy('codigoBanco')),
                 'choice_label' => function (Banco $banco) {
                     return sprintf("%03d", $banco->getCodigoBanco()) . " - " . $banco->getNome();
-                }
+                },
+                'required' => false
             ));
 
             $builder->add('documentoNum', TextType::class, array(
@@ -272,54 +280,54 @@ class MovimentacaoType extends AbstractType
                 'label' => 'Valor',
                 'currency' => 'BRL',
                 'grouping' => 'true',
-                'required' => false,
                 'attr' => array(
                     'class' => 'crsr-money'
-                )
+                ),
+                'required' => false
             ));
 
             $builder->add('descontos', MoneyType::class, array(
-                'required' => false,
                 'label' => 'Descontos',
                 'currency' => 'BRL',
                 'grouping' => 'true',
                 'attr' => array(
                     'class' => 'crsr-money'
-                )
+                ),
+                'required' => false
             ));
 
             $builder->add('acrescimos', MoneyType::class, array(
-                'required' => false,
                 'label' => 'Acréscimos',
                 'currency' => 'BRL',
                 'grouping' => 'true',
                 'attr' => array(
                     'class' => 'crsr-money'
-                )
+                ),
+                'required' => false
             ));
 
             $builder->add('valorTotal', MoneyType::class, array(
                 'label' => 'Valor Total',
                 'currency' => 'BRL',
                 'grouping' => 'true',
-                'required' => false,
                 'attr' => array(
                     'class' => 'crsr-money'
                 ),
-                'disabled' => true
+                'disabled' => true,
+                'required' => false
             ));
 
             // Cheque
 
             $builder->add('chequeBanco', EntityType::class, array(
-                'required' => false,
                 'label' => 'Banco',
                 'class' => Banco::class,
                 'choices' => $this->doctrine->getRepository(Banco::class)
                     ->findAll(WhereBuilder::buildOrderBy('codigoBanco')),
                 'choice_label' => function (Banco $banco) {
                     return sprintf("%03d", $banco->getCodigoBanco()) . " - " . $banco->getNome();
-                }
+                },
+                'required' => false
             ));
 
             $builder->add('chequeAgencia', TextType::class, array(
@@ -345,7 +353,7 @@ class MovimentacaoType extends AbstractType
                     'SIM' => true,
                     'NÃO' => false
                 ),
-                'required' => true
+                'required' => false
             ));
 
             $builder->add('recorrDia', IntegerType::class, array(

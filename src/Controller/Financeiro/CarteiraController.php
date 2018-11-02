@@ -169,6 +169,7 @@ class CarteiraController extends FormListController
             $r['agencia'] = $item->getAgencia();
             $r['conta'] = $item->getConta();
             $r['cheque'] = $item->getCheque();
+            $r['caixa'] = $item->getCaixa();
             $rs[] = $r;
         }
 

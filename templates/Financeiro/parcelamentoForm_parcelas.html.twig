@@ -1,7 +1,16 @@
 <div class="tab-pane fade" id="parcelas" role="tabpanel" aria-labelledby="parcelas-tab">
 
 
-    <form id="parcelas" action="{{ url('fin_parcelamento_salvarParcelas') }}" method="post">
+    <form id="parcelas" name="parcelas" action="{{ url('fin_parcelamento_salvarParcelas') }}" method="post">
+
+
+        <div class="form-group row">
+            <label class="col-form-label col-sm-2" for="parcelamento_primeiroVencto">Vencto #1</label>
+            <div class="col-sm-10">
+                <input type="text" id="parcelamento_primeiroVencto" name="parcelamento[primeiroVencto]"
+                       class="crsr-date form-control" maxlength="10">
+            </div>
+        </div>
 
         <div class="form-group row">
             <label class="col-form-label col-sm-2 required" for="parcelamento_qtdeParcelas">Qtde</label>
@@ -42,8 +51,11 @@
             <label class="col-form-label col-sm-2" for="parcelamento_diaFixo">Iteração</label>
             <div class="col-sm-10">
                 <select id="parcelamento_diaFixo" name="parcelamento[diaFixo]" class="form-control">
-                    <option value="1" {{ parcelamento.diaFixo|default('') ? 'selected="selected"' : '' }}>Dia Fixo</option>
-                    <option value="0" {{ parcelamento.diaFixo|default('') ? 'selected="selected"' : '' }}>30 dias corridos</option>
+                    <option value="1" {{ parcelamento.diaFixo|default('') ? 'selected="selected"' : '' }}>Dia Fixo
+                    </option>
+                    <option value="0" {{ parcelamento.diaFixo|default('') ? 'selected="selected"' : '' }}>30 dias
+                        corridos
+                    </option>
                 </select>
             </div>
         </div>
@@ -98,31 +110,37 @@
                         </thead>
 
                         <tbody id="tbody_parcelas">
-                            {% if parcelas is defined %}
-                                {% for i,parcela in parcelas %}
-                                    <tr>
-                                        <td>{{ i+1 }}</td>
-                                        <td>
-                                            <input type="text" name="parcela[{{ i }}][dtVencto]" required="required" class="crsr-date form-control" value="{{ parcela.dtVencto }}" maxlength="10">
-                                        </td>
-                                        <td>
-                                            <input type="text" name="parcela[{{ i }}][dtVenctoEfetiva]" required="required" class="crsr-date form-control" value="{{ parcela.dtVenctoEfetiva }}" maxlength="10">
-                                        </td>
-                                        <td>
-                                            <input type="text" name="parcela[{{ i }}][documentoNum]" required="required" class="form-control" value="{{ parcela.documentoNum }} ">
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text">R$ </span>
-                                                </div>
-                                                <input type="text" name="parcela[{{ i }}][valor]" required="required" class="crsr-money form-control" value="{{ parcela.valor }}">
+                        {% if parcelas is defined %}
+                            {% for i,parcela in parcelas %}
+                                <tr>
+                                    <td>{{ i+1 }}</td>
+                                    <td>
+                                        <input type="text" name="parcela[{{ i }}][dtVencto]" required="required"
+                                               class="crsr-date form-control" value="{{ parcela.dtVencto }}"
+                                               maxlength="10">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="parcela[{{ i }}][dtVenctoEfetiva]" required="required"
+                                               class="crsr-date form-control" value="{{ parcela.dtVenctoEfetiva }}"
+                                               maxlength="10">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="parcela[{{ i }}][documentoNum]" required="required"
+                                               class="form-control" value="{{ parcela.documentoNum }} ">
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">R$ </span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+                                            <input type="text" name="parcela[{{ i }}][valor]" required="required"
+                                                   class="crsr-money form-control" value="{{ parcela.valor }}">
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
 
-                            {% endif %}
+                        {% endif %}
 
                         </tbody>
 
@@ -143,7 +161,7 @@
                 <button type="button" name="parcelamento_btnGerar" id="parcelamento_btnSalvarTodas"
                         class="btn btn-primary"
                         value="Salvar parcelas"
-                        data-jsfunction="ParcelamentoForm.salvarParcelas"
+                        data-form="parcelas"
                         data-target="#confirmationModal" data-toggle="modal">
                     <i class="fas fa-save" aria-hidden="true"></i> Salvar parcelas
                 </button>

@@ -72,8 +72,6 @@
                 </div>
             </div>
 
-            {{ form_row(form.grupoItem) }}
-
             <div class="card" id="divCamposCheque" style="display: none;">
                 <h5 class="card-header">Cheque</h5>
                 <div class="card-body">
@@ -81,6 +79,14 @@
                     {{ form_row(form.chequeAgencia) }}
                     {{ form_row(form.chequeConta) }}
                     {{ form_row(form.chequeNumCheque) }}
+                </div>
+            </div>
+
+            <div class="card" id="divCamposCartao" style="display: none;">
+                <h5 class="card-header">Cartão</h5>
+                <div class="card-body">
+                    {{ form_row(form.operadoraCartao) }}
+                    {{ form_row(form.bandeiraCartao) }}
                 </div>
             </div>
 
@@ -119,7 +125,7 @@
 
 
 
-            <div class="card divCampos" id="divCamposRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
+            <div class="card" id="divCamposRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
                 <h5 class="card-header">Recorrência</h5>
                 <div class="card-body">
                     {{ form_row(form.recorrente) }}

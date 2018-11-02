@@ -127,6 +127,14 @@ $(document).ready(function () {
 
         let $tipoLanctoSelected = $tipoLancto.find(':selected').val();
 
+        if ($tipoLancto.find(':selected').data('data')['route']) {
+            let tipoLanctoRouteURL = Routing.generate($tipoLancto.find(':selected').data('data')['route']);
+            if (tipoLanctoRouteURL !== window.location.pathname) {
+                window.location.href = tipoLanctoRouteURL;
+                return;
+            }
+        }
+
         // Filtro por tipoLancto
         let camposVisiveis = $.grep(camposTodos, function (e) {
             return camposEscond[$tipoLanctoSelected].indexOf(e) === -1;
@@ -198,7 +206,16 @@ $(document).ready(function () {
      * Regras de acordo com o campo carteira.
      */
     function handleCarteiraRules() {
-
+        let carteira = $carteira.find(':selected').data('data');
+        if (carteira['caixa']) {
+            $dtVencto.closest('.form-group.row').css('display', 'none');
+            $dtVenctoEfetiva.closest('.form-group.row').css('display', 'none');
+            $dtPagto.closest('.form-group.row').css('display', 'none');
+        } else {
+            $dtVencto.closest('.form-group.row').css('display', '');
+            $dtVenctoEfetiva.closest('.form-group.row').css('display', '');
+            $dtPagto.closest('.form-group.row').css('display', '');
+        }
     }
 
 
@@ -278,7 +295,7 @@ $(document).ready(function () {
         getCarteiraData(); // chamo para inicializar o carteiraData caso ainda não tenha sido
         let carteiraDataDestino = [];
 
-        for (let i = 0 ; i < carteiraData.length; i++) {
+        for (let i = 0; i < carteiraData.length; i++) {
             if (carteiraData[i].id && carteiraData[i].id !== $carteira.val()) {
                 carteiraDataDestino.push(carteiraData[i]);
             }
@@ -304,7 +321,7 @@ $(document).ready(function () {
      * Constrói o campo tipoLancto.
      */
     function buildTiposLancto() {
-
+        // Se o valor já veio setado no data-val, então é porque só deve exibir um tipo
         if ($tipoLancto.data('val')) {
             $tipoLancto.select2();
         } else {
@@ -317,6 +334,9 @@ $(document).ready(function () {
                 }
             ).done(function (results) {
 
+                // o valor por ter vindo pelo value ou pelo data-val (ou por nenhum)
+                let val = $tipoLancto.val() ? $tipoLancto.val() : $tipoLancto.data('val');
+
                 results = $.map(results['tiposLanctos'], function (o) {
                     return {id: o.val, text: o.title, route: o.route};
                 });
@@ -327,9 +347,9 @@ $(document).ready(function () {
                         width: '100%'
                     }
                 );
-                // Se veio o valor do PHP...
-                if ($tipoLancto.data('val')) {
-                    $tipoLancto.val($tipoLancto.data('val')).trigger('change');
+                // Se veio o valor...
+                if (val) {
+                    $tipoLancto.val(val).trigger('change');
                 }
             });
         }
@@ -343,6 +363,8 @@ $(document).ready(function () {
                 type: 'GET'
             }
         ).done(function (results) {
+            // o valor por ter vindo pelo value ou pelo data-val (ou por nenhum)
+            let val = $categoria.val() ? $categoria.val() : $categoria.data('val');
             $categoria.empty().trigger("change");
 
             results.unshift({"id": "", "text": ""});
@@ -354,8 +376,8 @@ $(document).ready(function () {
                 }
             );
             // Se veio o valor do PHP...
-            if ($categoria.data('val')) {
-                $categoria.val($categoria.data('val')).trigger('change');
+            if (val) {
+                $categoria.val(val).trigger('change');
             }
         });
     }

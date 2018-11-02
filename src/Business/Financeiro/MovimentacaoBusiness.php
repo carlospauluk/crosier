@@ -145,6 +145,7 @@ class MovimentacaoBusiness
         $valorTotal = 0.0;
         foreach ($parcelas as $parcela) {
             $movimentacao = clone $primeiraParcela;
+            $movimentacao->setTipoLancto('GERAL');
             $movimentacao->setParcelamento($parcelamento);
             $movimentacao->setNumParcela($i++);
             $movimentacao->setQtdeParcelas(count($parcelas));
@@ -406,7 +407,7 @@ class MovimentacaoBusiness
         $tipos = [];
         $tipos['GERAL'] = ['title' => 'GERAL', 'val' => 'GERAL', 'route' => 'fin_movimentacao_form'];
         $tipos['TRANSF_PROPRIA'] = ['title' => 'TRANSFERÊNCIA PRÓPRIA', 'val' => 'TRANSF_PROPRIA', 'route' => 'fin_movimentacao_form'];
-        $tipos['PARCELAMENTO'] = ['title' => 'PARCELAMENTO', 'val' => 'PARCELAMENTO', 'route' => 'fin_parcelamento_movimentacaoForm'];
+        $tipos['PARCELAMENTO'] = ['title' => 'PARCELAMENTO', 'val' => 'PARCELAMENTO', 'route' => 'fin_parcelamento_form'];
         $tipos['GRUPO'] = ['title' => 'MOVIMENTAÇÃO DE GRUPO', 'val' => 'GRUPO', 'route' => 'fin_movimentacao_form'];
 
         return $tipos;
