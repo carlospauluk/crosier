@@ -151,12 +151,18 @@ class CategoriaController extends FormListController
             $params['codigo'] = 299;
         }
 
+        $somenteFolhas = $request->get('somenteFolhas') ? $request->get('somenteFolhas') !== false : true;
+
         $itens = $this->getDoctrine()->getRepository(Categoria::class)->findBy($params, ['codigoOrd' => 'ASC']);
 
         $rs = array();
         foreach ($itens as $item) {
+            $r = [];
             $r['id'] = $item->getId();
             $r['text'] = $item->getDescricaoMontada();
+            if ($somenteFolhas and $item->getSubCategs() and !$item->getSubCategs()->isEmpty()) {
+                $r['disabled'] = true;
+            }
             $rs[] = $r;
         }
 

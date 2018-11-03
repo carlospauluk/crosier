@@ -145,6 +145,7 @@ class MovimentacaoBusiness
         $valorTotal = 0.0;
         foreach ($parcelas as $parcela) {
             $movimentacao = clone $primeiraParcela;
+            $movimentacao->setTipoLancto('GERAL');
             $movimentacao->setParcelamento($parcelamento);
             $movimentacao->setNumParcela($i++);
             $movimentacao->setQtdeParcelas(count($parcelas));
@@ -401,49 +402,15 @@ class MovimentacaoBusiness
      * @param Movimentacao|null $movimentacao
      * @return array
      */
-    public function getTiposLanctos($formMovimentacao = null)
+    public function getTiposLanctos()
     {
-        $tipo_GERAL = ['title' => 'GERAL', 'val' => 'GERAL', 'route' => 'fin_movimentacao_form'];
+        $tipos = [];
+        $tipos['GERAL'] = ['title' => 'GERAL', 'val' => 'GERAL', 'route' => 'fin_movimentacao_form'];
+        $tipos['TRANSF_PROPRIA'] = ['title' => 'TRANSFERÊNCIA PRÓPRIA', 'val' => 'TRANSF_PROPRIA', 'route' => 'fin_movimentacao_form'];
+        $tipos['PARCELAMENTO'] = ['title' => 'PARCELAMENTO', 'val' => 'PARCELAMENTO', 'route' => 'fin_parcelamento_form'];
+        $tipos['GRUPO'] = ['title' => 'MOVIMENTAÇÃO DE GRUPO', 'val' => 'GRUPO', 'route' => 'fin_movimentacao_form'];
 
-        $tipo_TRANSF_PROPRIA = ['title' => 'TRANSFERÊNCIA PRÓPRIA', 'val' => 'TRANSF_PROPRIA', 'route' => 'fin_movimentacao_formTransfPropria'];
-
-        $tipo_PARCELAMENTO = ['title' => 'PARCELAMENTO', 'val' => 'PARCELAMENTO', 'route' => 'fin_parcelamento_movimentacaoForm'];
-
-        $tipo_CAIXA = ['title' => 'MOVIMENTAÇÃO DE CAIXA', 'val' => 'CAIXA', 'route' => 'fin_movimentacao_formCaixa'];
-
-        $tipo_MOVIMENTACAO_DE_GRUPO = ['title' => 'MOVIMENTAÇÃO DE GRUPO', 'val' => 'GRUPO', 'route' => 'fin_movimentacao_formGrupoItem'];
-
-
-//        // Se é nova, pode todos
-        if ($formMovimentacao) {
-
-
-            if (isset($formMovimentacao['categoria']) and $formMovimentacao['categoria'] == 299) {
-                // Se for uma 299, retorna apenas...
-                return [$tipo_TRANSF_PROPRIA];
-
-            } else if (isset($formMovimentacao['grupoItem'])) {
-                // Se tiver grupoItem...
-                return [$tipo_MOVIMENTACAO_DE_GRUPO, $tipo_PARCELAMENTO];
-
-            } else if (isset($formMovimentacao['carteira'])) {
-
-                if ($this->doctrine->getRepository(Carteira::class)->find($formMovimentacao['carteira'])->getCaixa()) {
-                    // Se for de algum caixa
-                    return [$tipo_CAIXA, $tipo_TRANSF_PROPRIA];
-                }
-            }
-
-        }
-
-        // outros casos, retorna tudo
-        return [
-            $tipo_GERAL,
-            $tipo_TRANSF_PROPRIA,
-            $tipo_PARCELAMENTO,
-            $tipo_CAIXA,
-            $tipo_MOVIMENTACAO_DE_GRUPO
-        ];
+        return $tipos;
     }
 
     /**
@@ -649,6 +616,31 @@ class MovimentacaoBusiness
         }
 
         return $result;
+    }
+
+
+    /**
+     * Verifica se está pedindo para editar uma 1.99. Neste caso, troca para a 2.99.
+     * @param Movimentacao $movimentacao
+     * @return null
+     * @throws \Exception
+     */
+    public function checkEditTransfPropria(Movimentacao $movimentacao)
+    {
+        if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getCodigo() == 199) {
+
+            $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
+            $cadeia = $movimentacao->getCadeia();
+            if ($cadeia == null) {
+                throw new \Exception('Movimentação de transferência própria sem cadeia');
+            }
+            $moviment299 = $this->doctrine->getRepository(Movimentacao::class)->findOneBy(['cadeia' => $cadeia, 'categoria' => $categ299]);
+            if (!$moviment299) {
+                throw new \Exception('Cadeia de transferência própria já existe, porém sem a 2.99');
+            }
+            return $moviment299;
+        }
+        return null;
     }
 
 

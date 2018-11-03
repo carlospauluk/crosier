@@ -86,7 +86,7 @@ abstract class FormListController extends Controller
      *
      * @param Request $request
      * @param EntityId|null $entityId
-     * @param null $parameters
+     * @param array $parameters
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
@@ -126,6 +126,7 @@ abstract class FormListController extends Controller
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
         $parameters['form'] = $form->createView();
         $parameters['page_title'] = $this->getFormPageTitle();
+        $parameters['e'] = $entityId;
         return $this->render($this->getFormView(), $parameters);
     }
 

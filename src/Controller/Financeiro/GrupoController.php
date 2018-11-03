@@ -10,6 +10,8 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\GrupoEntityHandler;
 use App\Form\Financeiro\GrupoType;
 use App\Utils\Repository\FilterData;
+use App\Utils\Repository\WhereBuilder;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -137,28 +139,40 @@ class GrupoController extends FormListController
 
     /**
      *
-     * @Route("/fin/grupo/select2json", name="fin_grupo_select2json", methods={"GET"})
+     * @Route("/fin/grupo/select2json", name="fin_grupo_select2json")
      * @param Request $request
      * @return Response
      */
     public function grupoSelect2json(Request $request)
     {
-        $grupos = $this->getDoctrine()->getRepository(Grupo::class)->findAll();
+        $grupos = $this->getDoctrine()->getRepository(Grupo::class)->findAll(WhereBuilder::buildOrderBy('descricao'));
+
+        $abertos = $request->get('abertos');
 
         $rs = array();
         foreach ($grupos as $grupo) {
-            $r['id'] = $grupo->getId();
-            $r['text'] = $grupo->getDescricao();
-            $rs[] = $r;
+            if ($abertos) {
+                // Só retorna grupos que possuam itens abertos
+                $itens = $this->getDoctrine()->getRepository(GrupoItem::class)->findBy(['pai' => $grupo, 'fechado' => false],['dtVencto'=>'DESC']);
+                if ($itens and count($itens) > 0) {
+                    $r['id'] = $grupo->getId();
+                    $r['text'] = $grupo->getDescricao();
+                    $r['itens'] = [];
+                    foreach ($itens as $item) {
+                        $rItem['id'] = $item->getId();
+                        $rItem['text'] = $item->getDescricao();
+                        $r['itens'][] = $rItem;
+                    }
+                    $rs[] = $r;
+                }
+            } else {
+                $r['id'] = $grupo->getId();
+                $r['text'] = $grupo->getDescricao();
+                $rs[] = $r;
+            }
         }
 
-        $normalizer = new ObjectNormalizer();
-        $encoder = new JsonEncoder();
-
-        $serializer = new Serializer(array($normalizer), array($encoder));
-        $json = $serializer->serialize($rs, 'json');
-
-        return new Response($json);
+        return new JsonResponse($rs);
 
     }
 

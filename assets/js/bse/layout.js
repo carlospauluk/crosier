@@ -55,13 +55,15 @@ $(document).ready(function () {
     CrosierMasks.maskAll();
 
 
-    $('form').submit(function(e) {
+    $('form').submit(function (e) {
         Pace.restart();
-
+        for (let i = 0; i < document.getElementsByClassName("blur-on-pace").length; i++) {
+            document.getElementsByClassName("blur-on-pace")[i].style.filter = 'blur(3px)';
+        }
     });
 
     $(document).ajaxStart(function () {
-         Pace.restart();
+        Pace.restart();
     });
 
     // **************** confirmationModal ****************
@@ -85,7 +87,7 @@ $(document).ready(function () {
         var args = Array.prototype.slice.call(arguments, 2);
         var namespaces = functionName.split(".");
         var func = namespaces.pop();
-        for(var i = 0; i < namespaces.length; i++) {
+        for (var i = 0; i < namespaces.length; i++) {
             context = context[namespaces[i]];
         }
         return context[func].apply(context, args);
@@ -118,7 +120,7 @@ $(document).ready(function () {
 
     $('.FLASHMESSAGE').each(function () {
         if ($(this).hasClass('FLASHMESSAGE_SUCCESS')) {
-            toastr.success($(this).html(),'', 'trustedHtml');
+            toastr.success($(this).html(), '', 'trustedHtml');
         } else if ($(this).hasClass('FLASHMESSAGE_WARNING')) {
             toastr.warning($(this).html());
         } else if ($(this).hasClass('FLASHMESSAGE_INFO')) {
@@ -168,7 +170,7 @@ $(document).ready(function () {
             }
         );
     });
-    $.fn.select2.defaults.set( "theme", "bootstrap" );
+    $.fn.select2.defaults.set("theme", "bootstrap");
 
     $('[data-toggle="tooltip"]').tooltip();
 

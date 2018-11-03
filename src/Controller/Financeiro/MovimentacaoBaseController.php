@@ -105,7 +105,7 @@ class MovimentacaoBaseController extends FormListController
 
     /**
      *
-     * @Route("/fin/movimentacao/delete/{id}/", name="fin_movimentacao_delete", requirements={"id"="\d+"})
+     * @Route("/fin/movimentacao/delete/{movimentacao}/", name="fin_movimentacao_delete", requirements={"movimentacao"="\d+"})
      * @param Request $request
      * @param Movimentacao $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

@@ -17,9 +17,13 @@ $(document).ready(function () {
     let $carteira = $('#movimentacao_carteira');
     let $carteiraDestino = $('#movimentacao_carteiraDestino');
     let $tipoLancto = $('#movimentacao_tipoLancto');
+    let $divCamposGrupo = $('#divCamposGrupo');
+    let $grupo = $('#grupo'); // não é um campo do form
+    let $grupoItem = $('#movimentacao_grupoItem');
     let $categoria = $('#movimentacao_categoria');
     let $centroCusto = $('#movimentacao_centroCusto');
     let $modo = $("#movimentacao_modo");
+    let $divCamposValores = $("#divCamposValores");
     let $valor = $("#movimentacao_valor");
     let $descontos = $("#movimentacao_descontos");
     let $acrescimos = $("#movimentacao_acrescimos");
@@ -27,48 +31,233 @@ $(document).ready(function () {
     let $dtMoviment = $("#movimentacao_dtMoviment");
     let $dtVencto = $("#movimentacao_dtVencto");
     let $dtVenctoEfetiva = $("#movimentacao_dtVenctoEfetiva");
+    let $dtPagto = $("#movimentacao_dtPagto");
+    let $divCamposCheque = $('#divCamposCheque');
     let $chequeBanco = $('#movimentacao_chequeBanco');
     let $chequeAgencia = $('#movimentacao_chequeAgencia');
     let $chequeConta = $('#movimentacao_chequeConta');
+    let $divCamposDocumento = $('#divCamposDocumento');
     let $documentoBanco = $('#movimentacao_documentoBanco');
+    let $documentoNum = $('#movimentacao_documentoNum');
     let $pessoa = $('#movimentacao_pessoa');
+    let $divCamposRecorrencia = $('#divCamposRecorrencia');
     let $recorrente = $('#movimentacao_recorrente');
+    let $divCamposCartao = $('#divCamposCartao');
+    let $bandeiraCartao = $('#movimentacao_bandeiraCartao');
+    let $operadoraCartao = $('#movimentacao_operadoraCartao');
 
+    // "cachê" para grupos e itens
+    let grupoData = null;
 
-    let carteira_data = null;
+    // "cachê" para não precisar ir toda hora buscar via ajax
+    let carteiraData = null;
 
-    function loadCarteiras(params) {
-        if (!params) {
-            params = {};
+    // Todos os campos
+    let camposTodos = [
+        $movimentacao_id,
+        $carteira,
+        $carteiraDestino,
+        $tipoLancto,
+        $divCamposGrupo,
+        $categoria,
+        $centroCusto,
+        $modo,
+        $divCamposValores,
+        $valor,
+        $descontos,
+        $acrescimos,
+        $valorTotal,
+        $dtMoviment,
+        $dtVencto,
+        $dtVenctoEfetiva,
+        $dtPagto,
+        $divCamposCheque,
+        $chequeBanco,
+        $chequeAgencia,
+        $chequeConta,
+        $divCamposDocumento,
+        $documentoBanco,
+        $documentoNum,
+        $pessoa,
+        $divCamposRecorrencia,
+        $recorrente,
+        $bandeiraCartao,
+        $operadoraCartao,
+    ];
+
+    // Campos que não são mostrados em tal tipoLancto
+    let camposEscond = {
+        GERAL: [
+            $carteiraDestino,
+            $divCamposGrupo
+        ],
+        TRANSF_PROPRIA: [
+            $categoria,
+            $divCamposGrupo,
+            $dtVencto,
+            $dtVenctoEfetiva,
+            $dtPagto,
+            $pessoa,
+            $divCamposDocumento
+        ],
+        GRUPO: [
+            $modo,
+            $carteira,
+            $carteiraDestino,
+            $dtVencto,
+            $dtVenctoEfetiva,
+            $dtPagto
+        ]
+    };
+
+    /**
+     * Método principal. Remonta o formulário de acordo com as regras.
+     */
+    function handleFormRules() {
+        // São esses 3 campos que definem o comportamento do formulário.
+        handleTipoLanctoRules();
+        handleModoRules();
+        handleCarteiraRules();
+    }
+
+    /**
+     * Regras de acordo com o tipoLancto.
+     */
+    function handleTipoLanctoRules() {
+
+        let $tipoLanctoSelected = $tipoLancto.find(':selected').val();
+
+        if ($tipoLancto.find(':selected').data('data')['route']) {
+            let tipoLanctoRouteURL = Routing.generate($tipoLancto.find(':selected').data('data')['route']);
+            if (tipoLanctoRouteURL !== window.location.pathname) {
+                window.location.href = tipoLanctoRouteURL;
+                return;
+            }
         }
 
-        let $carteiraSelected = $('#movimentacao_carteira :selected');
+        // Filtro por tipoLancto
+        let camposVisiveis = $.grep(camposTodos, function (e) {
+            return camposEscond[$tipoLanctoSelected].indexOf(e) === -1;
+        });
 
-        // Para chamar por ajax apenas 1 vez
-        if (!carteira_data) {
-            $.ajax({
-                    dataType: "json",
-                    url: Routing.generate('fin_carteira_select2json'),
-                    type: 'POST',
-                    success: function (results) {
-                        results.unshift({"id": '', "text": ''});
-                        carteira_data = results;
-                        buildCarteiraSelect2(params);
-                    }
-                }
-            );
+        // Esconde todos
+        camposTodos.forEach(function (campo) {
+            if (campo.prop('nodeName') === 'DIV') { // para os casos das divCampos...
+                campo.css('display', 'none');
+            } else {
+                campo.closest('.form-group.row').css('display', 'none');
+            }
+        });
+
+        // Mostra só os correspondentes ao tipoLancto
+        camposVisiveis.forEach(function (campo) {
+            if (campo.prop('nodeName') === 'DIV') { // para os casos das divCampos...
+                campo.css('display', '');
+            } else {
+                campo.closest('.form-group.row').css('display', '');
+            }
+        });
+
+        if ($tipoLanctoSelected === 'TRANSF_PROPRIA') {
+            buildCarteiraDestino();
+        }
+
+    }
+
+    /**
+     * Regras de acordo com o campo modo.
+     */
+    function handleModoRules() {
+        let modo = $modo.find(':selected').text();
+
+        if (modo.includes('CHEQUE')) {
+            $divCamposCheque.css('display', '');
+
+            // se for 'CHEQUE PRÓPRIO' já preenche com os dados da carteira.
+            if (modo.includes('PRÓPRIO')) {
+                let carteira = $carteira.find(':selected').data('data');
+                $chequeBanco.val(carteira['bancoId']).trigger('change');
+                $chequeAgencia.val(carteira['agencia']);
+
+                $chequeConta.val(carteira['conta']);
+
+                // Reconstrói o campo carteira com somente carteiras que possuem cheques
+                buildCarteira({'cheque': true});
+                return; // para não executar as linhas abaixo.
+            }
+        } else if (modo.includes('CARTÃO')) {
+            $divCamposCartao.css('display', '');
+            return; // para não executar as linhas abaixo.
+        }
+
+        // Não sendo nem CHEQUE nem CARTÃO, limpa tudo
+        $divCamposCheque.css('display', 'none');
+        buildCarteira(); // se não for cheque, monta novamente com todas as carteiras
+        $chequeBanco.val('').trigger('change');
+        $chequeAgencia.val('');
+        $chequeConta.val('');
+
+        $divCamposCartao.css('display', 'none');
+        $bandeiraCartao.val('').trigger('change');
+        $operadoraCartao.val('').trigger('change');
+    }
+
+    /**
+     * Regras de acordo com o campo carteira.
+     */
+    function handleCarteiraRules() {
+        let carteira = $carteira.find(':selected').data('data');
+        if (carteira['caixa']) {
+            $dtVencto.closest('.form-group.row').css('display', 'none');
+            $dtVenctoEfetiva.closest('.form-group.row').css('display', 'none');
+            $dtPagto.closest('.form-group.row').css('display', 'none');
         } else {
-            buildCarteiraSelect2(params);
+            $dtVencto.closest('.form-group.row').css('display', '');
+            $dtVenctoEfetiva.closest('.form-group.row').css('display', '');
+            $dtPagto.closest('.form-group.row').css('display', '');
         }
     }
 
-    function buildCarteiraSelect2(params) {
-        $carteira.empty().trigger("change");
 
+    /**
+     * Busca os dados de carteiras via ajax, ou apenas retorna se já buscado.
+     * @param params
+     * @returns {*}
+     */
+    function getCarteiraData(params) {
+        if (!params) params = {};
+        // Para chamar por ajax apenas 1 vez
+        if (!carteiraData) {
+            $.ajax({
+                    dataType: "json",
+                    async: false,
+                    url: Routing.generate('fin_carteira_select2json'),
+                    type: 'POST'
+                }
+            ).done(function (results) {
+                results.unshift({"id": '', "text": ''});
+                carteiraData = results;
+            });
+        }
+        return carteiraData;
+
+    }
+
+    /**
+     * (Re)constrói o campo carteira de acordo com os parâmetros passados (se foram passados).
+     * @param params
+     */
+    function buildCarteira(params) {
+        if (!params) params = {};
+
+        let $carteiraSelected = $carteira.find(':selected');
+        let val = $carteiraSelected.val() ? $carteiraSelected.val() : $carteiraSelected.data('val');
+
+        $carteira.empty().trigger("change");
 
         let _carteira_data =
             // percorre o carteira_data vai colocando no _carteira_data se retornar true
-            $.grep(carteira_data, function (e, i) {
+            $.grep(getCarteiraData(params), function (e) {
                 // se não foi passado params
                 if ($.isEmptyObject(params)) {
                     return true;
@@ -90,173 +279,145 @@ $(document).ready(function () {
             }
         );
         // Se já estava setado ou se veio o valor do PHP...
-        let $carteiraSelected = $('#movimentacao_carteira :selected');
-        let val = $carteiraSelected.val() ? $carteiraSelected.val() : $carteiraSelected.data('val');
         if (val) {
             $carteira.select2("val", val);
-            //$carteira.val(val).trigger('change').trigger('select2:select');
-            console.log('setei carteira');
+            $carteira.trigger('change');
         }
     }
 
 
-    function handleCarteiras() {
-        let modo = $('#movimentacao_modo :selected').text();
-
-        if (modo.includes('CHEQUE')) {
-            $('#movimentacao_carteira option');
-        }
-    }
-
-
-    function loadCarteirasDestino() {
+    /**
+     * (Re)constrói o campo carteiraDestino (removendo o valor selecionado no campo carteira).
+     */
+    function buildCarteiraDestino() {
         if (!$carteiraDestino.is(":visible")) return;
-        $.getJSON(
-            Routing.generate('fin_carteira_select2json'),
-            function (results) {
-                for (let i = results.length - 1; i >= 0; i--) {
-                    if (results[i].id === $carteira.val()) {
-                        results.splice(i, 1);
-                        break;
-                    }
+
+        getCarteiraData(); // chamo para inicializar o carteiraData caso ainda não tenha sido
+        let carteiraDataDestino = [];
+
+        for (let i = 0; i < carteiraData.length; i++) {
+            if (carteiraData[i].id && carteiraData[i].id !== $carteira.val()) {
+                carteiraDataDestino.push(carteiraData[i]);
+            }
+        }
+        carteiraDataDestino.unshift({"id": '', "text": ''})
+
+        $carteiraDestino.empty().trigger("change");
+        $carteiraDestino.select2({
+                placeholder: "Selecione...",
+                data: carteiraDataDestino,
+                width: '100%'
+            }
+        );
+
+        if ($carteiraDestino.data('val')) {
+            $carteiraDestino.val($carteiraDestino.data('val'));
+            $carteiraDestino.trigger('change');
+        }
+    }
+
+
+    /**
+     * Constrói o campo tipoLancto.
+     */
+    function buildTiposLancto() {
+        // Se o valor já veio setado no data-val, então é porque só deve exibir um tipo
+        if ($tipoLancto.data('val')) {
+            $tipoLancto.select2();
+        } else {
+            $.ajax({
+                    dataType: "json",
+                    async: false,
+                    url: Routing.generate('fin_movimentacao_getTiposLanctos'),
+                    data: {"formMovimentacao": $('form[name="movimentacao"]').serialize()},
+                    type: 'POST'
                 }
+            ).done(function (results) {
 
-                results.unshift({"id": "", "text": ""});
+                // o valor por ter vindo pelo value ou pelo data-val (ou por nenhum)
+                let val = $tipoLancto.val() ? $tipoLancto.val() : $tipoLancto.data('val');
 
-                $carteiraDestino.empty().trigger("change");
-                $carteiraDestino.select2({
-                        placeholder: "Selecione...",
+                results = $.map(results['tiposLanctos'], function (o) {
+                    return {id: o.val, text: o.title, route: o.route};
+                });
+
+                $tipoLancto.empty().trigger("change");
+                $tipoLancto.select2({
                         data: results,
                         width: '100%'
                     }
                 );
-                // Se veio o valor do PHP...
-                if ($carteiraDestino.data('val')) {
-                    $carteiraDestino.select2('val', $carteiraDestino.data('val'));
+                // Se veio o valor...
+                if (val) {
+                    $tipoLancto.val(val).trigger('change');
                 }
             });
-    }
-
-
-    function handleCamposCheque() {
-        if ($tipoLancto.val() === 'CHEQUE_PROPRIO') {
-            let carteira = $('#movimentacao_carteira :selected').data('data');
-            $chequeBanco.select2('val', carteira.bancoId);
-            $chequeAgencia.val(carteira.agencia);
-            $chequeConta.val(carteira.conta);
-        }
-
-        let modo = $('#movimentacao_modo :selected').text();
-
-        if (modo.includes('CHEQUE')) {
-            $('#divCamposCheque').css('display', '');
-        } else {
-            $('#divCamposCheque').css('display', 'none');
-        }
-
-        if (modo.includes('CHEQUE PRÓPRIO')) {
-            // recarrega o campo somente com carteiras que tenham cheque
-            loadCarteiras({'cheque': true});
-        } else {
-            // recarrega com todas
-            loadCarteiras();
-            $chequeBanco.select2('val', '');
-            $chequeAgencia.val('');
-            $chequeConta.val('');
         }
     }
 
-
-    function loadTiposLancto() {
+    function buildCategoria() {
         $.ajax({
                 dataType: "json",
-                url: Routing.generate('fin_movimentacao_getTiposLanctos'),
-                data: {"formMovimentacao": $('form[name="movimentacao"]').serialize()},
-                type: 'POST',
-                success: function (results) {
-
-                    results = $.map(results.tiposLanctos, function (o, i) {
-                        return {id: o.val, text: o.title, route: o.route};
-                    })
-
-                    $tipoLancto.empty().trigger("change");
-                    $tipoLancto.select2({
-                            data: results,
-                            width: '100%'
-                        }
-                    );
-                    // Se veio o valor do PHP...
-                    if ($tipoLancto.data('val')) {
-                        $tipoLancto.val($tipoLancto.data('val')).trigger('change').trigger('select2:select');
-                    }
-                }
-            }
-        );
-    }
-
-
-    function tipoLanctoChange() {
-        let $tipoLanctoSelected = $('#movimentacao_tipoLancto :selected');
-
-        let tipoLancto = $tipoLanctoSelected.text();
-        let tipoLanctoVal = $tipoLanctoSelected.val();
-
-        // Some todos e mostra somente os tipoLancto-TODOS e os correspondentes ao tipoLancto selecionado
-        let $tipoLancto = $("[class*='tipoLancto-']");
-        $tipoLancto.closest('div .form-group.row').css('display', 'none');
-        $tipoLancto.closest('.divCampos').css('display', 'none');
-        let $tipoLancto_TODOS = $(".tipoLancto-TODOS");
-        $tipoLancto_TODOS.closest('div .form-group.row').css('display', '');
-        $tipoLancto_TODOS.closest('.divCampos').css('display', '');
-        let $tipoLancto_tipoLanctoVal = $(".tipoLancto-" + tipoLanctoVal);
-        $tipoLancto_tipoLanctoVal.closest('div .form-group.row').css('display', '');
-        $tipoLancto_tipoLanctoVal.closest('.divCampos').css('display', '');
-
-        // Recarrega as categorias, pois tem regra para quais exibir dependendo do tipoLancto
-        loadCategorias();
-        //
-        handleCamposCheque();
-    }
-
-
-    function loadCategorias() {
-        $.ajax({
-                dataType: "json",
+                async: false,
                 url: Routing.generate('fin_categoria_select2json') + '?tipoLancto=' + $tipoLancto.val(),
-                type: 'GET',
-                success: function (results) {
-                    $categoria.empty().trigger("change");
-
-                    results.unshift({"id": "", "text": ""});
-
-                    $categoria.select2({
-                            placeholder: "Selecione...",
-                            data: results,
-                            width: '100%'
-                        }
-                    );
-                    // Se veio o valor do PHP...
-                    if ($categoria.data('val')) {
-                        $categoria.val($categoria.data('val')).trigger('change').trigger('select2:select');
-                    }
-                }
+                type: 'GET'
             }
-        );
+        ).done(function (results) {
+            // o valor por ter vindo pelo value ou pelo data-val (ou por nenhum)
+            let val = $categoria.val() ? $categoria.val() : $categoria.data('val');
+            $categoria.empty().trigger("change");
+
+            results.unshift({"id": "", "text": ""});
+
+            $categoria.select2({
+                    placeholder: "Selecione...",
+                    data: results,
+                    width: '100%'
+                }
+            );
+            // Se veio o valor do PHP...
+            if (val) {
+                $categoria.val(val).trigger('change');
+            }
+        });
     }
 
-
-    function modoChange() {
-        let modo = $('#movimentacao_modo :selected').text();
-        if (modo) {
-            if (modo.includes('CARTÃO')) {
-                $('#divCamposCartao').css('display', '');
-            } else {
-                $('#divCamposCartao').css('display', 'none');
+    /**
+     * Constrói os campos de grupo e grupoItem.
+     */
+    function buildGrupos() {
+        /**
+         * Handler para evento no select2 #grupo
+         */
+        $grupo.on('select2:select', function () {
+            $grupoItem.empty().trigger("change");
+            let results = $(this).select2('data')[0]['itens'];
+            results.unshift({"id": "", "text": "Selecione..."});
+            $grupoItem.select2({
+                data: results,
+                width: '100%'
+            });
+            if ($grupoItem.data('val')) {
+                $grupoItem.val($grupoItem.data('val')).trigger('change').trigger('select2:select');
             }
+        });
 
-        }
-        handleCamposCheque();
-        handleCarteiras();
+        $.ajax({
+            url: Routing.generate('fin_grupo_select2json') + '?abertos=true',
+            dataType: 'json',
+            async: false
+        }).done(function (result) {
+            result.unshift({"id": "", "text": "Selecione..."});
+            $grupo.empty().trigger("change");
+            $grupo.select2({
+                data: result,
+                width: '100%'
+            });
+            if ($grupoItem.data('valpai')) {
+                $grupo.val($grupoItem.data('valpai')).trigger('change').trigger('select2:select');
+            }
+        });
+
     }
 
 
@@ -279,30 +440,30 @@ $(document).ready(function () {
     }
 
 
-    $valor.on('blur', function (e) {
+    $valor.on('blur', function () {
         resValorTotal()
     });
-    $descontos.on('blur', function (e) {
+    $descontos.on('blur', function () {
         resValorTotal()
     });
-    $acrescimos.on('blur', function (e) {
+    $acrescimos.on('blur', function () {
         resValorTotal()
     });
 
-    $dtMoviment.on('focus', function (e) {
+    $dtMoviment.on('focus', function () {
         if ($dtMoviment.val() === '') {
             $dtMoviment.val(Moment().format('DD/MM/YYYY'));
         }
     });
 
     let dtVenctoS = null;
-    $dtVenctoEfetiva.on('focus', function (e) {
+    $dtVenctoEfetiva.on('focus', function () {
         if ($dtVencto.val() !== '' && (!dtVenctoS || dtVenctoS !== $dtVencto.val())) {
             dtVenctoS = $dtVencto.val();
             $.getJSON(Routing.generate('findProximoDiaUtilFinanceiro') + '/?dia=' + encodeURIComponent($dtVencto.val()))
                 .done(
                     function (data) {
-                        $("#movimentacao_dtVenctoEfetiva").val(data.dia);
+                        $("#movimentacao_dtVenctoEfetiva").val(data['dia']);
                     });
         }
     });
@@ -312,58 +473,56 @@ $(document).ready(function () {
         checkExibirCamposRecorrente();
     });
 
-    $carteira.on('select2:select', function (e) {
-        loadCarteirasDestino();
-        handleCamposCheque();
+    $carteira.on('select2:select', function () {
+        handleFormRules();
     });
 
-    $tipoLancto.on('select2:select', function (e) {
-        tipoLanctoChange();
+    $tipoLancto.on('select2:select', function () {
+        handleFormRules()
     });
 
-    $modo.on('select2:select', function (e) {
-        modoChange();
+    $modo.on('select2:select', function () {
+        handleFormRules()
     });
 
 
-    $modo.select2({placeholder: "Selecione..."});
+    // -----------------
 
-    $categoria.select2();
+    function initializeForm() {
 
-    $centroCusto.select2();
+        $modo.select2({placeholder: "Selecione..."});
+        $centroCusto.select2();
+        $documentoBanco.select2();
+        $chequeBanco.select2();
 
-    $documentoBanco.select2();
-
-    $chequeBanco.select2();
-
-    $pessoa.select2({
-        ajax: {
-            delay: 250,
-            url: function (params) {
-                console.log(params);
-                return Routing.generate('bse_pessoa_findByNome') + '/' + params.term;
+        $pessoa.select2({
+            ajax: {
+                delay: 250,
+                url: function (params) {
+                    console.log(params);
+                    return Routing.generate('bse_pessoa_findByNome') + '/' + params.term;
+                },
+                dataType: 'json',
+                processResults: function (data) {
+                    let dataNew = $.map(data.results, function (obj) {
+                        obj.text = obj['nome'];
+                        return obj;
+                    });
+                    return {results: dataNew};
+                },
+                cache: true
             },
-            dataType: 'json',
-            processResults: function (data, params) {
-                let dataNew = $.map(data.results, function (obj) {
-                    obj.text = obj.nome;
-                    return obj;
-                });
-                return {results: dataNew};
-            },
-            cache: true
-        },
-        minimumInputLength: 1
-    });
+            minimumInputLength: 1
+        });
+
+        buildTiposLancto();
+        buildCategoria();
+        buildGrupos();
+        handleFormRules();
+    }
 
 
-    checkExibirCamposRecorrente();
-    loadTiposLancto();
-    loadCarteiras();
-    loadCarteirasDestino();
-// loadCategorias(); -- não precisa, é chamado no loadTiposLancto()
-    tipoLanctoChange();
-    modoChange();
+    initializeForm();
 
 
 })

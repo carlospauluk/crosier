@@ -35,133 +35,31 @@ class MovimentacaoController extends MovimentacaoBaseController
      */
     public function form(Request $request, Movimentacao $movimentacao = null)
     {
-        $movimentacaoForm = $request->request->get('movimentacao');
-        if ($movimentacaoForm) {
-            $movimentacaoForm['valorTotal'] = 0.0;
-            $movimentacaoForm['dtUtil'] = '01/01/1900';
-            $movimentacaoForm['centroCusto'] = 1;
-            $request->request->set('movimentacao', $movimentacaoForm);
+        $tipoLancto = $request->get('tipoLancto');
+
+        // Se está tentando acessar uma url de uma movimentação que não existe
+        if ($request->get('id') !== null and $movimentacao == null) {
+            return $this->redirectToRoute('fin_movimentacao_form');
         }
-        $exibirRecorrente = $this->getBusiness()->exibirRecorrente($movimentacao);
-
-        return $this->doForm($request, $movimentacao, ['exibirRecorrente' => $exibirRecorrente]);
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/formTransfPropria", name="fin_movimentacao_formTransfPropria")
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \Exception
-     */
-    public function formTransfPropria(Request $request)
-    {
-        $this->getSecurityBusiness()->checkAccess('fin_movimentacao_form');
-
-        $movimentacao = $request->get('movimentacao_transf_propria');
         if ($movimentacao) {
-            $movimentacao['valorTotal'] = 0.0;
-            $movimentacao['dtVencto'] = $movimentacao['dtMoviment'];
-            $movimentacao['dtVenctoEfetiva'] = $movimentacao['dtMoviment'];
-            $movimentacao['dtPagto'] = $movimentacao['dtMoviment'];
-            $movimentacao['dtUtil'] = '01/01/1900';
-            $movimentacao['centroCusto'] = 1;
-            $request->request->set('movimentacao_transf_propria', $movimentacao);
-        }
-
-        $form = $this->createForm(MovimentacaoType::class);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted()) {
-            if ($form->isValid()) {
-                try {
-                    $entity = $form->getData();
-                    $entity = $this->getEntityHandler()->save($entity);
-                    $cadeia = $entity->getCadeia();
-                    $this->addFlash('success', 'Registro salvo com sucesso!');
-                    return $this->redirectToRoute('fin_movimentacao_list', ['filter' => ['cadeia' => $cadeia->getId()]]);
-                } catch (\Exception $e) {
-                    $msg = ExceptionUtils::treatException($e);
-                    $this->addFlash('error', $msg);
-                    $this->addFlash('error', 'Erro ao salvar!');
-                }
-            } else {
-                $errors = $form->getErrors(true, true);
-                foreach ($errors as $error) {
-                    $this->addFlash('error', $error->getMessage());
-                }
+            // Verifica se está editando uma transfPropria pela 1.99
+            $m = $this->getBusiness()->checkEditTransfPropria($movimentacao);
+            if ($m) {
+                return $this->redirectToRoute('fin_movimentacao_form', ['id' => $m->getId()]);
             }
         }
 
-        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
-        $parameters['form'] = $form->createView();
-        $parameters['page_title'] = 'Transferência Própria';
-        return $this->render('Financeiro/movimentacaoFormTransfPropria.html.twig', $parameters);
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/formGrupoItem/{grupoItem}/{movimentacao}", name="fin_movimentacao_formGrupoItem", defaults={"movimentacao"=null}, requirements={"grupoItem"="\d+","movimentacao"="\d+"})
-     *
-     * @param Request $request
-     * @param GrupoItem $grupoItem
-     * @param Movimentacao $movimentacao
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \Exception
-     */
-    public function formGrupoItem(Request $request, GrupoItem $grupoItem, Movimentacao $movimentacao = null)
-    {
-        $this->getSecurityBusiness()->checkAccess('fin_movimentacao_form');
-
-        $movimentacaoForm = $request->request->get('movimentacao');
-        if ($movimentacaoForm) {
-            $movimentacaoForm['valorTotal'] = 0.0;
-            $movimentacaoForm['dtUtil'] = '01/01/1900';
-            $movimentacaoForm['dtVencto'] = '01/01/1900';
-            $movimentacaoForm['dtVenctoEfetiva'] = '01/01/1900';
-            $movimentacaoForm['centroCusto'] = 1;
-            $request->request->set('movimentacao', $movimentacaoForm);
-        }
-        $exibirRecorrente = $this->getBusiness()->exibirRecorrente($movimentacao);
-        $parameters = [];
-        $parameters['exibirRecorrente'] = $exibirRecorrente;
-        $parameters['grupoItem'] = $grupoItem;
-
-        if (!$movimentacao) {
+        if  (!$movimentacao) {
             $movimentacao = new Movimentacao();
-            $movimentacao->setGrupoItem($grupoItem);
+            $movimentacao->setTipoLancto($tipoLancto);
         }
 
-        $form = $this->createForm(MovimentacaoType::class, $movimentacao);
 
-        $form->handleRequest($request);
 
-        if ($form->isSubmitted()) {
-            if ($form->isValid()) {
-                try {
-                    $entity = $form->getData();
-                    $this->getEntityHandler()->save($entity);
-                    $this->addFlash('success', 'Registro salvo com sucesso!');
-                    return $this->redirectToRoute('fin_movimentacao_formGrupoItem', array('grupoItem' => $grupoItem->getId(), 'movimentacao' => $movimentacao->getId()));
-                } catch (\Exception $e) {
-                    $msg = ExceptionUtils::treatException($e);
-                    $this->addFlash('error', $msg);
-                    $this->addFlash('error', 'Erro ao salvar!');
-                }
-            } else {
-                $errors = $form->getErrors(true, true);
-                foreach ($errors as $error) {
-                    $this->addFlash('error', $error->getMessage());
-                }
-            }
-        }
+        $vParams['exibirRecorrente'] = $this->getBusiness()->exibirRecorrente($movimentacao);
 
-        // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono form e foi-se.
-        $parameters['form'] = $form->createView();
-        $parameters['page_title'] = $grupoItem->getDescricao();
-        return $this->render('Financeiro/movimentacaoFormGrupoItem.html.twig', $parameters);
+        return $this->doForm($request, $movimentacao, $vParams);
     }
-
 
     /**
      *
@@ -186,18 +84,6 @@ class MovimentacaoController extends MovimentacaoBaseController
     {
         $jsonResponse = $this->doDatatablesJsList($request);
         return $jsonResponse;
-    }
-
-    /**
-     *
-     * @Route("/fin/movimentacao/delete/{id}/", name="fin_movimentacao_delete", requirements={"id"="\d+"})
-     * @param Request $request
-     * @param Movimentacao $movimentacao
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
-     */
-    public function delete(Request $request, Movimentacao $movimentacao)
-    {
-        return $this->doDelete($request, $movimentacao);
     }
 
     /**
@@ -255,7 +141,8 @@ class MovimentacaoController extends MovimentacaoBaseController
         return $this->render('Financeiro/movimentacaoParcelamentoList.html.twig', ['movs' => $movs]);
     }
 
-    public function getFormPageTitle() {
+    public function getFormPageTitle()
+    {
         return "Movimentação";
     }
 

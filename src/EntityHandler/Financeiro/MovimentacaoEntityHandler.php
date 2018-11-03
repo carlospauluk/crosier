@@ -8,6 +8,7 @@ use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
+use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
 use Psr\Log\LoggerInterface;
@@ -81,6 +82,11 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     public function beforeSave($movimentacao)
     {
+        if ($movimentacao->getTipoLancto() == 'GRUPO') {
+            $modo50 = $this->getEntityManager()->getRepository(Modo::class)->findOneBy(['codigo' => 50]);
+            $movimentacao->setModo($modo50);
+        }
+
         if (!$movimentacao->getModo()) {
             throw new \Exception("Modo deve ser informado para a movimentação '" . $movimentacao->getDescricao() . "''");
         }
@@ -93,6 +99,9 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         // Salvando movimentação agrupada
         if ($movimentacao->getTipoLancto() == 'MOVIMENTACAO_AGRUPADA') {
+            $movimentacao->setTipoLancto('GRUPO');
+        }
+        if ($movimentacao->getTipoLancto() == 'GRUPO') {
             if (!$movimentacao->getGrupoItem()) {
                 throw new \Exception("GrupoItem deve ser informado.");
             } else {
@@ -119,9 +128,10 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         if (!$movimentacao->getCategoria()) {
             throw new \Exception("É necessário informar a categoria da movimentação.");
-        } else if ($movimentacao->getCategoria()->getCentroCustoDif() == FALSE) {
-            $movimentacao->setCentroCusto($this->getEntityManager()->getRepository(CentroCusto::class)->find(1));
         }
+//        else if ($movimentacao->getCategoria()->getCentroCustoDif() == FALSE) {
+//            $movimentacao->setCentroCusto($this->getEntityManager()->getRepository(CentroCusto::class)->find(1));
+//        }
 
         // Se não passar descrição, tenta montá-la a partir da bandeira do cartão.
         if (!trim($movimentacao->getDescricao())) {
@@ -159,7 +169,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
 
         if (!$movimentacao->getDtPagto()) {
-            if (strpos($movimentacao->getModo()->getDescricao(),'CHEQUE') !== FALSE) {
+            if (strpos($movimentacao->getModo()->getDescricao(), 'CHEQUE') !== FALSE) {
                 $movimentacao->setStatus('A_COMPENSAR');
             } else {
                 $movimentacao->setStatus('ABERTA');
@@ -172,6 +182,10 @@ class MovimentacaoEntityHandler extends EntityHandler
             if ($movimentacao->getDtMoviment() == null) {
                 $movimentacao->setDtMoviment($movimentacao->getDtPagto());
             }
+        }
+
+        if (!$movimentacao->getRecorrente()) {
+            $movimentacao->setRecorrente(false);
         }
 
         if (!$movimentacao->getRecorrFrequencia()) {
@@ -235,20 +249,15 @@ class MovimentacaoEntityHandler extends EntityHandler
      */
     public function save($movimentacao)
     {
-        // Se estiver inserindo, verifica os procedimentos para cada tipoLancto.
-        if (!$movimentacao->getId()) {
-            if (!$movimentacao->getTipoLancto()) {
-                throw new \Exception("Tipo Lancto não informado para " . $movimentacao->getDescricaoMontada());
-            }
-
-            if ($movimentacao->getTipoLancto() == 'TRANSF_PROPRIA') {
-                return $this->saveTransfPropria($movimentacao);
-            } else if ($movimentacao->getTipoLancto() == 'TRANSF_CAIXA') {
-                return $this->saveTransfCaixa($movimentacao);
-            }
+        if (!$movimentacao->getTipoLancto()) {
+            throw new \Exception("Tipo Lancto não informado para " . $movimentacao->getDescricaoMontada());
         }
 
-        $movimentacao = parent::save($movimentacao);
+        if ($movimentacao->getTipoLancto() == 'TRANSF_PROPRIA') {
+            return $this->saveTransfPropria($movimentacao);
+        } else {
+            $movimentacao = parent::save($movimentacao);
+        }
         return $movimentacao;
 
     }
@@ -284,48 +293,34 @@ class MovimentacaoEntityHandler extends EntityHandler
      * @return \App\Entity\Base\EntityId|Movimentacao|null
      * @throws \Exception
      */
-    public function saveTransfPropria(Movimentacao $movimentacao)
+    public function saveTransfPropria(Movimentacao $moviment299)
     {
-        $moviment299 = null;
+        $categ299 = $this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
+        $categ199 = $this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 199]);
+        $moviment299->setCategoria($categ299);
 
-        // Se NÃO estiver passando uma 299 então é uma TRANSF_CAIXA (101 + 299 + 199).
-        if ($movimentacao->getCategoria()->getCodigo() != 299) {
-            $cadeia = $movimentacao->getCadeia();
-            $moviment299 = new Movimentacao();
-            $cadeiaOrdem = 2; // é a segunda movimentação das 3
-            $moviment299->setCadeiaOrdem($cadeiaOrdem);
-            $moviment299->setDescricao($movimentacao->getDescricao());
-            $moviment299->setCategoria($this->getEntityManager()->getRepository(Categoria::class)->find(299));
-            $moviment299->setModo($movimentacao->getModo());
-            $moviment299->setCarteira($movimentacao->getCarteira());
-            $moviment299->setStatus('REALIZADA');
-            $moviment299->setValor($movimentacao->getValor());
-            $moviment299->setValorTotal($movimentacao->getValorTotal());
-            $moviment299->setCentroCusto($movimentacao->getCentroCusto());
-            $moviment299->setDtMoviment($movimentacao->getDtMoviment());
-            $moviment299->setDtVencto($movimentacao->getDtVencto());
-            $moviment299->setDtVenctoEfetiva($movimentacao->getDtVenctoEfetiva());
-            $moviment299->setDtPagto($movimentacao->getDtPagto());
-            $moviment299->setTipoLancto($movimentacao->getTipoLancto());
 
-            $moviment299->setBandeiraCartao($movimentacao->getBandeiraCartao());
-
+        if ($moviment299->getId()) {
+            $cadeia = $moviment299->getCadeia();
+            $moviment199 = $this->getEntityManager()->getRepository(Movimentacao::class)->findOneBy(['cadeia' => $cadeia, 'categoria' => $categ199]);
+            if (!$moviment199) {
+                throw new \Exception('Cadeia de transferência própria já existe, porém sem a 1.99');
+            }
         } else {
-            // caso contrário é só uma TRANSF_PROPRIA mesmo
             $cadeia = new Cadeia();
-            $moviment299 = $movimentacao;
-            $cadeiaOrdem = 1; // é a primeira movimentação das 2
-            $moviment299->setCadeiaOrdem($cadeiaOrdem);
+            $moviment199 = new Movimentacao();
         }
+
+        $moviment299->setCadeiaOrdem(1);
         $moviment299->setCadeia($cadeia);
+        $moviment299->calcValorTotal();
 
         // Salvar a 199
-        $moviment199 = new Movimentacao();
-        $moviment199->setDescricao($movimentacao->getDescricao());
+        $moviment199->setDescricao($moviment299->getDescricao());
         $moviment199->setStatus('REALIZADA');
-        $moviment199->setCategoria($this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 199]));
+        $moviment199->setCategoria($categ199);
         $moviment199->setCentroCusto($this->getEntityManager()->getRepository(CentroCusto::class)->find(1));
-        $moviment199->setCarteira($movimentacao->getCarteiraDestino());
+        $moviment199->setCarteira($moviment299->getCarteiraDestino());
         $moviment199->setChequeNumCheque($moviment299->getChequeNumCheque());
         $moviment199->setChequeConta($moviment299->getChequeConta());
         $moviment199->setChequeBanco($moviment299->getChequeBanco());
@@ -336,13 +331,16 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment199->setDtPagto($moviment299->getDtPagto());
         $moviment199->setModo($moviment299->getModo());
         $moviment199->setValor($moviment299->getValor());
-        $moviment199->setValorTotal($moviment299->getValorTotal());
+        $moviment199->setDescontos($moviment299->getDescontos());
+        $moviment199->setAcrescimos($moviment299->getAcrescimos());
+        $moviment199->calcValorTotal();
         $moviment199->setTipoLancto($moviment299->getTipoLancto());
         $moviment199->setBandeiraCartao($moviment299->getBandeiraCartao());
-        $moviment199->setCadeiaOrdem(++$cadeiaOrdem); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
+        $moviment199->setCadeiaOrdem(2); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
         $moviment199->setCadeia($cadeia);
 
-        $cadeia->setVinculante(true);
+        $cadeia->setVinculante(false);
+        $cadeia->setFechada(false);
         $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
 
         $moviment299 = parent::save($moviment299);
@@ -350,37 +348,11 @@ class MovimentacaoEntityHandler extends EntityHandler
 
 
         // agora que já salvou a primeira, pode fechar a cadeia
-        $cadeia->setFechada(true);
+        $cadeia->setVinculante(true);
+        $cadeia->setFechada (true);
         $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
 
         return $moviment299;
-    }
-
-    /**
-     * Salva uma TRANSFERÊNCIA DE ENTRADA DE CAIXA.
-     * São geradas 3 movimentações: a original do lançamento + 299 + 199.
-     */
-    public function saveTransfCaixa(Movimentacao $movimentacao)
-    {
-
-        try {
-            // cria a cadeia destas movimentações
-            $cadeia = new Cadeia();
-            $cadeia->setVinculante(true);
-            $movimentacao->setStatus('REALIZADA');
-            $movimentacao->setCentroCusto($this->getEntityManager()->getRepository(CentroCusto::class)->find(1));
-            $movimentacao->setDtVencto($movimentacao->getDtMoviment());
-            $movimentacao->setDtVenctoEfetiva($movimentacao->getDtMoviment());
-            $movimentacao->setDtPagto($movimentacao->getDtMoviment());
-            $movimentacao->setCadeia($cadeia);
-            $movimentacao->setCadeiaOrdem(1);
-            $movimentacao = parent::save($movimentacao);
-            $movimentacao = $this->saveTransfPropria($movimentacao);
-            $this->getEntityManager()->flush();
-            return $movimentacao;
-        } catch (\Exception $e) {
-            throw new \Exception("Erro ao salvar a transferência de caixa.");
-        }
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Form\Financeiro\MovimentacaoType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -30,15 +31,14 @@ class ParcelamentoController extends Controller
 
     /**
      *
-     * @Route("/fin/parcelamento/movimentacaoForm", name="fin_parcelamento_movimentacaoForm")
+     * @Route("/fin/parcelamento/form", name="fin_parcelamento_form")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \ReflectionException
      * @throws \Exception
      */
     public function form(Request $request)
     {
-        $this->securityBusiness->checkAccess('fin_parcelamento_movimentacaoForm');
+        $this->securityBusiness->checkAccess('fin_parcelamento_form');
 
         $movimentacaoForm = $this->createForm(MovimentacaoType::class);
 
@@ -48,14 +48,7 @@ class ParcelamentoController extends Controller
             parse_str(urldecode($request->get('movimentacao')), $movimentacao);
             $movimentacao = $movimentacao['movimentacao'];
         }
-        if ($movimentacao) {
-            $movimentacao['valor'] = 0.0;
-            $movimentacao['descontos'] = 0.0;
-            $movimentacao['acrescimos'] = 0.0;
-            $movimentacao['valor_total'] = 0.0;
-            $movimentacao['dtVenctoEfetiva'] = '01/01/1900';
-            $request->request->set('movimentacao', $movimentacao);
-        }
+
 
         $movimentacaoForm->handleRequest($request);
 
@@ -63,6 +56,8 @@ class ParcelamentoController extends Controller
             if ($movimentacaoForm->isValid()) {
                 try {
                     $entity = $movimentacaoForm->getData();
+                    $session = $request->hasSession() ? $request->getSession() : new Session();
+                    $session->set('parcelamentoMovimentacao', $entity);
                     $this->addFlash('info', 'Movimentação preparada.');
                 } catch (\Exception $e) {
                     $this->addFlash('error', $e->getMessage());
@@ -78,7 +73,7 @@ class ParcelamentoController extends Controller
         }
 
         // Pode ou não ter vindo algo no $parameters. Independentemente disto, só adiciono movimentacaoForm e foi-se.
-        $parameters['movimentacaoForm'] = $movimentacaoForm->createView();
+        $parameters['form'] = $movimentacaoForm->createView();
         $parameters['page_title'] = 'Lançamento de Parcelamento';
         $parameters['parcelamento'] = $request->get('parcelamento');
         $parameters['parcelas'] = $request->get('parcela');
@@ -95,13 +90,16 @@ class ParcelamentoController extends Controller
     {
         $qtdeParcelas = $request->get('qtdeParcelas');
 //        $valorTotal = $request->get('valorTotal');
-        $valorParcela = $request->get('valorParcela');
+        $valorParcela = floatval($request->get('valorParcela'));
         $diaFixo = $request->get('diaFixo');
+        $primeiroVencto = $request->get('primeiroVencto');
 
         parse_str(urldecode($request->get('movimentacao')), $movimentacao);
+        $movimentacao = $movimentacao['movimentacao'];
+        $movimentacao['dtVencto'] = $primeiroVencto;
 
         // burlando o esquema para poder avaliar a entidade no handleRequest
-        $request->request->set('movimentacao', $movimentacao['movimentacao']);
+        $request->request->set('movimentacao', $movimentacao);
         $movimentacaoForm = $this->createForm(MovimentacaoType::class);
         $movimentacaoForm->handleRequest($request);
         $movimentacao = $movimentacaoForm->getData();
@@ -114,7 +112,7 @@ class ParcelamentoController extends Controller
         for ($i = 0; $i < $qtdeParcelas; $i++) {
             $parcela = [];
             $parcela['numParcela'] = $i + 1;
-            $parcela['valor'] = $valorParcela;
+            $parcela['valor'] = number_format($valorParcela, 2, ',', '.');
 
             if ($i > 0) {
                 if ($diaFixo) {
@@ -127,7 +125,12 @@ class ParcelamentoController extends Controller
             $dtVenctoEfetiva = $this->getDoctrine()->getManager()->getRepository(DiaUtil::class)->findProximoDiaUtilFinanceiro($dtVenctoAux);
             $parcela['dtVenctoEfetiva'] = $dtVenctoEfetiva->format('d/m/Y');
 
-            $parcela['documentoNum'] = ctype_digit($documentoNumAux) ? (intval($documentoNumAux) + $i) : $documentoNumAux;
+            if ($documentoNumAux) {
+                $parcela['documentoNum'] = ctype_digit($documentoNumAux) ? (intval($documentoNumAux) + $i) : $documentoNumAux;
+            } else {
+                $parcela['documentoNum'] = '';
+            }
+
 
             $parcelas[] = $parcela;
         }
@@ -141,29 +144,18 @@ class ParcelamentoController extends Controller
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \ReflectionException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function salvarParcelas(Request $request)
     {
-        parse_str(urldecode($request->get('movimentacao')), $movimentacao);
-
-        $movimentacao = $movimentacao['movimentacao'];
-        $movimentacao['valor'] = 0.0;
-        $movimentacao['descontos'] = 0.0;
-        $movimentacao['acrescimos'] = 0.0;
-        $movimentacao['valor_total'] = 0.0;
-        $movimentacao['dtVenctoEfetiva'] = '01/01/1900';
-        $request->request->set('movimentacao', $movimentacao);
-        $movimentacaoForm = $this->createForm(MovimentacaoType::class);
-        $movimentacaoForm->handleRequest($request);
-        if (!$movimentacaoForm->isValid()) {
-            return $this->redirectToRoute('fin_parcelamento_movimentacaoForm',['request' => $request], 307);
-        }
-        $movimentacao = $movimentacaoForm->getData();
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $movimentacao = $session->get('parcelamentoMovimentacao');
+        $this->getMovimentacaoBusiness()->mergeAll($movimentacao);
 
         $parcelas = $request->get('parcela');
         if (!is_array($parcelas)) {
             $this->addFlash('error', 'Parcelas não geradas?');
-            return $this->redirectToRoute('fin_parcelamento_movimentacaoForm',['request' => $request], 307);
+            return $this->redirectToRoute('fin_parcelamento_form', ['request' => $request], 307);
         }
 
         try {
@@ -174,7 +166,7 @@ class ParcelamentoController extends Controller
             return $this->redirectToRoute('fin_movimentacao_list', ['filter' => ['parcelamento' => $parcelamento->getId()]]);
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
-            return $this->redirectToRoute('fin_parcelamento_movimentacaoForm',['request' => $request], 307);
+            return $this->redirectToRoute('fin_parcelamento_form', ['request' => $request], 307);
         }
 
     }

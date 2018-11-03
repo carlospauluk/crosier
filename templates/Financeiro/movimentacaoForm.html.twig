@@ -13,10 +13,27 @@
                     <h3>Movimentação</h3>
                 </div>
                 <div class="col-4 text-right">
+
+                    <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top"
+                            title="Novo registro"
+                            onclick="window.location.href='{{ url('fin_movimentacao_form') }}'">
+                        <i class="fas fa-file" aria-hidden="true"></i> Novo
+                    </button>
+
                     <button type="button" class="btn btn-secondary"
                             onclick="window.location.href='{{ url('fin_movimentacao_list') }}'">
                         <i class="fas fa-sync" aria-hidden="true"></i> Listar
                     </button>
+
+                    {% if e.id %}
+                    <button type="button" class="btn btn-danger"
+                            data-url="{{ url('fin_movimentacao_delete', {movimentacao: e.id}) }}"
+                            data-token="{{ csrf_token('delete') }}"
+                            data-target="#confirmationModal" data-toggle="modal">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                    </button>
+                    {% endif %}
+
                 </div>
             </div>
 
@@ -39,13 +56,37 @@
             {{ form_row(form.carteira) }}
             {{ form_row(form.carteiraDestino) }}
 
-            <div class="card divCampos" id="divCamposCheque" style="display: none;">
+
+            <div class="card" id="divCamposGrupo" style="display: none;">
+                <h5 class="card-header">Grupo</h5>
+                <div class="card-body">
+
+                    <div class="form-group row">
+                        <label class="col-form-label col-sm-2 form-control-label required" for="grupo">Grupo</label>
+                        <div class="col-sm-10">
+                            <select id="grupo" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    {{ form_row(form.grupoItem) }}
+                </div>
+            </div>
+
+            <div class="card" id="divCamposCheque" style="display: none;">
                 <h5 class="card-header">Cheque</h5>
                 <div class="card-body">
                     {{ form_row(form.chequeBanco) }}
                     {{ form_row(form.chequeAgencia) }}
                     {{ form_row(form.chequeConta) }}
                     {{ form_row(form.chequeNumCheque) }}
+                </div>
+            </div>
+
+            <div class="card" id="divCamposCartao" style="display: none;">
+                <h5 class="card-header">Cartão</h5>
+                <div class="card-body">
+                    {{ form_row(form.operadoraCartao) }}
+                    {{ form_row(form.bandeiraCartao) }}
                 </div>
             </div>
 
@@ -64,7 +105,7 @@
             {{ form_row(form.descricao) }}
 
 
-            <div class="card divCampos">
+            <div class="card divCamposDocumento">
                 <h5 class="card-header">Documento</h5>
                 <div class="card-body">
                     {{ form_row(form.documentoBanco) }}
@@ -72,7 +113,7 @@
                 </div>
             </div>
 
-            <div class="card divCampos">
+            <div class="card divCamposValores">
                 <h5 class="card-header">Valores</h5>
                 <div class="card-body">
                     {{ form_row(form.valor) }}
@@ -84,7 +125,7 @@
 
 
 
-            <div class="card divCampos" id="divRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
+            <div class="card" id="divCamposRecorrencia" style="display: {{ exibirRecorrente ? '' : 'none' }}">
                 <h5 class="card-header">Recorrência</h5>
                 <div class="card-body">
                     {{ form_row(form.recorrente) }}
