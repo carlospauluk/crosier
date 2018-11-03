@@ -9,7 +9,6 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\CarteiraEntityHandler;
 use App\Form\Financeiro\CarteiraType;
 use App\Utils\Repository\FilterData;
-use App\Utils\Repository\WhereBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -158,7 +157,7 @@ class CarteiraController extends FormListController
             $params['caixa'] = true;
         }
 
-        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy($params,['codigo' => 'asc']);
+        $itens = $this->getDoctrine()->getRepository(Carteira::class)->findBy($params, ['codigo' => 'asc']);
 
         $rs = array();
         foreach ($itens as $item) {

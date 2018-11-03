@@ -1,0 +1,35 @@
+{% extends 'list.html.twig' %}
+
+
+{% set titulo = 'Produtos' %}
+{% set route_form = 'est_produto_form' %}
+{% set route_list = 'est_produto_list' %}
+{% set route_list_ajax = 'est_produto_datatablesJsList' %}
+{% set list_id = 'produtoList' %}
+
+{% set campos_pesquisar %}
+
+    <div class="form-group">
+        <label for="p_reduzido">Reduzido</label>
+        <input type="number" size="15" class="form-control"
+               name="filter[reduzido]" id="p_reduzido"
+               value="{{ filter.reduzido|default('') }}">
+    </div>
+    <div class="form-group">
+        <label for="p_reduzido_ekt">Reduzido (EKT)</label>
+        <input type="number" size="15" class="form-control"
+               name="filter[reduzido_ekt]" id="p_reduzido_ekt"
+               value="{{ filter.reduzido_ekt|default('') }}">
+    </div>
+    <div class="form-group">
+        <label for="p_descricao">Descrição</label>
+        <input type="text" class="form-control" id="p_descricao"
+               name="filter[descricao]"
+               value="{{ filter.descricao|default('') }}">
+    </div>
+{% endset %}
+
+
+{% block down_scripts %}
+    <script src="{{ asset('build/est/produtoList.js') }}"></script>
+{% endblock %}

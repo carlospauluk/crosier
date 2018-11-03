@@ -15,7 +15,9 @@ use App\EntityHandler\Estoque\FornecedorEntityHandler;
 use App\Form\Base\EnderecoType;
 use App\Form\Estoque\FornecedorType;
 use App\Utils\Repository\FilterData;
+use App\Utils\Repository\WhereBuilder;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -74,7 +76,8 @@ class FornecedorController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData('p.nome', 'LIKE', $params['filter']['p_nome'])
+            new FilterData('e.codigo', 'LIKE', $params['filter']['codigo']),
+            new FilterData(['p.nome', 'p.nomeFantasia'], 'LIKE', $params['filter']['nome'])
         );
     }
 
@@ -181,6 +184,7 @@ class FornecedorController extends FormListController
      * @Route("/est/fornecedor/list/", name="est_fornecedor_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function list(Request $request)
     {
@@ -271,7 +275,47 @@ class FornecedorController extends FormListController
         $serializer = new Serializer(array($normalizer), array($encoder));
         $json = $serializer->serialize($fornecedor, 'json', ['attributes' => $attributes]);
 
-        return new Response($json);
+        return new JsonResponse($json);
+    }
+
+    /**
+     *
+     * @Route("/est/fornecedor/findByCodigoOuNome/{str}", name="est_fornecedor_findByCodigoOuNome")
+     * @param $str
+     * @return Response|void
+     * @throws \Exception
+     */
+    public function findByCodigoOuNome($str)
+    {
+        if ($str == null) {
+            return;
+        }
+        if (is_numeric($str)) {
+            $params['filter']['codigo'] = $str;
+        }
+        $params['filter']['nome'] = $str;
+
+        $filterDatas = $this->doGetFilterDatas($params);
+
+        $fornecedores = $this->getDoctrine()->getRepository(Fornecedor::class)->findByFilters($filterDatas,WhereBuilder::buildOrderBy('codigo ASC'));
+        if (!$fornecedores or count($fornecedores) < 0) {
+            return null;
+        }
+
+        $rs = [];
+
+        foreach ($fornecedores as $fornecedor) {
+            if ($fornecedor->getPessoa()) {
+                $this->pessoaBusiness->fillTransients($fornecedor->getPessoa());
+            }
+
+            $rs[]['id'] = $fornecedor->getId();
+            $rs[]['codigo'] = $fornecedor->getCodigo();
+            $rs[]['pessoa']['nome'] = $fornecedor->getPessoa()->getNome();
+            $rs[]['pessoa']['nomeFantasia'] = $fornecedor->getPessoa()->getNomeFantasia();
+        }
+
+        return new JsonResponse($rs);
     }
 
 

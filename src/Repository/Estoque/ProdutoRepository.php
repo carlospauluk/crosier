@@ -3,8 +3,8 @@
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\Produto;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * Repository para a entidade Produto.
@@ -12,12 +12,15 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class ProdutoRepository extends ServiceEntityRepository
+class ProdutoRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function handleFrombyFilters(QueryBuilder &$qb)
     {
-        parent::__construct($registry, Produto::class);
+        return $qb->from($this->getEntityClass(), 'e')
+            ->join('App\Entity\Estoque\Fornecedor', 'f', 'WITH', 'e.fornecedor = f')
+            ->join('App\Entity\Base\Pessoa', 'fp', 'WITH', 'f.pessoa = fp')
+            ;
     }
 
     public function findByReduzidoEktAndDtVenda($reduzidoEkt, \DateTime $dtVenda)
@@ -40,5 +43,10 @@ class ProdutoRepository extends ServiceEntityRepository
         }
 
         return count($results) == 1 ? $results[0] : null;
+    }
+
+    public function getEntityClass()
+    {
+        return Produto::class;
     }
 }

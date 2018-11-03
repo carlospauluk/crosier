@@ -25,62 +25,6 @@ class Produto extends EntityId
 
     /**
      *
-     * @ORM\Column(name="cst", type="string", nullable=false, length=30)
-     * @Assert\NotBlank(message="O campo 'cst' deve ser informado")
-     */
-    private $cst;
-
-    /**
-     *
-     * @ORM\Column(name="descricao", type="string", nullable=false, length=200)
-     * @Assert\NotBlank(message="O campo 'descricao' deve ser informado")
-     */
-    private $descricao;
-
-    /**
-     *
-     * @ORM\Column(name="dt_ult_venda", type="date", nullable=true)
-     * @Assert\NotNull(message="O campo 'dt_ult_venda' deve ser informado")
-     * @Assert\Type("\DateTime", message="O campo 'dt_ult_venda' deve ser do tipo data/hora")
-     */
-    private $dtUltVenda;
-
-    /**
-     *
-     * @ORM\Column(name="fracionado", type="boolean", nullable=false)
-     * @Assert\NotNull(message="O campo 'fracionado' deve ser informado")
-     */
-    private $fracionado;
-
-    /**
-     *
-     * @ORM\Column(name="grade_err", type="string", nullable=true, length=200)
-     */
-    private $gradeErr;
-
-    /**
-     *
-     * @ORM\Column(name="icms", type="integer", nullable=false)
-     * @Assert\NotBlank(message="O campo 'icms' deve ser informado")
-     * @Assert\Range(min = 0)
-     */
-    private $icms;
-
-    /**
-     *
-     * @ORM\Column(name="ncm", type="string", nullable=false, length=30)
-     * @Assert\NotBlank(message="O campo 'ncm' deve ser informado")
-     */
-    private $ncm;
-
-    /**
-     *
-     * @ORM\Column(name="obs", type="string", nullable=true, length=5000)
-     */
-    private $obs;
-
-    /**
-     *
      * @ORM\Column(name="reduzido", type="bigint", nullable=false)
      * @Assert\NotBlank(message="O campo 'reduzido' deve ser informado")
      * @Assert\Range(min = 0)
@@ -96,19 +40,10 @@ class Produto extends EntityId
 
     /**
      *
-     * @ORM\Column(name="reduzido_ekt_ate", type="date", nullable=true)
-     * @Assert\NotNull(message="O campo 'reduzido_ekt_ate' deve ser informado")
-     * @Assert\Type("\DateTime", message="O campo 'reduzido_ekt_ate' deve ser do tipo data/hora")
+     * @ORM\Column(name="descricao", type="string", nullable=false, length=200)
+     * @Assert\NotBlank(message="O campo 'descricao' deve ser informado")
      */
-    private $reduzidoEktAte;
-
-    /**
-     *
-     * @ORM\Column(name="reduzido_ekt_desde", type="date", nullable=true)
-     * @Assert\NotNull(message="O campo 'reduzido_ekt_desde' deve ser informado")
-     * @Assert\Type("\DateTime", message="O campo 'reduzido_ekt_desde' deve ser do tipo data/hora")
-     */
-    private $reduzidoEktDesde;
+    private $descricao;
 
     /**
      *
@@ -116,35 +51,6 @@ class Produto extends EntityId
      * @Assert\NotBlank(message="O campo 'referencia' deve ser informado")
      */
     private $referencia;
-
-    /**
-     *
-     * @ORM\Column(name="subdepto_err", type="string", nullable=true, length=200)
-     */
-    private $subdeptoErr;
-
-    /**
-     *
-     * @ORM\Column(name="tipo_tributacao", type="string", nullable=false, length=30)
-     * @Assert\NotBlank(message="O campo 'tipo_tributacao' deve ser informado")
-     */
-    private $tipoTributacao;
-
-    /**
-     *
-     * @ORM\Column(name="unidade_produto_err", type="string", nullable=true, length=200)
-     */
-    private $unidadeProdutoErr;
-
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Depto")
-     * @ORM\JoinColumn(name="depto_imp_id", nullable=true)
-     * @Assert\NotNull(message="O campo 'Depto_imp' deve ser informado")
-     *
-     * @var $deptoImp Depto
-     */
-    private $deptoImp;
 
     /**
      *
@@ -184,247 +90,485 @@ class Produto extends EntityId
 
     /**
      *
+     * @ORM\Column(name="cst", type="string", nullable=false, length=30)
+     * @Assert\NotBlank(message="O campo 'cst' deve ser informado")
+     */
+    private $cst;
+
+    /**
+     *
+     * @ORM\Column(name="tipo_tributacao", type="string", nullable=false, length=30)
+     * @Assert\NotBlank(message="O campo 'tipo_tributacao' deve ser informado")
+     */
+    private $tipoTributacao;
+
+    /**
+     *
+     * @ORM\Column(name="icms", type="integer", nullable=false)
+     * @Assert\NotBlank(message="O campo 'icms' deve ser informado")
+     * @Assert\Range(min = 0)
+     */
+    private $icms;
+
+    /**
+     * FIXME: isso deveria ser controlado apenas pela unidade
+     * @ORM\Column(name="fracionado", type="boolean", nullable=false)
+     * @Assert\NotNull(message="O campo 'fracionado' deve ser informado")
+     */
+    private $fracionado;
+
+    /**
+     *
+     * @ORM\Column(name="ncm", type="string", nullable=false, length=30)
+     * @Assert\NotBlank(message="O campo 'ncm' deve ser informado")
+     */
+    private $ncm;
+
+
+    // ----------- CAMPOS RELACIONADOS A IMPORTAÇÃO DO EKT
+    // FIXME: mais tarde poderão ser removidos
+
+
+    /**
+     *
+     * @ORM\Column(name="reduzido_ekt_ate", type="date", nullable=true)
+     * @Assert\NotNull(message="O campo 'reduzido_ekt_ate' deve ser informado")
+     * @Assert\Type("\DateTime", message="O campo 'reduzido_ekt_ate' deve ser do tipo data/hora")
+     */
+    private $reduzidoEktAte;
+
+    /**
+     *
+     * @ORM\Column(name="reduzido_ekt_desde", type="date", nullable=true)
+     * @Assert\NotNull(message="O campo 'reduzido_ekt_desde' deve ser informado")
+     * @Assert\Type("\DateTime", message="O campo 'reduzido_ekt_desde' deve ser do tipo data/hora")
+     */
+    private $reduzidoEktDesde;
+
+    /**
+     *
+     * @ORM\Column(name="grade_err", type="string", nullable=true, length=200)
+     */
+    private $gradeErr;
+
+    /**
+     *
+     * @ORM\Column(name="subdepto_err", type="string", nullable=true, length=200)
+     */
+    private $subdeptoErr;
+
+
+    /**
+     *
+     * @ORM\Column(name="unidade_produto_err", type="string", nullable=true, length=200)
+     */
+    private $unidadeProdutoErr;
+
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Depto")
+     * @ORM\JoinColumn(name="depto_imp_id", nullable=true)
+     * @Assert\NotNull(message="O campo 'Depto_imp' deve ser informado")
+     *
+     * @var $deptoImp Depto
+     */
+    private $deptoImp;
+
+
+    /**
+     *
+     * @ORM\Column(name="dt_ult_venda", type="date", nullable=true)
+     * @Assert\NotNull(message="O campo 'dt_ult_venda' deve ser informado")
+     * @Assert\Type("\DateTime", message="O campo 'dt_ult_venda' deve ser do tipo data/hora")
+     */
+    private $dtUltVenda;
+
+
+    /**
+     *
+     * @ORM\Column(name="obs", type="string", nullable=true, length=5000)
+     */
+    private $obs;
+
+    /**
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\Cortinas\ArtigoCortina")
      * @ORM\JoinColumn(name="artigo_cortina_id", nullable=true)
      * @Assert\NotNull(message="O campo 'Artigo_cortina' deve ser informado")
+     *
+     * FIXME: isso deveria estar em outra tabela para não sujar esta.
      *
      * @var $artigoCortina ArtigoCortina
      */
     private $artigoCortina;
 
-    public function __construct()
-    {
-        ORM\Annotation::class;
-        Assert\All::class;
-    }
-
+    /**
+     * @return mixed
+     */
     public function getId()
     {
         return $this->id;
     }
 
-    public function setId($id)
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
     {
         $this->id = $id;
     }
 
-    public function getCst()
-    {
-        return $this->cst;
-    }
-
-    public function setCst($cst)
-    {
-        $this->cst = $cst;
-    }
-
-    public function getDescricao()
-    {
-        return $this->descricao;
-    }
-
-    public function setDescricao($descricao)
-    {
-        $this->descricao = $descricao;
-    }
-
-    public function getDtUltVenda()
-    {
-        return $this->dtUltVenda;
-    }
-
-    public function setDtUltVenda($dtUltVenda)
-    {
-        $this->dtUltVenda = $dtUltVenda;
-    }
-
-    public function getFracionado()
-    {
-        return $this->fracionado;
-    }
-
-    public function setFracionado($fracionado)
-    {
-        $this->fracionado = $fracionado;
-    }
-
-    public function getGradeErr()
-    {
-        return $this->gradeErr;
-    }
-
-    public function setGradeErr($gradeErr)
-    {
-        $this->gradeErr = $gradeErr;
-    }
-
-    public function getIcms()
-    {
-        return $this->icms;
-    }
-
-    public function setIcms($icms)
-    {
-        $this->icms = $icms;
-    }
-
-    public function getNcm()
-    {
-        return $this->ncm;
-    }
-
-    public function setNcm($ncm)
-    {
-        $this->ncm = $ncm;
-    }
-
-    public function getObs()
-    {
-        return $this->obs;
-    }
-
-    public function setObs($obs)
-    {
-        $this->obs = $obs;
-    }
-
+    /**
+     * @return mixed
+     */
     public function getReduzido()
     {
         return $this->reduzido;
     }
 
-    public function setReduzido($reduzido)
+    /**
+     * @param mixed $reduzido
+     */
+    public function setReduzido($reduzido): void
     {
         $this->reduzido = $reduzido;
     }
 
+    /**
+     * @return mixed
+     */
     public function getReduzidoEkt()
     {
         return $this->reduzidoEkt;
     }
 
-    public function setReduzidoEkt($reduzidoEkt)
+    /**
+     * @param mixed $reduzidoEkt
+     */
+    public function setReduzidoEkt($reduzidoEkt): void
     {
         $this->reduzidoEkt = $reduzidoEkt;
     }
 
-    public function getReduzidoEktAte()
+    /**
+     * @return mixed
+     */
+    public function getDescricao()
     {
-        return $this->reduzidoEktAte;
+        return $this->descricao;
     }
 
-    public function setReduzidoEktAte($reduzidoEktAte)
+    /**
+     * @param mixed $descricao
+     */
+    public function setDescricao($descricao): void
     {
-        $this->reduzidoEktAte = $reduzidoEktAte;
+        $this->descricao = $descricao;
     }
 
-    public function getReduzidoEktDesde()
-    {
-        return $this->reduzidoEktDesde;
-    }
-
-    public function setReduzidoEktDesde($reduzidoEktDesde)
-    {
-        $this->reduzidoEktDesde = $reduzidoEktDesde;
-    }
-
+    /**
+     * @return mixed
+     */
     public function getReferencia()
     {
         return $this->referencia;
     }
 
-    public function setReferencia($referencia)
+    /**
+     * @param mixed $referencia
+     */
+    public function setReferencia($referencia): void
     {
         $this->referencia = $referencia;
     }
 
-    public function getSubdeptoErr()
+    /**
+     * @return Fornecedor
+     */
+    public function getFornecedor(): Fornecedor
     {
-        return $this->subdeptoErr;
+        return $this->fornecedor;
     }
 
-    public function setSubdeptoErr($subdeptoErr)
+    /**
+     * @param Fornecedor $fornecedor
+     */
+    public function setFornecedor(Fornecedor $fornecedor): void
     {
-        $this->subdeptoErr = $subdeptoErr;
+        $this->fornecedor = $fornecedor;
     }
 
+    /**
+     * @return Grade
+     */
+    public function getGrade(): Grade
+    {
+        return $this->grade;
+    }
+
+    /**
+     * @param Grade $grade
+     */
+    public function setGrade(Grade $grade): void
+    {
+        $this->grade = $grade;
+    }
+
+    /**
+     * @return Subdepto
+     */
+    public function getSubdepto(): Subdepto
+    {
+        return $this->subdepto;
+    }
+
+    /**
+     * @param Subdepto $subdepto
+     */
+    public function setSubdepto(Subdepto $subdepto): void
+    {
+        $this->subdepto = $subdepto;
+    }
+
+    /**
+     * @return UnidadeProduto
+     */
+    public function getUnidadeProduto(): UnidadeProduto
+    {
+        return $this->unidadeProduto;
+    }
+
+    /**
+     * @param UnidadeProduto $unidadeProduto
+     */
+    public function setUnidadeProduto(UnidadeProduto $unidadeProduto): void
+    {
+        $this->unidadeProduto = $unidadeProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCst()
+    {
+        return $this->cst;
+    }
+
+    /**
+     * @param mixed $cst
+     */
+    public function setCst($cst): void
+    {
+        $this->cst = $cst;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getTipoTributacao()
     {
         return $this->tipoTributacao;
     }
 
-    public function setTipoTributacao($tipoTributacao)
+    /**
+     * @param mixed $tipoTributacao
+     */
+    public function setTipoTributacao($tipoTributacao): void
     {
         $this->tipoTributacao = $tipoTributacao;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getIcms()
+    {
+        return $this->icms;
+    }
+
+    /**
+     * @param mixed $icms
+     */
+    public function setIcms($icms): void
+    {
+        $this->icms = $icms;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFracionado()
+    {
+        return $this->fracionado;
+    }
+
+    /**
+     * @param mixed $fracionado
+     */
+    public function setFracionado($fracionado): void
+    {
+        $this->fracionado = $fracionado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNcm()
+    {
+        return $this->ncm;
+    }
+
+    /**
+     * @param mixed $ncm
+     */
+    public function setNcm($ncm): void
+    {
+        $this->ncm = $ncm;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReduzidoEktAte()
+    {
+        return $this->reduzidoEktAte;
+    }
+
+    /**
+     * @param mixed $reduzidoEktAte
+     */
+    public function setReduzidoEktAte($reduzidoEktAte): void
+    {
+        $this->reduzidoEktAte = $reduzidoEktAte;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReduzidoEktDesde()
+    {
+        return $this->reduzidoEktDesde;
+    }
+
+    /**
+     * @param mixed $reduzidoEktDesde
+     */
+    public function setReduzidoEktDesde($reduzidoEktDesde): void
+    {
+        $this->reduzidoEktDesde = $reduzidoEktDesde;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGradeErr()
+    {
+        return $this->gradeErr;
+    }
+
+    /**
+     * @param mixed $gradeErr
+     */
+    public function setGradeErr($gradeErr): void
+    {
+        $this->gradeErr = $gradeErr;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSubdeptoErr()
+    {
+        return $this->subdeptoErr;
+    }
+
+    /**
+     * @param mixed $subdeptoErr
+     */
+    public function setSubdeptoErr($subdeptoErr): void
+    {
+        $this->subdeptoErr = $subdeptoErr;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getUnidadeProdutoErr()
     {
         return $this->unidadeProdutoErr;
     }
 
-    public function setUnidadeProdutoErr($unidadeProdutoErr)
+    /**
+     * @param mixed $unidadeProdutoErr
+     */
+    public function setUnidadeProdutoErr($unidadeProdutoErr): void
     {
         $this->unidadeProdutoErr = $unidadeProdutoErr;
     }
 
-    public function getDeptoImp()
+    /**
+     * @return Depto
+     */
+    public function getDeptoImp(): Depto
     {
         return $this->deptoImp;
     }
 
-    public function setDeptoImp($deptoImp)
+    /**
+     * @param Depto $deptoImp
+     */
+    public function setDeptoImp(Depto $deptoImp): void
     {
         $this->deptoImp = $deptoImp;
     }
 
-    public function getFornecedor()
+    /**
+     * @return mixed
+     */
+    public function getDtUltVenda()
     {
-        return $this->fornecedor;
+        return $this->dtUltVenda;
     }
 
-    public function setFornecedor($fornecedor)
+    /**
+     * @param mixed $dtUltVenda
+     */
+    public function setDtUltVenda($dtUltVenda): void
     {
-        $this->fornecedor = $fornecedor;
+        $this->dtUltVenda = $dtUltVenda;
     }
 
-    public function getGrade()
+    /**
+     * @return mixed
+     */
+    public function getObs()
     {
-        return $this->grade;
+        return $this->obs;
     }
 
-    public function setGrade($grade)
+    /**
+     * @param mixed $obs
+     */
+    public function setObs($obs): void
     {
-        $this->grade = $grade;
+        $this->obs = $obs;
     }
 
-    public function getSubdepto()
-    {
-        return $this->subdepto;
-    }
-
-    public function setSubdepto($subdepto)
-    {
-        $this->subdepto = $subdepto;
-    }
-
-    public function getUnidadeProduto()
-    {
-        return $this->unidadeProduto;
-    }
-
-    public function setUnidadeProduto($unidadeProduto)
-    {
-        $this->unidadeProduto = $unidadeProduto;
-    }
-
-    public function getArtigoCortina()
+    /**
+     * @return ArtigoCortina
+     */
+    public function getArtigoCortina(): ArtigoCortina
     {
         return $this->artigoCortina;
     }
 
-    public function setArtigoCortina($artigoCortina)
+    /**
+     * @param ArtigoCortina $artigoCortina
+     */
+    public function setArtigoCortina(ArtigoCortina $artigoCortina): void
     {
         $this->artigoCortina = $artigoCortina;
     }
+
+
 }

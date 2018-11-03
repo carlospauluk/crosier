@@ -215,11 +215,6 @@ class Fornecedor extends EntityId
     public function __construct()
     {
         $this->enderecos = new ArrayCollection();
-        ORM\Annotation::class;
-        Assert\All::class;
-        ManyToMany::class;
-        JoinTable::class;
-        JoinColumn::class;
     }
 
     public function getId()

@@ -10,15 +10,15 @@
 {% set campos_pesquisar %}
 
     <div class="form-group">
-        <label for="p_descricao">Nome</label>
-        <input type="text" class="form-control" id="filter[p_nome]"
+        <label for="nome">Nome</label>
+        <input type="text" class="form-control" id="nome"
                name="filter[p_nome]"
-               value="{{ filter.p_nome|default('') }}">
+               value="{{ filter.nome|default('') }}">
     </div>
     <div class="form-group">
-        <label for="p_descricao">Código</label>
+        <label for="codigo">Código</label>
         <input type="number" size="15" class="form-control"
-               name="filter[codigo]"
+               name="filter[codigo]" id="codigo"
                value="{{ filter.codigo|default('') }}">
     </div>
 {% endset %}

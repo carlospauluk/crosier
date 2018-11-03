@@ -16,11 +16,6 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 class FornecedorRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
-    {
-        parent::__construct($registry, Fornecedor::class);
-    }
-
     public function handleFrombyFilters(QueryBuilder &$qb)
     {
         return $qb->from($this->getEntityClass(), 'e')
