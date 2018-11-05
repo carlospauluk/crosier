@@ -69,7 +69,7 @@ class UnimakeBusiness
 
         $nfe->infNFe->ide->natOp = $notaFiscal->getNaturezaOperacao();
 
-        $nfe->infNFe->ide->dhEmi = $notaFiscal->getDtEmissao()->format('Y-m-d\TH:i:s\-03:00');
+        $nfe->infNFe->ide->dhEmi = $notaFiscal->getDtEmissao()->format('Y-m-d\TH:i:sP');
 
         $nfe->infNFe->ide->tpNF = $notaFiscal->getEntrada() ? '0' : '1';
 
@@ -86,7 +86,7 @@ class UnimakeBusiness
         }
 
         if ($notaFiscal->getTipoNotaFiscal() == 'NFE') {
-            $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:s\-03:00');
+            $nfe->infNFe->ide->dhSaiEnt = $notaFiscal->getDtSaiEnt()->format('Y-m-d\TH:i:sU');
         } else {
             unset($nfe->infNFe->ide->dhSaiEnt); // NFCE não possui
             $nfe->infNFe->ide->idDest = 1;
@@ -636,7 +636,7 @@ class UnimakeBusiness
         $pedCanc->evento->infEvento->tpAmb = $notaFiscal->getAmbiente() == 'PROD' ? '1' : '2';
         $pedCanc->evento->infEvento->CNPJ = $notaFiscal->getPessoaEmitente()->getDocumento();
         $pedCanc->evento->infEvento->chNFe = $chaveNota;
-        $pedCanc->evento->infEvento->dhEvento = (new \DateTime('now', new \DateTimeZone('America/Sao_Paulo')))->format('Y-m-d\TH:i:s\-03:00');
+        $pedCanc->evento->infEvento->dhEvento = (new \DateTime('now', new \DateTimeZone('America/Sao_Paulo')))->format('Y-m-d\TH:i:sU');
         $pedCanc->evento->infEvento->tpEvento = '110111';
         $pedCanc->evento->infEvento->detEvento->xJust = $notaFiscal->getMotivoCancelamento();
         $pedCanc->evento->infEvento->detEvento->nProt = $notaFiscal->getProtocoloAutorizacao();
@@ -712,7 +712,7 @@ class UnimakeBusiness
         $cartaCorr->evento->infEvento->tpAmb = $notaFiscal->getAmbiente() == 'PROD' ? '1' : '2';
         $cartaCorr->evento->infEvento->CNPJ = $notaFiscal->getPessoaEmitente()->getDocumento();
         $cartaCorr->evento->infEvento->chNFe = $chaveNota;
-        $cartaCorr->evento->infEvento->dhEvento = (new \DateTime('now', new \DateTimeZone('America/Sao_Paulo')))->format('Y-m-d\TH:i:s\-03:00');
+        $cartaCorr->evento->infEvento->dhEvento = (new \DateTime('now', new \DateTimeZone('America/Sao_Paulo')))->format('Y-m-d\TH:i:sU');
         $cartaCorr->evento->infEvento->tpEvento = '110110';
         $cartaCorr->evento->infEvento->nSeqEvento = $nSeqEvento;
 
