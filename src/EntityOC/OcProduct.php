@@ -40,42 +40,42 @@ class OcProduct
      *
      * @ORM\Column(name="upc", type="string", length=12, nullable=false)
      */
-    private $upc;
+    private $upc = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="ean", type="string", length=14, nullable=false)
      */
-    private $ean;
+    private $ean = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="jan", type="string", length=13, nullable=false)
      */
-    private $jan;
+    private $jan = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="isbn", type="string", length=17, nullable=false)
      */
-    private $isbn;
+    private $isbn = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="mpn", type="string", length=64, nullable=false)
      */
-    private $mpn;
+    private $mpn = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="location", type="string", length=128, nullable=false)
      */
-    private $location;
+    private $location = '';
 
     /**
      * @var int
@@ -131,7 +131,7 @@ class OcProduct
      *
      * @ORM\Column(name="tax_class_id", type="integer", nullable=false)
      */
-    private $taxClassId;
+    private $taxClassId = 0;
 
     /**
      * @var \DateTime

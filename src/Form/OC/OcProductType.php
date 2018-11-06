@@ -2,6 +2,10 @@
 
 namespace App\Form\OC;
 
+use App\EntityOC\OcCategoryDescription;
+use App\EntityOC\OcManufacturer;
+use App\EntityOC\OcStockStatus;
+use App\Utils\Repository\WhereBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -29,12 +33,14 @@ class OcProductType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
 
+
+
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
             $ocProduct = $event->getData();
             $builder = $event->getForm();
+            $ocEntityManager = $this->doctrine->getEntityManager('oc');
 
-
-            $builder->add('id', HiddenType::class, array(
+            $builder->add('productId', HiddenType::class, array(
                 'label' => 'Id',
                 'required' => false,
                 'disabled' => true
@@ -47,31 +53,54 @@ class OcProductType extends AbstractType
                 'required' => false
             ));
 
-            $builder->add('titulo', TextType::class, array(
-                'label' => 'Produto'
+            $builder->add('name', TextType::class, array(
+                'label' => 'Produto',
+                'attr' => ['style' => 'text-transform: none']
             ));
 
-            $builder->add('descricao', TextareaType::class, array(
+            $builder->add('description', TextareaType::class, array(
                 'label' => 'Descrição'
             ));
 
-            $builder->add('modelo', TextType::class, array(
-                'label' => 'Modelo'
+            $builder->add('model', TextType::class, array(
+                'label' => 'Modelo',
+                'attr' => ['style' => 'text-transform: none']
             ));
 
-            $builder->add('marca_id', ChoiceType::class, array(
+            $ocManufacturers = $ocEntityManager->getRepository(OcManufacturer::class)->findAll(WhereBuilder::buildOrderBy('name ASC'));
+            $marcas = [];
+            foreach ($ocManufacturers as $ocManufacturer) {
+                $marcas[$ocManufacturer->getName()] = $ocManufacturer->getManufacturerId();
+            }
+            $builder->add('manufacturerId', ChoiceType::class, array(
                 'label' => 'Marca',
-                'choices' => [$ocProduct['marca_id']],
+                'choices' => $marcas,
                 'required' => false
             ));
 
-            $builder->add('depto_id', ChoiceType::class, array(
+            $ocCategs = $ocEntityManager->getRepository(OcCategoryDescription::class)->findAll(WhereBuilder::buildOrderBy('name ASC'));
+            $categs = [];
+            foreach ($ocCategs as $ocCateg) {
+                $categs[$ocCateg->getName()] = $ocCateg->getCategoryId();
+            }
+            $builder->add('categoryId', ChoiceType::class, array(
                 'label' => 'Departamento',
-                'choices' => [$ocProduct['depto_id']],
+                'choices' => $categs,
                 'required' => false
             ));
 
-            $builder->add('preco', MoneyType::class, array(
+            $ocStockStatus = $ocEntityManager->getRepository(OcStockStatus::class)->findAll(WhereBuilder::buildOrderBy('name ASC'));
+            $statusEstoque = [];
+            foreach ($ocStockStatus as $s) {
+                $statusEstoque[$s->getName()] = $s->getStockStatusId();
+            }
+            $builder->add('stockStatusId', ChoiceType::class, array(
+                'label' => 'Status Estoque',
+                'choices' => $statusEstoque,
+                'required' => false
+            ));
+
+            $builder->add('price', MoneyType::class, array(
                 'label' => 'Preço',
                 'currency' => 'BRL',
                 'grouping' => 'true',
@@ -81,7 +110,7 @@ class OcProductType extends AbstractType
                 'required' => false
             ));
 
-            $builder->add('qtde', NumberType::class, array(
+            $builder->add('quantity', NumberType::class, array(
                 'label' => 'Qtde',
                 'grouping' => 'true',
                 'scale' => 3,
@@ -91,7 +120,7 @@ class OcProductType extends AbstractType
                 'required' => true
             ));
 
-            $builder->add('dimensaoC', NumberType::class, array(
+            $builder->add('length', NumberType::class, array(
                 'label' => 'Comprimento',
                 'grouping' => 'true',
                 'scale' => 3,
@@ -101,7 +130,7 @@ class OcProductType extends AbstractType
                 'required' => true
             ));
 
-            $builder->add('dimensaoL', NumberType::class, array(
+            $builder->add('width', NumberType::class, array(
                 'label' => 'Largura',
                 'grouping' => 'true',
                 'scale' => 3,
@@ -111,8 +140,18 @@ class OcProductType extends AbstractType
                 'required' => true
             ));
 
-            $builder->add('dimensaoA', NumberType::class, array(
+            $builder->add('height', NumberType::class, array(
                 'label' => 'Altura',
+                'grouping' => 'true',
+                'scale' => 3,
+                'attr' => array(
+                    'class' => 'crsr-dec3'
+                ),
+                'required' => true
+            ));
+
+            $builder->add('weight', NumberType::class, array(
+                'label' => 'Peso',
                 'grouping' => 'true',
                 'scale' => 3,
                 'attr' => array(

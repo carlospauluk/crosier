@@ -3,31 +3,33 @@
 {{ form_start(ocProductForm) }}
 
 {{ form_row(ocProductForm._token) }}
-{{ form_row(ocProductForm.id) }}
+{{ form_row(ocProductForm.productId) }}
 {{ form_row(ocProductForm.sku) }}
-{{ form_row(ocProductForm.titulo) }}
+{{ form_row(ocProductForm.name) }}
 
 <div class="form-group row">
-    <label class="col-form-label col-sm-2 required" for="oc_product_descricao">Descrição</label>
+    <label class="col-form-label col-sm-2 required" for="oc_product_description">Descrição</label>
     <div class="col-sm-10">
-        <textarea id="oc_product_descricao" name="oc_product[descricao]" required="required"
-                  class="form-control">{{ ocProductForm.descricao.vars.value|raw }}</textarea>
+        <textarea id="oc_product_description" name="oc_product[description]" required="required"
+                  class="form-control">{{ ocProductForm.description.vars.value|raw }}</textarea>
     </div>
 </div>
 
 
-{{ form_row(ocProductForm.modelo) }}
-{{ form_row(ocProductForm.marca_id) }}
-{{ form_row(ocProductForm.depto_id) }}
-{{ form_row(ocProductForm.preco) }}
-{{ form_row(ocProductForm.qtde) }}
+{{ form_row(ocProductForm.model) }}
+{{ form_row(ocProductForm.manufacturerId) }}
+{{ form_row(ocProductForm.categoryId) }}
+{{ form_row(ocProductForm.stockStatusId) }}
+{{ form_row(ocProductForm.price) }}
+{{ form_row(ocProductForm.quantity) }}
 
 <div class="card">
     <h5 class="card-header">Dimensões</h5>
     <div class="card-body">
-            {{ form_row(ocProductForm.dimensaoC) }}
-            {{ form_row(ocProductForm.dimensaoA) }}
-            {{ form_row(ocProductForm.dimensaoL) }}
+            {{ form_row(ocProductForm.weight) }}
+            {{ form_row(ocProductForm.length) }}
+            {{ form_row(ocProductForm.height) }}
+            {{ form_row(ocProductForm.width) }}
     </div>
 </div>
 

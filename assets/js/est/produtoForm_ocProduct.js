@@ -12,9 +12,10 @@ Routing.setRoutingData(routes)
 
 
 $(document).ready(function () {
-    let $marca = $('#oc_product_marca_id');
-    let $depto = $('#oc_product_depto_id');
-    let $descricao = $('#oc_product_descricao');
+    let $marca = $('#oc_product_manufacturerId');
+    let $depto = $('#oc_product_categoryId');
+    let $statusEstoque = $('#oc_product_stockStatusid');
+    let $descricao = $('#oc_product_description');
 
     $descricao.summernote();
 
@@ -26,7 +27,6 @@ $(document).ready(function () {
             type: 'GET'
         }
     ).done(function (results) {
-        // o valor por ter vindo pelo value ou pelo data-val (ou por nenhum)
         let val = $marca.val();
         $marca.empty().trigger("change");
 
@@ -67,6 +67,31 @@ $(document).ready(function () {
         // Se veio o valor do PHP...
         if (val) {
             $depto.val(val).trigger('change');
+        }
+    });
+
+    $.ajax({
+            dataType: "json",
+            async: false,
+            url: Routing.generate('oc_stockStatus_select2json'),
+            type: 'GET'
+        }
+    ).done(function (results) {
+        // o valor por ter vindo pelo value ou pelo data-val (ou por nenhum)
+        let val = $depto.val();
+        $statusEstoque.empty().trigger("change");
+
+        results.unshift({"id": "", "text": ""});
+
+        $statusEstoque.select2({
+                placeholder: "Selecione...",
+                data: results,
+                width: '100%'
+            }
+        );
+        // Se veio o valor do PHP...
+        if (val) {
+            $statusEstoque.val(val).trigger('change');
         }
     });
 

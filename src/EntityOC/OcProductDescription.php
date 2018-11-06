@@ -49,28 +49,28 @@ class OcProductDescription
      *
      * @ORM\Column(name="tag", type="text", length=65535, nullable=false)
      */
-    private $tag;
+    private $tag = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="meta_title", type="string", length=255, nullable=false)
      */
-    private $metaTitle;
+    private $metaTitle = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="meta_description", type="string", length=255, nullable=false)
      */
-    private $metaDescription;
+    private $metaDescription = '';
 
     /**
      * @var string
      *
      * @ORM\Column(name="meta_keyword", type="string", length=255, nullable=false)
      */
-    private $metaKeyword;
+    private $metaKeyword = '';
 
     /**
      * @return int

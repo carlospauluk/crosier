@@ -48,9 +48,14 @@
             <div class="modal-content">
                 <form action="{{ url(route_list) }}" method="get" id="formPesquisar">
                     <div class="modal-body">
-                        <h4>Pesquisar</h4>
 
-                        {{ campos_pesquisar }}
+                            <h5 class="modal-header">Pesquisar por...</h5>
+
+                        <div class="card">
+                            <div class="card-body">
+                                {{ campos_pesquisar }}
+                            </div>
+                        </div>
 
                     </div>
                     <div class="modal-footer">

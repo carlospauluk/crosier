@@ -34,7 +34,7 @@ class WhereBuilder
     public static function build(QueryBuilder &$qb, $filters)
     {
         if (!$filters) {
-            return;
+            return null;
         }
         $andX = $qb->expr()->andX();
 
@@ -68,6 +68,10 @@ class WhereBuilder
 
                 switch ($filter->compar) {
                     case 'EQ':
+                        $orX->add($qb->expr()
+                            ->eq($field, $fieldP));
+                        break;
+                    case 'EQ_BOOL':
                         $orX->add($qb->expr()
                             ->eq($field, $fieldP));
                         break;
@@ -126,7 +130,7 @@ class WhereBuilder
             $andX->add($orX);
         }
         if (!$filtrando) {
-            return;
+            return null;
         }
         $qb->where($andX);
 
@@ -164,6 +168,9 @@ class WhereBuilder
                         break;
                     case 'LIKE_ONLY':
                         $qb->setParameter($fieldP, $filter->val);
+                        break;
+                    case 'EQ_BOOL':
+                        $qb->setParameter($fieldP, $filter->val === 'true' ? true : false);
                         break;
                     default:
                         $qb->setParameter($fieldP, $filter->val);

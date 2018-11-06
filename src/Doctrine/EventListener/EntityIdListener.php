@@ -3,6 +3,7 @@
 namespace App\Doctrine\EventListener;
 
 
+use App\Entity\Base\EntityId;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use ReflectionClass;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -48,6 +49,7 @@ class EntityIdListener
     public function prePersist(LifecycleEventArgs $args)
     {
         $entityId = $args->getObject();
+        if (!$entityId instanceof EntityId) return;
         $this->handleUppercaseFields($entityId);
         $entityId->setInserted(new \DateTime('now'));
         $entityId->setEstabelecimento($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()->getEstabelecimento()));
@@ -59,6 +61,7 @@ class EntityIdListener
     public function preUpdate(LifecycleEventArgs $args)
     {
         $entityId = $args->getObject();
+        if (!$entityId instanceof EntityId) return;
         $this->handleUppercaseFields($entityId);
         $entityId->setUpdated(new \DateTime());
         $entityId->setUserUpdated($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
@@ -67,6 +70,7 @@ class EntityIdListener
 
     private function handleUppercaseFields($entityId)
     {
+        if (!$entityId instanceof EntityId) return;
         $uppercaseFieldsJson = file_get_contents('../src/Entity/uppercaseFields.json');
         $uppercaseFields = json_decode($uppercaseFieldsJson);
         $class = str_replace('\\', '_', get_class($entityId));

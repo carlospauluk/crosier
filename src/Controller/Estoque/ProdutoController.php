@@ -38,7 +38,6 @@ class ProdutoController extends FormListController
     public function form(Request $request, Produto $produto = null)
     {
         $ocProduct = $this->getOcProduct($produto);
-
         $ocProductForm = $this->createForm(OcProductType::class);
         $ocProductForm->setData($ocProduct);
         $ocProductForm->handleRequest($request);
@@ -47,7 +46,7 @@ class ProdutoController extends FormListController
             if ($ocProductForm->isValid()) {
                 try {
                     $ocProductArray = $ocProductForm->getData();
-                    $this->getProdutoBusiness()->saveOcProduct($ocProductArray);
+                    $this->getProdutoBusiness()->saveOcProduct($produto, $ocProductArray);
                     $this->addFlash('success', 'Registro salvo com sucesso!');
                     return $this->redirectToRoute('est_produto_form', array(
                         'id' => $produto->getId(),
@@ -88,6 +87,8 @@ class ProdutoController extends FormListController
             new FilterData('e.reduzidoEkt', 'EQ', $params['filter']['reduzido_ekt']),
             new FilterData('e.reduzido', 'EQ', $params['filter']['reduzido']),
             new FilterData('e.descricao', 'LIKE', $params['filter']['descricao']),
+            new FilterData('e.atual', 'EQ_BOOL', $params['filter']['atual']),
+            new FilterData('e.naLojaVirtual', 'EQ_BOOL', $params['filter']['naLojaVirtual']),
 //            new FilterData('sd.depto', 'EQ', $params['filter']['p_depto']),
 //            new FilterData('p.subdepto', 'EQ', $params['filter']['p_subdepto']),
         );

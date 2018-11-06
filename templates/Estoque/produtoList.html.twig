@@ -9,23 +9,46 @@
 
 {% set campos_pesquisar %}
 
-    <div class="form-group">
+    <div class="form-group row">
         <label for="p_reduzido">Reduzido</label>
         <input type="number" size="15" class="form-control"
                name="filter[reduzido]" id="p_reduzido"
                value="{{ filter.reduzido|default('') }}">
     </div>
-    <div class="form-group">
+    <div class="form-group row">
         <label for="p_reduzido_ekt">Reduzido (EKT)</label>
         <input type="number" size="15" class="form-control"
                name="filter[reduzido_ekt]" id="p_reduzido_ekt"
                value="{{ filter.reduzido_ekt|default('') }}">
     </div>
-    <div class="form-group">
+    <div class="form-group row">
         <label for="p_descricao">Descrição</label>
         <input type="text" class="form-control" id="p_descricao"
                name="filter[descricao]"
                value="{{ filter.descricao|default('') }}">
+    </div>
+
+    <div class="form-group row">
+        <label for="filter_atual">Atual</label>
+        <select id="filter_atual" name="filter[atual]" class="form-control">
+            <option value="" {{ filter.atual|default('') == '' ? 'selected="selected"' : '' }}>Selecione...</option>
+            <option value="true" {{ filter.atual|default('') == 'true' ? 'selected="selected"' : '' }}>Sim
+            </option>
+            <option value="false" {{ filter.atual|default('') == 'false' ? 'selected="selected"' : '' }}>Não
+            </option>
+        </select>
+    </div>
+
+    <div class="form-group row">
+        <label for="filter_naLojaVirtual">Na loja virtual</label>
+        <select id="filter_naLojaVirtual" name="filter[naLojaVirtual]" class="form-control">
+            <option value="" {{ filter.naLojaVirtual|default('') == '' ? 'selected="selected"' : '' }}>Selecione...
+            </option>
+            <option value="true" {{ filter.naLojaVirtual|default('') == 'true' ? 'selected="selected"' : '' }}>Sim
+            </option>
+            <option value="false" {{ filter.naLojaVirtual|default('') == 'false' ? 'selected="selected"' : '' }}>Não
+            </option>
+        </select>
     </div>
 {% endset %}
 
