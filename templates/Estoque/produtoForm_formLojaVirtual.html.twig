@@ -1,0 +1,110 @@
+{% extends 'index.html.twig' %}
+
+
+
+
+{% block page_content %}
+
+    {% set produto = e %}
+
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-8">
+                    <h3>{{ page_title }}</h3>
+                </div>
+                <div class="col-4 text-right">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="window.location.href='{{ url('est_produto_list') }}'">
+                        <i class="fas fa-sync" aria-hidden="true"></i> Listar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <ul class="nav nav-tabs" id="principal" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="cabecalho-tab" data-toggle="tab" href="#cabecalho" role="tab">Dados</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ (produto) ? '' : 'disabled' }}" id="grade-tab" data-toggle="tab" href="#grade" role="tab">Grade</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ (produto and produto.naLojaVirtual) ? '' : 'disabled' }}" id="loja-virtual-tab" data-toggle="tab" href="#loja-virtual" role="tab">Loja Virtual</a>
+                </li>
+            </ul>
+
+            <div class="form-group row">
+            </div>
+
+
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="cabecalho" role="tabpanel" aria-labelledby="cabecalho-tab">
+
+                    {% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+
+                    {{ form_start(form) }}
+
+                    {{ form_row(form._token) }}
+                    {{ form_row(form.id) }}
+                    {{ form_widget(form) }}
+
+
+                    <div class="row">
+                        <div class="col text-right">
+                            <button type="submit" class="btn btn-primary btn-lg" value="Salvar">
+                                <i class="fas fa-save" aria-hidden="true"></i> Salvar
+                            </button>
+
+                            <button type="button" value="Resetar" class="btn btn-secondary"
+                                    data-url="{{ url('est_produto_form') }}"
+                                    data-target="#confirmationModal" data-toggle="modal">
+                                <i class="fas fa-undo" aria-hidden="true"></i> Recarregar
+                            </button>
+                        </div>
+                    </div>
+
+
+                    {{ form_end(form, {'render_rest': false}) }}
+
+
+                </div>
+
+                <div class="tab-pane fade" id="grade" role="tabpanel">
+
+                    {% if produto.id is defined %}
+
+                        grade
+
+                    {% endif %}
+
+                </div>
+
+                <div class="tab-pane fade" id="loja-virtual" role="tabpanel">
+
+                    {% if produto.id is defined and produto.naLojaVirtual %}
+
+                        {{ include('Estoque/produtoForm_produtoLojaVirtual.html.twig') }}
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+
+{% block down_scripts %}
+    <script src="{{ asset('build/est/produtoForm.js') }}"></script>
+{% endblock %}
