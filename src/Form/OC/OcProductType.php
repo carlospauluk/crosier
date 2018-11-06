@@ -120,6 +120,16 @@ class OcProductType extends AbstractType
                 'required' => true
             ));
 
+            $builder->add('weight', NumberType::class, array(
+                'label' => 'Peso',
+                'grouping' => 'true',
+                'scale' => 3,
+                'attr' => array(
+                    'class' => 'crsr-dec3'
+                ),
+                'required' => true
+            ));
+
             $builder->add('length', NumberType::class, array(
                 'label' => 'Comprimento',
                 'grouping' => 'true',
@@ -142,16 +152,6 @@ class OcProductType extends AbstractType
 
             $builder->add('height', NumberType::class, array(
                 'label' => 'Altura',
-                'grouping' => 'true',
-                'scale' => 3,
-                'attr' => array(
-                    'class' => 'crsr-dec3'
-                ),
-                'required' => true
-            ));
-
-            $builder->add('weight', NumberType::class, array(
-                'label' => 'Peso',
                 'grouping' => 'true',
                 'scale' => 3,
                 'attr' => array(

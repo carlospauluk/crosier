@@ -63,9 +63,9 @@ class ProdutoBusiness
                 'price' => $ocProduct->getPrice(),
                 'stockStatusId' => $ocProduct->getStockStatusId(),
                 'weight' => $ocProduct->getWeight(),
-                'lenght' => $ocProduct->getLength(),
                 'height' => $ocProduct->getHeight(),
-                'weight' => $ocProduct->getWeight(),
+                'length' => $ocProduct->getLength(),
+                'width' => $ocProduct->getWidth(),
                 'status' => $ocProduct->isStatus(),
                 'name' => $ocProductDescription->getName(),
                 'description' => $ocProductDescription->getDescription()
