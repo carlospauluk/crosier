@@ -41,7 +41,7 @@ doctrine:
             is_bundle: false
             type: annotation
             dir: '%kernel.project_dir%/src/Entity'
-            prefix: 'App\Entity'
+            prefix: 'App\Entity\'
             alias: App
       oc:
         connection: oc
@@ -50,6 +50,6 @@ doctrine:
           AppOC:
             is_bundle: false
             type: annotation
-            dir: '%kernel.project_dir%/src/OC/Entity'
-            prefix: 'App\OC\Entity'
+            dir: '%kernel.project_dir%/src/EntityOC'
+            prefix: 'App\EntityOC\'
             alias: AppOC

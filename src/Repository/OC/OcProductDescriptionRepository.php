@@ -1,9 +1,8 @@
 <?php
 
-namespace App\OC\Repository;
+namespace App\Repository\OC;
 
-use App\OC\Entity\OcProduct;
-use App\OC\Entity\OcProductDescription;
+use App\EntityOC\OcProductDescription;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 

@@ -20,7 +20,12 @@
         "select2": "4",
         "simple-line-icons": "^2.4.1",
         "toastr": "^2.1.4",
-        "webpack-notifier": "^1.6.0"
+        "webpack-notifier": "^1.6.0",
+        "moment": "^2.22.2",
+        "numeral": "^2.0.6",
+        "select2-bootstrap-theme": "^0.1.0-beta.10",
+        "sortablejs": "RubaXa/Sortable",
+        "summernote": "^0.8.10"
     },
     "license": "UNLICENSED",
     "private": true,
@@ -31,9 +36,6 @@
         "build": "encore production"
     },
     "dependencies": {
-        "moment": "^2.22.2",
-        "numeral": "^2.0.6",
-        "select2-bootstrap-theme": "^0.1.0-beta.10",
-        "sortablejs": "RubaXa/Sortable"
+        
     }
 }

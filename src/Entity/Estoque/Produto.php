@@ -26,29 +26,24 @@ class Produto extends EntityId
     /**
      *
      * @ORM\Column(name="reduzido", type="bigint", nullable=false)
-     * @Assert\NotBlank(message="O campo 'reduzido' deve ser informado")
-     * @Assert\Range(min = 0)
      */
     private $reduzido;
 
     /**
      *
      * @ORM\Column(name="reduzido_ekt", type="integer", nullable=true)
-     * @Assert\Range(min = 0)
      */
     private $reduzidoEkt;
 
     /**
      *
      * @ORM\Column(name="descricao", type="string", nullable=false, length=200)
-     * @Assert\NotBlank(message="O campo 'descricao' deve ser informado")
      */
     private $descricao;
 
     /**
      *
      * @ORM\Column(name="referencia", type="string", nullable=false, length=20)
-     * @Assert\NotBlank(message="O campo 'referencia' deve ser informado")
      */
     private $referencia;
 
@@ -91,36 +86,30 @@ class Produto extends EntityId
     /**
      *
      * @ORM\Column(name="cst", type="string", nullable=false, length=30)
-     * @Assert\NotBlank(message="O campo 'cst' deve ser informado")
      */
     private $cst;
 
     /**
      *
      * @ORM\Column(name="tipo_tributacao", type="string", nullable=false, length=30)
-     * @Assert\NotBlank(message="O campo 'tipo_tributacao' deve ser informado")
      */
     private $tipoTributacao;
 
     /**
      *
      * @ORM\Column(name="icms", type="integer", nullable=false)
-     * @Assert\NotBlank(message="O campo 'icms' deve ser informado")
-     * @Assert\Range(min = 0)
      */
     private $icms;
 
     /**
      * FIXME: isso deveria ser controlado apenas pela unidade
      * @ORM\Column(name="fracionado", type="boolean", nullable=false)
-     * @Assert\NotNull(message="O campo 'fracionado' deve ser informado")
      */
     private $fracionado;
 
     /**
      *
      * @ORM\Column(name="ncm", type="string", nullable=false, length=30)
-     * @Assert\NotBlank(message="O campo 'ncm' deve ser informado")
      */
     private $ncm;
 
@@ -132,7 +121,6 @@ class Produto extends EntityId
     /**
      *
      * @ORM\Column(name="reduzido_ekt_ate", type="date", nullable=true)
-     * @Assert\NotNull(message="O campo 'reduzido_ekt_ate' deve ser informado")
      * @Assert\Type("\DateTime", message="O campo 'reduzido_ekt_ate' deve ser do tipo data/hora")
      */
     private $reduzidoEktAte;
@@ -140,7 +128,6 @@ class Produto extends EntityId
     /**
      *
      * @ORM\Column(name="reduzido_ekt_desde", type="date", nullable=true)
-     * @Assert\NotNull(message="O campo 'reduzido_ekt_desde' deve ser informado")
      * @Assert\Type("\DateTime", message="O campo 'reduzido_ekt_desde' deve ser do tipo data/hora")
      */
     private $reduzidoEktDesde;
@@ -168,7 +155,6 @@ class Produto extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Depto")
      * @ORM\JoinColumn(name="depto_imp_id", nullable=true)
-     * @Assert\NotNull(message="O campo 'Depto_imp' deve ser informado")
      *
      * @var $deptoImp Depto
      */
@@ -178,7 +164,6 @@ class Produto extends EntityId
     /**
      *
      * @ORM\Column(name="dt_ult_venda", type="date", nullable=true)
-     * @Assert\NotNull(message="O campo 'dt_ult_venda' deve ser informado")
      * @Assert\Type("\DateTime", message="O campo 'dt_ult_venda' deve ser do tipo data/hora")
      */
     private $dtUltVenda;
@@ -194,13 +179,24 @@ class Produto extends EntityId
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Cortinas\ArtigoCortina")
      * @ORM\JoinColumn(name="artigo_cortina_id", nullable=true)
-     * @Assert\NotNull(message="O campo 'Artigo_cortina' deve ser informado")
      *
      * FIXME: isso deveria estar em outra tabela para não sujar esta.
      *
      * @var $artigoCortina ArtigoCortina
      */
     private $artigoCortina;
+
+    /**
+     *
+     * @ORM\Column(name="atual", type="boolean", nullable=true)
+     */
+    private $atual = false;
+
+    /**
+     *
+     * @ORM\Column(name="na_loja_virtual", type="boolean", nullable=true)
+     */
+    private $naLojaVirtual = false;
 
     /**
      * @return mixed
@@ -285,7 +281,7 @@ class Produto extends EntityId
     /**
      * @return Fornecedor
      */
-    public function getFornecedor(): Fornecedor
+    public function getFornecedor(): ?Fornecedor
     {
         return $this->fornecedor;
     }
@@ -293,7 +289,7 @@ class Produto extends EntityId
     /**
      * @param Fornecedor $fornecedor
      */
-    public function setFornecedor(Fornecedor $fornecedor): void
+    public function setFornecedor(?Fornecedor $fornecedor): void
     {
         $this->fornecedor = $fornecedor;
     }
@@ -568,6 +564,38 @@ class Produto extends EntityId
     public function setArtigoCortina(ArtigoCortina $artigoCortina): void
     {
         $this->artigoCortina = $artigoCortina;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAtual()
+    {
+        return $this->atual;
+    }
+
+    /**
+     * @param mixed $atual
+     */
+    public function setAtual($atual): void
+    {
+        $this->atual = $atual;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNaLojaVirtual()
+    {
+        return $this->naLojaVirtual;
+    }
+
+    /**
+     * @param mixed $naLojaVirtual
+     */
+    public function setNaLojaVirtual($naLojaVirtual): void
+    {
+        $this->naLojaVirtual = $naLojaVirtual;
     }
 
 

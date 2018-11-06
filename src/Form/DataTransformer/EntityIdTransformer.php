@@ -45,14 +45,14 @@ class EntityIdTransformer implements DataTransformerInterface
     /**
      * Transforms a string (number) to an object (issue).
      *
-     * @param string $issueNumber
-     * @throws TransformationFailedException if object (issue) is not found.
+     * @param $id
+     * @return null|object
      */
     public function reverseTransform($id)
     {
         // no issue number? It's optional, so that's ok
         if (!$id) {
-            return;
+            return null;
         }
 
         $entity = $this->getRepo()->find($id);

@@ -4,6 +4,9 @@ import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap';
 
+import 'summernote/dist/summernote-bs4.css';
+
+
 import 'popper.js';
 
 import 'perfect-scrollbar';

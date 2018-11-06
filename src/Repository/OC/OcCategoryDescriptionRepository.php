@@ -1,10 +1,9 @@
 <?php
 
-namespace App\OC\Repository;
+namespace App\Repository\OC;
 
-use App\OC\Entity\OcCategoryDescription;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\EntityOC\OcCategoryDescription;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade OcCategoryDescription.
@@ -12,12 +11,11 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class OcCategoryDescriptionRepository extends ServiceEntityRepository
+class OcCategoryDescriptionRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, OcCategoryDescription::class);
+        return OcCategoryDescription::class;
     }
-
 }

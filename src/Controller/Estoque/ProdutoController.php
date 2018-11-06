@@ -2,12 +2,16 @@
 
 namespace App\Controller\Estoque;
 
+use App\Business\Estoque\ProdutoBusiness;
 use App\Controller\FormListController;
 use App\Entity\Estoque\Produto;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Estoque\ProdutoEntityHandler;
 use App\Form\Estoque\ProdutoType;
+use App\Form\OC\OcProductType;
+use App\Utils\ExceptionUtils;
 use App\Utils\Repository\FilterData;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -20,32 +24,63 @@ class ProdutoController extends FormListController
 
     private $entityHandler;
 
-    /**
-     * @required
-     * @param ProdutoEntityHandler $entityHandler
-     */
-    public function setEntityHandler(ProdutoEntityHandler $entityHandler)
-    {
-        $this->entityHandler = $entityHandler;
-    }
+    private $produtoBusiness;
 
     /**
-     * @return EntityHandler|null
+     *
+     * @Route("/est/produto/form/{id}", name="est_produto_form", defaults={"id"=null}, requirements={"id"="\d+"})
+     * @param Request $request
+     * @ParamConverter("produto", class="App\Entity\Estoque\Produto")
+     * @param Produto|null $produto
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
-    public function getEntityHandler(): EntityHandler
+    public function form(Request $request, Produto $produto = null)
     {
-        return $this->entityHandler;
+        $ocProduct = $this->getOcProduct($produto);
+
+        $ocProductForm = $this->createForm(OcProductType::class);
+        $ocProductForm->setData($ocProduct);
+        $ocProductForm->handleRequest($request);
+
+        if ($ocProductForm->isSubmitted()) {
+            if ($ocProductForm->isValid()) {
+                try {
+                    $ocProductArray = $ocProductForm->getData();
+                    $this->getProdutoBusiness()->saveOcProduct($ocProductArray);
+                    $this->addFlash('success', 'Registro salvo com sucesso!');
+                    return $this->redirectToRoute('est_produto_form', array(
+                        'id' => $produto->getId(),
+                        '_fragment' => 'loja-virtual'
+                    ));
+                } catch (\Exception $e) {
+                    $msg = ExceptionUtils::treatException($e);
+                    $this->addFlash('error', $msg);
+                    $this->addFlash('error', 'Erro ao salvar!');
+                }
+            } else {
+                $errors = $ocProductForm->getErrors(true, true);
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+            }
+        }
+
+        $params['ocProductForm'] = $ocProductForm->createView();
+
+        return $this->doForm($request, $produto, $params);
     }
 
-    public function getFormRoute()
+    public function saveOcProduct()
     {
-        return 'est_produto_form';
+
     }
 
-    public function getFormView()
+    public function getOcProduct(?Produto $produto)
     {
-        return 'Estoque/produtoForm.html.twig';
+        return $this->getProdutoBusiness()->getOcProductArrayByProduto($produto);
     }
+
 
     public function getFilterDatas($params)
     {
@@ -56,35 +91,6 @@ class ProdutoController extends FormListController
 //            new FilterData('sd.depto', 'EQ', $params['filter']['p_depto']),
 //            new FilterData('p.subdepto', 'EQ', $params['filter']['p_subdepto']),
         );
-    }
-
-    public function getListView()
-    {
-        return 'Estoque/produtoList.html.twig';
-    }
-
-    public function getListRoute()
-    {
-        return 'est_produto_list';
-    }
-
-
-    public function getTypeClass()
-    {
-        return ProdutoType::class;
-    }
-
-    /**
-     *
-     * @Route("/est/produto/form/{produto}", name="est_produto_form", defaults={"produto"=null}, requirements={"produto"="\d+"})
-     * @param Request $request
-     * @param Produto|null $produto
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \Exception
-     */
-    public function form(Request $request, Produto $produto = null)
-    {
-        return $this->doForm($request, $produto);
     }
 
     /**
@@ -142,6 +148,67 @@ class ProdutoController extends FormListController
     public function delete(Request $request, Produto $produto)
     {
         return $this->doDelete($request, $produto);
+    }
+
+    public function getListView()
+    {
+        return 'Estoque/produtoList.html.twig';
+    }
+
+    public function getListRoute()
+    {
+        return 'est_produto_list';
+    }
+
+
+    public function getTypeClass()
+    {
+        return ProdutoType::class;
+    }
+
+    /**
+     * @required
+     * @param ProdutoEntityHandler $entityHandler
+     */
+    public function setEntityHandler(ProdutoEntityHandler $entityHandler)
+    {
+        $this->entityHandler = $entityHandler;
+    }
+
+    /**
+     * @return EntityHandler|null
+     */
+    public function getEntityHandler(): EntityHandler
+    {
+        return $this->entityHandler;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProdutoBusiness(): ProdutoBusiness
+    {
+        return $this->produtoBusiness;
+    }
+
+    /**
+     * @required
+     * @param mixed $produtoBusiness
+     */
+    public function setProdutoBusiness(ProdutoBusiness $produtoBusiness): void
+    {
+        $this->produtoBusiness = $produtoBusiness;
+    }
+
+
+    public function getFormRoute()
+    {
+        return 'est_produto_form';
+    }
+
+    public function getFormView()
+    {
+        return 'Estoque/produtoForm.html.twig';
     }
 
 

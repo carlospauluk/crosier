@@ -1,6 +1,6 @@
 <?php
 
-namespace App\OC\Form;
+namespace App\Form\OC;
 
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
@@ -47,7 +47,7 @@ class OcProductType extends AbstractType
                 'required' => false
             ));
 
-            $builder->add('produto', TextType::class, array(
+            $builder->add('titulo', TextType::class, array(
                 'label' => 'Produto'
             ));
 
@@ -65,8 +65,9 @@ class OcProductType extends AbstractType
                 'required' => false
             ));
 
-            $builder->add('depto_id', TextType::class, array(
+            $builder->add('depto_id', ChoiceType::class, array(
                 'label' => 'Departamento',
+                'choices' => [$ocProduct['depto_id']],
                 'required' => false
             ));
 
@@ -91,6 +92,7 @@ class OcProductType extends AbstractType
             ));
 
             $builder->add('dimensaoC', NumberType::class, array(
+                'label' => 'Comprimento',
                 'grouping' => 'true',
                 'scale' => 3,
                 'attr' => array(
@@ -100,6 +102,7 @@ class OcProductType extends AbstractType
             ));
 
             $builder->add('dimensaoL', NumberType::class, array(
+                'label' => 'Largura',
                 'grouping' => 'true',
                 'scale' => 3,
                 'attr' => array(
@@ -109,6 +112,7 @@ class OcProductType extends AbstractType
             ));
 
             $builder->add('dimensaoA', NumberType::class, array(
+                'label' => 'Altura',
                 'grouping' => 'true',
                 'scale' => 3,
                 'attr' => array(

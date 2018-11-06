@@ -9,6 +9,14 @@
 
     <script src="{{ asset('build/static/pace.min.js') }}"></script>
     <script>
+        window.onbeforeunload = function(e) {
+            document.getElementById('preloader').style.display = '';
+
+            for (let i = 0; i < document.getElementsByClassName("blur-on-pace").length; i++) {
+                document.getElementsByClassName("blur-on-pace")[i].style.filter = 'blur(3px)';
+            }
+        };
+
         Pace.on('start', function (e) {
             document.getElementById('preloader').style.display = '';
 

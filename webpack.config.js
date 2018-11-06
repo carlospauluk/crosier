@@ -1,5 +1,7 @@
 var Encore = require('@symfony/webpack-encore');
 
+const webpack = require('webpack');
+
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 Encore
@@ -16,6 +18,8 @@ Encore
         // copies to {output}/static
         { from: './assets/static', to: 'static' }
     ]))
+    // o summmernote tem esta dependência, mas não é necessária
+    .addPlugin(new webpack.IgnorePlugin(/^codemirror$/))
     .enableSassLoader()
     /*
      * ENTRY CONFIG
@@ -44,6 +48,7 @@ Encore
     .addEntry('est/fornecedorForm', './assets/js/est/fornecedorForm.js')
     .addEntry('est/produtoList', './assets/js/est/produtoList.js')
     .addEntry('est/produtoForm', './assets/js/est/produtoForm.js')
+    .addEntry('est/produtoForm_ocProduct', './assets/js/est/produtoForm_ocProduct.js')
 
     .addEntry('crm/clienteList', './assets/js/crm/clienteList.js')
     .addEntry('crm/clienteForm', './assets/js/crm/clienteForm.js')

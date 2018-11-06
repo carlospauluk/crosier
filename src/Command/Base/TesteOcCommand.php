@@ -2,7 +2,7 @@
 
 namespace App\Command\Base;
 
-use App\OC\Entity\OcProduct;
+use App\EntityOC\OcProduct;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

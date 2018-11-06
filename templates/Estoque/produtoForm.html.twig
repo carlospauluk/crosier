@@ -5,6 +5,8 @@
 
 {% block page_content %}
 
+    {% set produto = e %}
+
 
     <div class="card">
         <div class="card-header">
@@ -30,7 +32,10 @@
                     <a class="nav-link active" id="cabecalho-tab" data-toggle="tab" href="#cabecalho" role="tab">Dados</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="grade-tab" data-toggle="tab" href="#grade" role="tab">Grade</a>
+                    <a class="nav-link {{ (produto) ? '' : 'disabled' }}" id="grade-tab" data-toggle="tab" href="#grade" role="tab">Grade</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ (produto and produto.naLojaVirtual) ? '' : 'disabled' }}" id="loja-virtual-tab" data-toggle="tab" href="#loja-virtual" role="tab">Loja Virtual</a>
                 </li>
             </ul>
 
@@ -74,6 +79,18 @@
 
                     {% if produto.id is defined %}
 
+                        grade
+
+                    {% endif %}
+
+                </div>
+
+                <div class="tab-pane fade" id="loja-virtual" role="tabpanel">
+
+                    {% if produto.id is defined and produto.naLojaVirtual %}
+
+                        {{ include('Estoque/produtoForm_formLojaVirtual.html.twig') }}
+
                     {% endif %}
 
                 </div>
@@ -90,4 +107,5 @@
 
 {% block down_scripts %}
     <script src="{{ asset('build/est/produtoForm.js') }}"></script>
+    <script src="{{ asset('build/est/produtoForm_ocProduct.js') }}"></script>
 {% endblock %}
