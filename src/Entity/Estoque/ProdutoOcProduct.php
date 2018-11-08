@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  *
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\Estoque\ProdutoOcProductRepository")
  * @ORM\Table(name="est_produto_oc_product")
  */
 class ProdutoOcProduct

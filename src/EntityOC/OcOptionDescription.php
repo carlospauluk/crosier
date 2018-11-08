@@ -37,5 +37,53 @@ class OcOptionDescription
      */
     private $name;
 
+    /**
+     * @return int
+     */
+    public function getOptionId(): int
+    {
+        return $this->optionId;
+    }
+
+    /**
+     * @param int $optionId
+     */
+    public function setOptionId(int $optionId): void
+    {
+        $this->optionId = $optionId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLanguageId(): int
+    {
+        return $this->languageId;
+    }
+
+    /**
+     * @param int $languageId
+     */
+    public function setLanguageId(int $languageId): void
+    {
+        $this->languageId = $languageId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
 
 }

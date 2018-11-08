@@ -42,5 +42,69 @@ class OcOptionValue
      */
     private $sortOrder;
 
+    /**
+     * @return int
+     */
+    public function getOptionValueId(): int
+    {
+        return $this->optionValueId;
+    }
+
+    /**
+     * @param int $optionValueId
+     */
+    public function setOptionValueId(int $optionValueId): void
+    {
+        $this->optionValueId = $optionValueId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOptionId(): int
+    {
+        return $this->optionId;
+    }
+
+    /**
+     * @param int $optionId
+     */
+    public function setOptionId(int $optionId): void
+    {
+        $this->optionId = $optionId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getImage(): string
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string $image
+     */
+    public function setImage(string $image): void
+    {
+        $this->image = $image;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    /**
+     * @param int $sortOrder
+     */
+    public function setSortOrder(int $sortOrder): void
+    {
+        $this->sortOrder = $sortOrder;
+    }
+
 
 }

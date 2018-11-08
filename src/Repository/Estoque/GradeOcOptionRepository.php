@@ -2,20 +2,20 @@
 
 namespace App\Repository\Estoque;
 
-use App\Entity\Estoque\Subdepto;
+use App\Entity\Estoque\GradeOcOption;
 use App\Repository\FilterRepository;
 
 /**
- * Repository para a entidade Subdepto.
+ * Repository para a entidade GradeOcOption.
  *
  * @author Carlos Eduardo Pauluk
  *
  */
-class SubdeptoRepository extends FilterRepository
+class GradeOcOptionRepository extends FilterRepository
 {
 
     public function getEntityClass()
     {
-        return Subdepto::class;
+        return GradeOcOption::class;
     }
 }

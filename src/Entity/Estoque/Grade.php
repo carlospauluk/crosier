@@ -62,8 +62,6 @@ class Grade extends EntityId
 
     public function __construct()
     {
-        ORM\Annotation::class;
-        Assert\All::class;
         $this->tamanhos = new ArrayCollection();
     }
 

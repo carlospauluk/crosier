@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * OcProductOption
  *
  * @ORM\Table(name="oc_product_option")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\OC\OcProductOptionRepository")
  */
 class OcProductOption
 {
@@ -48,6 +48,86 @@ class OcProductOption
      * @ORM\Column(name="required", type="boolean", nullable=false)
      */
     private $required;
+
+    /**
+     * @return int
+     */
+    public function getProductOptionId(): ?int
+    {
+        return $this->productOptionId;
+    }
+
+    /**
+     * @param int $productOptionId
+     */
+    public function setProductOptionId(int $productOptionId): void
+    {
+        $this->productOptionId = $productOptionId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getProductId(): int
+    {
+        return $this->productId;
+    }
+
+    /**
+     * @param int $productId
+     */
+    public function setProductId(int $productId): void
+    {
+        $this->productId = $productId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOptionId(): int
+    {
+        return $this->optionId;
+    }
+
+    /**
+     * @param int $optionId
+     */
+    public function setOptionId(int $optionId): void
+    {
+        $this->optionId = $optionId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getValue(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * @param string $value
+     */
+    public function setValue(string $value): void
+    {
+        $this->value = $value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRequired(): bool
+    {
+        return $this->required;
+    }
+
+    /**
+     * @param bool $required
+     */
+    public function setRequired(bool $required): void
+    {
+        $this->required = $required;
+    }
 
 
 }

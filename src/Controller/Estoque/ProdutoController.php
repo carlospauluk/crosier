@@ -37,6 +37,7 @@ class ProdutoController extends FormListController
      */
     public function form(Request $request, Produto $produto = null)
     {
+        // busca (se tiver) o produtod a loja virtual
         $ocProduct = $this->getOcProduct($produto);
         $ocProductForm = $this->createForm(OcProductType::class);
         $ocProductForm->setData($ocProduct);
@@ -64,11 +65,11 @@ class ProdutoController extends FormListController
                 }
             }
         }
-
         $params['ocProductForm'] = $ocProductForm->createView();
 
         return $this->doForm($request, $produto, $params);
     }
+
 
     public function saveOcProduct()
     {

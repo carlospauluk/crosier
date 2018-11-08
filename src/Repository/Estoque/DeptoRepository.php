@@ -3,8 +3,7 @@
 namespace App\Repository\Estoque;
 
 use App\Entity\Estoque\Depto;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade Depto.
@@ -12,11 +11,11 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class DeptoRepository extends ServiceEntityRepository
+class DeptoRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, Depto::class);
+        return Depto::class;
     }
 }

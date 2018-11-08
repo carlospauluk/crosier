@@ -4,6 +4,8 @@ namespace App\Entity\Estoque;
 
 use App\Entity\Base\EntityId;
 use App\Entity\Cortinas\ArtigoCortina;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -197,6 +199,37 @@ class Produto extends EntityId
      * @ORM\Column(name="na_loja_virtual", type="boolean", nullable=true)
      */
     private $naLojaVirtual = false;
+
+
+    /**
+     *
+     * @var ProdutoPreco[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="ProdutoPreco",
+     *      mappedBy="produto",
+     *      orphanRemoval=true
+     * )
+     */
+    private $precos;
+
+    /**
+     *
+     * @var ProdutoSaldo[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="ProdutoSaldo",
+     *      mappedBy="produto",
+     *      orphanRemoval=true
+     * )
+     */
+    private $saldos;
+
+    public function __construct()
+    {
+        $this->precos = new ArrayCollection();
+        $this->saldos = new ArrayCollection();
+    }
 
     /**
      * @return mixed
@@ -598,5 +631,31 @@ class Produto extends EntityId
         $this->naLojaVirtual = $naLojaVirtual;
     }
 
+    /**
+     *
+     * @return Collection|ProdutoPreco[]
+     */
+    public function getPrecos(): Collection
+    {
+        return $this->precos;
+    }
+
+    public function getPrecoAtual(): ?ProdutoPreco
+    {
+        $precosArray = $this->precos->toArray();
+        usort($precosArray, function (ProdutoPreco $a, ProdutoPreco $b) {
+            return ($a->getDtPrecoVenda() >= $b->getDtPrecoVenda());
+        });
+        return $this->precos->get(0);
+    }
+
+    /**
+     *
+     * @return Collection|ProdutoSaldo[]
+     */
+    public function getSaldos(): Collection
+    {
+        return $this->saldos;
+    }
 
 }

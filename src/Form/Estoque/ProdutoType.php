@@ -4,6 +4,7 @@ namespace App\Form\Estoque;
 
 use App\Entity\Estoque\Fornecedor;
 use App\Entity\Estoque\Produto;
+use App\Entity\Estoque\ProdutoOcProduct;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\AbstractType;
@@ -85,13 +86,25 @@ class ProdutoType extends AbstractType
                 )
             ));
 
-            $builder->add('naLojaVirtual', ChoiceType::class, array(
+
+            $params = [
                 'label' => 'Na Loja Virtual',
-                'choices' => array(
-                    'Sim' => true,
-                    'Não' => false
-                )
-            ));
+                'choices' =>
+                    [
+                        'Sim' => true,
+                        'Não' => false
+                    ]
+            ];
+//            if  ($produto) {
+//                $produtoOcProduct = $this->doctrine->getRepository(ProdutoOcProduct::class)->findby(['produto' => $produto]);
+//                if ($produto->getNaLojaVirtual() == true) {
+//                    $params['choices'] = ['Sim' => true];
+//                }
+//                if ($produtoOcProduct) {
+//                    $params['choices'] = ['Sim' => true];
+//                }
+//            }
+            $builder->add('naLojaVirtual', ChoiceType::class, $params);
 
         });
 

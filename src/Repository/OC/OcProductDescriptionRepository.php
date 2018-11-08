@@ -3,8 +3,7 @@
 namespace App\Repository\OC;
 
 use App\EntityOC\OcProductDescription;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Repository\FilterRepository;
 
 /**
  * Repository para a entidade OcProductDescription.
@@ -12,12 +11,11 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @author Carlos Eduardo Pauluk
  *
  */
-class OcProductDescriptionRepository extends ServiceEntityRepository
+class OcProductDescriptionRepository extends FilterRepository
 {
 
-    public function __construct(RegistryInterface $registry)
+    public function getEntityClass()
     {
-        parent::__construct($registry, OcProductDescription::class);
+        return OcProductDescription::class;
     }
-
 }
