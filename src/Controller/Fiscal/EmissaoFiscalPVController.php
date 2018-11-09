@@ -10,6 +10,7 @@ use App\Entity\Fiscal\NotaFiscal;
 use App\Entity\Fiscal\NotaFiscalVenda;
 use App\Entity\Vendas\Venda;
 use App\Form\Fiscal\EmissaoFiscalType;
+use App\Utils\ExceptionUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -138,20 +139,24 @@ class EmissaoFiscalPVController extends Controller
      */
     public function processarPV(Request $request, $pv)
     {
-        // Processa os arquivos do EKT para gerar a venda
-        $this->vendaBusiness->processarTXTsEKTeApagarArquivos();
 
-        $venda = $this->getDoctrine()
-            ->getRepository(Venda::class)
-            ->findByPV($pv);
-        if (!$venda) {
-            $this->addFlash('error', 'Venda não encontrada!');
+        try {// Processa os arquivos do EKT para gerar a venda
+            $this->vendaBusiness->processarTXTsEKTeApagarArquivos();
+            $venda = $this->getDoctrine()
+                ->getRepository(Venda::class)
+                ->findByPV($pv);
+            if (!$venda) {
+                $this->addFlash('error', 'Venda não encontrada!');
+                return $this->redirectToRoute('fis_emissaofiscalpv_ini');
+            }
+            return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
+                'id' => $venda->getId()
+            ));
+        } catch (\Exception $e) {
+            $msg = ExceptionUtils::treatException($e);
+            $this->addFlash('error', $msg);
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         }
-
-        return $this->redirectToRoute('fis_emissaofiscalpv_form', array(
-            'id' => $venda->getId()
-        ));
     }
 
     /**
