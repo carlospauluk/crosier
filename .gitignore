@@ -26,3 +26,9 @@ yarn-error.log
 Vagrantfile*
 .vagrant/*
 ansible/*
+
+
+
+assets/static/fos_js_routes.json
+src/Entity/uppercaseFields.json
+
