@@ -338,7 +338,6 @@ class ProdutoBusiness
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
 
-
         $ftpServer = getenv('OC_FTP_SERVER');
         $ftpUsername = getenv('OC_FTP_USERNAME');
         $ftpPassword = getenv('OC_FTP_PASSWORD');
@@ -449,11 +448,16 @@ class ProdutoBusiness
         foreach ($remoteFiles as $remoteFile) {
             if (strpos($remoteFile['type'], 'dir') !== false) continue;
             $arquivoRemotoExisteNaBase = false;
-            foreach ($ocProductImages as $ocProductImage) {
-                if (pathinfo($ocProductImage->getImage())['basename'] == $remoteFile['name']
-                    or pathinfo($ocProduct->getImage())['basename'] == $remoteFile['name']) {
-                    $arquivoRemotoExisteNaBase = true;
-                    break;
+            $baseName_product = pathinfo($ocProduct->getImage())['basename'];
+            if ($baseName_product == $remoteFile['name']) {
+                $arquivoRemotoExisteNaBase = true;
+            } else {
+                foreach ($ocProductImages as $ocProductImage) {
+                    $baseName_productImage = pathinfo($ocProductImage->getImage())['basename'];
+                    if ($baseName_productImage == $remoteFile['name']) {
+                        $arquivoRemotoExisteNaBase = true;
+                        break;
+                    }
                 }
             }
             if (!$arquivoRemotoExisteNaBase) {
