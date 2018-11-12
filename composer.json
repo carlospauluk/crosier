@@ -7,6 +7,8 @@
         "ext-iconv": "*",
         "ext-soap": "*",
         "ext-zip": "*",
+        "ext-intl": "*",
+        "ext-ftp": "*",
         "econea/nusoap": "~0.9.5.1",
         "friendsofsymfony/jsrouting-bundle": "^2.2",
         "sensio/framework-extra-bundle": "^5.1",

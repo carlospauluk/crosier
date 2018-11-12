@@ -10,10 +10,12 @@ use App\EntityOC\OcCategory;
 use App\EntityOC\OcManufacturer;
 use App\EntityOC\OcProduct;
 use App\EntityOC\OcProductDescription;
+use App\EntityOC\OcProductImage;
 use App\EntityOC\OcProductOption;
 use App\EntityOC\OcProductOptionValue;
 use App\EntityOC\OcProductToCategory;
 use App\EntityOC\OcProductToStore;
+use App\Utils\StringUtils;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class ProdutoBusiness
@@ -274,10 +276,128 @@ class ProdutoBusiness
 
             $ocEntityManager->flush();
             $ocEntityManager->commit();
+
         } catch (\Exception $e) {
             $ocEntityManager->rollback();
             throw new \Exception('Erro ao salvar produto oc', 0, $e);
         }
+
+        try {
+            $this->saveImages($produto, $ocProduct);
+        } catch (\Exception $e) {
+            throw new \Exception('Erro ao salvar imagens do produto', 0, $e);
+        }
+
+
+    }
+
+
+    public function saveImages(Produto $produto, OcProduct $ocProduct)
+    {
+        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+        $productId = $ocProduct->getProductId();
+        // $ocProduct = $ocEntityManager->getRepository(OcProduct::class)->find($productId);
+
+
+        $crosierfolder = getenv('CROSIER_FOLDER');
+        $ocProductImagesFolder = $crosierfolder . '/product-images/';
+
+        $fornecedoresFolders = scandir($ocProductImagesFolder);
+        $fornecedorFolder = null;
+        foreach ($fornecedoresFolders as $ff) {
+            if (strlen($ff) >= strlen($produto->getFornecedor()->getCodigo()) and substr($ff, 0, strlen($produto->getFornecedor()->getCodigo())) == $produto->getFornecedor()->getCodigo()) {
+                $fornecedorFolder = $ff;
+                break;
+            }
+        }
+        if (!$fornecedorFolder) {
+            $fornecedorFolder = $ocProductImagesFolder . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());;
+            mkdir($fornecedorFolder, 0755);
+        }
+
+        $ents = scandir($ocProductImagesFolder . $fornecedorFolder);
+        $produtoFolder = null;
+        // tenta encontrar uma pasta que tenha seu nome começando pelo reduzido
+        foreach ($ents as $ent) {
+            if (substr($ent, 0, strlen($produto->getReduzido())) == $produto->getReduzido()) {
+                $produtoFolder = $ent;
+                break;
+            }
+        }
+        if (!$produtoFolder) {
+            $nome = StringUtils::strToFilenameStr($produto->getDescricao());
+            $produtoFolder = $produto->getReduzido() . '-' . $nome;
+            mkdir($ocProductImagesFolder . $fornecedorFolder . $produtoFolder, 0755);
+        }
+
+        $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
+
+        $ftpServer = getenv('OC_FTP_SERVER');
+        $ftpUsername = getenv('OC_FTP_USERNAME');
+        $ftpPassword = getenv('OC_FTP_PASSWORD');
+        $ftpProductImagesFolder = getenv('OC_FTP_PRODUCT_IMAGE_FOLDER');
+        $httpProductImagesFolder = getenv('OC_HTTP_PRODUCT_IMAGE_FOLDER');
+
+        $ftpConn = ftp_connect($ftpServer);
+        $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
+        if (!$logged) {
+            throw new \Exception('Erro ao conectar ao FTP', 0, $e);
+        }
+        if (!ftp_chdir($ftpConn, $ftpProductImagesFolder)) {
+            throw new \Exception('Erro ao abrir pasta das imagens no FTP', 0, $e);
+        }
+
+
+        @ftp_mkdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder);
+        @ftp_mkdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
+        if (!ftp_chdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder)) {
+            throw new \Exception('Erro em chdir(fornecedorFolder)');
+        }
+        if (!ftp_chdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder)) {
+            throw new \Exception('Erro em chdir(produtoFolder)');
+        }
+
+        // Percorre as imagens da pasta
+
+        $remoteFiles = ftp_mlsd($ftpConn, '.');
+        $imagens = scandir($produtoFolder_compl);
+        foreach ($imagens as $img) {
+            $existe = false;
+            if (is_dir($produtoFolder_compl . '/' . $img)) continue;
+            $pathParts = pathinfo($produtoFolder_compl . '/' . $img);
+
+            foreach ($remoteFiles as $remoteFile) {
+                if ($img == $remoteFile['name']) {
+                    $existe = true;
+                    $md5Remote = md5_file($httpProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
+                    $md5Local = md5_file($produtoFolder_compl . '/' . $img);
+                    // O arquivo foi alterado, reenvia...
+                    if ($md5Remote !== $md5Local) {
+                        ftp_delete($ftpConn, $remoteFile['name']);
+                        ftp_put($ftpConn, $remoteFile['img'], $img, FTP_BINARY);
+                    }
+                }
+            }
+
+            // Não achou o arquivo
+            if (!$existe) {
+                ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
+
+                if (intval($pathParts['filename']) == 1) {
+                    $ocProduct->setImage('catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
+                    $ocEntityManager->persist($ocProduct);
+                    $ocEntityManager->flush();
+                } else {
+                    $ocProductImage = new OcProductImage();
+                    $ocProductImage->setImage('catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
+                    $ocProductImage->setProductId($productId);
+                    $ocProductImage->setSortOrder(intval($pathParts['filename']));
+                    $ocEntityManager->persist($ocProductImage);
+                    $ocEntityManager->flush();
+                }
+            }
+        }
+        ftp_close($ftpConn);
 
 
     }

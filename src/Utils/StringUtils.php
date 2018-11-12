@@ -3,6 +3,7 @@
 namespace App\Utils;
 
 use NumberFormatter;
+use Transliterator;
 
 class StringUtils
 {
@@ -66,6 +67,19 @@ class StringUtils
 
             return $sb;
         }
+    }
+
+    /**
+     * Troca todos os caracteres específicos, e troca qualquer coisa que não seja letra ou números por underscore.
+     * @param $str
+     * @return mixed
+     */
+    public static function strToFilenameStr($str)
+    {
+        $str = trim($str);
+        $str = Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', Transliterator::FORWARD)->transliterate($str);
+        $str = preg_replace('/[^a-zA-Z0-9]/', '_', $str);
+        return $str;
     }
 }
 
