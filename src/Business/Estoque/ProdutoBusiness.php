@@ -333,10 +333,11 @@ class ProdutoBusiness
         if (!$produtoFolder) {
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
             $produtoFolder = $produto->getReduzido() . '-' . $nome;
-            mkdir($ocProductImagesFolder . $fornecedorFolder . $produtoFolder, 0755);
+            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0755);
         }
-
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
+
+
 
         $ftpServer = getenv('OC_FTP_SERVER');
         $ftpUsername = getenv('OC_FTP_USERNAME');
