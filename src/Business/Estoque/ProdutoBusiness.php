@@ -292,12 +292,18 @@ class ProdutoBusiness
     }
 
 
+    /**
+     * Salva as imagens do produto a partir da pasta crosierfolder.
+     *
+     * @param Produto $produto
+     * @param OcProduct $ocProduct
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function saveImages(Produto $produto, OcProduct $ocProduct)
     {
         $ocEntityManager = $this->doctrine->getEntityManager('oc');
         $productId = $ocProduct->getProductId();
-        // $ocProduct = $ocEntityManager->getRepository(OcProduct::class)->find($productId);
-
 
         $crosierfolder = getenv('CROSIER_FOLDER');
         $ocProductImagesFolder = $crosierfolder . '/product-images/';
@@ -347,7 +353,7 @@ class ProdutoBusiness
             throw new \Exception('Erro ao abrir pasta das imagens no FTP', 0, $e);
         }
 
-
+        // manda criar com supressão de erros (caso exista, não retorna o erro)
         @ftp_mkdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder);
         @ftp_mkdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
         if (!ftp_chdir($ftpConn, $ftpProductImagesFolder . '/' . $fornecedorFolder)) {
@@ -361,9 +367,16 @@ class ProdutoBusiness
 
         $remoteFiles = ftp_mlsd($ftpConn, '.');
         $imagens = scandir($produtoFolder_compl);
+        $qtdeImagens = 0;
+
+        $ocProductImages = $ocEntityManager->getRepository(OcProductImage::class)->findBy(['productId' => $productId]);
+        $ocProductImages_existemNaBase = [];
         foreach ($imagens as $img) {
+            // Só aceita arquivos com o formato '99.extt'
+            if (!preg_match('/^\d{2}\.{1}\w{3,4}$/', $img)) continue;
+
+            $qtdeImagens++;
             $existe = false;
-            if (is_dir($produtoFolder_compl . '/' . $img)) continue;
             $pathParts = pathinfo($produtoFolder_compl . '/' . $img);
 
             foreach ($remoteFiles as $remoteFile) {
@@ -374,29 +387,79 @@ class ProdutoBusiness
                     // O arquivo foi alterado, reenvia...
                     if ($md5Remote !== $md5Local) {
                         ftp_delete($ftpConn, $remoteFile['name']);
-                        ftp_put($ftpConn, $remoteFile['img'], $img, FTP_BINARY);
+                        ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
                     }
+                    break;
                 }
             }
-
             // Não achou o arquivo
             if (!$existe) {
                 ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
+            }
 
-                if (intval($pathParts['filename']) == 1) {
-                    $ocProduct->setImage('catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
+            $sortOrder = intval($pathParts['filename']);
+            $fileNameRemotoCompl = 'catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img;
+
+            if ($sortOrder == 1) {
+                // a primeira imagem sempre vai como principal do produto (registro direto na oc_product)
+                if ($ocProduct->getImage() != $fileNameRemotoCompl) {
+                    $ocProduct->setImage($fileNameRemotoCompl);
                     $ocEntityManager->persist($ocProduct);
                     $ocEntityManager->flush();
-                } else {
+                }
+            } else {
+                // as demais vão na oc_product_image
+                $existeNaBase = false;
+
+                foreach ($ocProductImages as $ocProductImage) {
+                    if ($ocProductImage->getSortOrder() == $sortOrder) {
+                        $ocProductImages_existemNaBase[] = $ocProductImage;
+                        $existeNaBase = true;
+                        // se, por acaso, o nome do arquivo está errado, altera na base.
+                        if ($ocProductImage->getImage() != $fileNameRemotoCompl) {
+                            $ocProductImage->setImage($fileNameRemotoCompl);
+                            $ocEntityManager->persist($ocProduct);
+                            $ocEntityManager->flush();
+                        }
+                    }
+                }
+                if (!$existeNaBase) {
                     $ocProductImage = new OcProductImage();
-                    $ocProductImage->setImage('catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
+                    $ocProductImage->setImage($fileNameRemotoCompl);
                     $ocProductImage->setProductId($productId);
                     $ocProductImage->setSortOrder(intval($pathParts['filename']));
                     $ocEntityManager->persist($ocProductImage);
                     $ocEntityManager->flush();
+                    $ocProductImages_existemNaBase[] = $ocProductImage;
                 }
             }
         }
+
+        // Por fim, remove todos os oc_product_image que não existam
+        foreach ($ocProductImages as $ocProductImage) {
+            if (!in_array($ocProductImage, $ocProductImages_existemNaBase)) {
+                $ocEntityManager->remove($ocProductImage);
+                $ocEntityManager->flush();
+            }
+        }
+        $ocProductImages = $ocEntityManager->getRepository(OcProductImage::class)->findBy(['productId' => $productId]);
+        // e também os arquivos que estejam no FTP porém que não existam na base
+        $remoteFiles = ftp_mlsd($ftpConn, '.');
+        foreach ($remoteFiles as $remoteFile) {
+            if (strpos($remoteFile['type'], 'dir') !== false) continue;
+            $arquivoRemotoExisteNaBase = false;
+            foreach ($ocProductImages as $ocProductImage) {
+                if (pathinfo($ocProductImage->getImage())['basename'] == $remoteFile['name']
+                    or pathinfo($ocProduct->getImage())['basename'] == $remoteFile['name']) {
+                    $arquivoRemotoExisteNaBase = true;
+                    break;
+                }
+            }
+            if (!$arquivoRemotoExisteNaBase) {
+                ftp_delete($ftpConn, $remoteFile['name']);
+            }
+        }
+
         ftp_close($ftpConn);
 
 
