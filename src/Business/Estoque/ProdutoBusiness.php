@@ -318,7 +318,7 @@ class ProdutoBusiness
         }
         if (!$fornecedorFolder) {
             $fornecedorFolder = $ocProductImagesFolder . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());;
-            mkdir($fornecedorFolder, 0755);
+            mkdir($fornecedorFolder, 0777);
         }
 
         $ents = scandir($ocProductImagesFolder . $fornecedorFolder);
@@ -333,7 +333,7 @@ class ProdutoBusiness
         if (!$produtoFolder) {
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
             $produtoFolder = $produto->getReduzido() . '-' . $nome;
-            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0755);
+            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
@@ -479,7 +479,7 @@ class ProdutoBusiness
         if (!(@ftp_rmdir($ftpConn, $dir) || @ftp_delete($ftpConn, $dir))) {
             // if the attempt to delete fails, get the file listing
             $filelist = @ftp_nlist($ftpConn, $dir);
-
+            if (!$filelist) return;
             // loop through the file list and recursively delete the FILE in the list
             foreach ($filelist as $ent) {
                 if (pathinfo($ent)['basename'] == '.' or pathinfo($ent)['basename'] == '..') continue;
