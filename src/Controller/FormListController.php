@@ -266,7 +266,7 @@ abstract class FormListController extends Controller
                 $orders[] = $order;
             }
             $draw = (int)$rParams['draw'];
-            parse_str(urldecode($rParams['formPesquisar']), $formPesquisar);
+            parse_str($rParams['formPesquisar'], $formPesquisar);
             if (is_array($defaultFilters)) {
                 $formPesquisar = array_merge_recursive($formPesquisar, $defaultFilters);
             }

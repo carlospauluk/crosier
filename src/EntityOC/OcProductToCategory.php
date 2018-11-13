@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * OcProductToCategory
  *
  * @ORM\Table(name="oc_product_to_category", indexes={@ORM\Index(name="category_id", columns={"category_id"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\OC\OcProductToCategoryRepository")
  */
 class OcProductToCategory
 {

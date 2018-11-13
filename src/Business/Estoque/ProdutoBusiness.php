@@ -6,15 +6,23 @@ use App\Entity\Estoque\GradeOcOption;
 use App\Entity\Estoque\GradeTamanhoOcOptionValue;
 use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\ProdutoOcProduct;
+use App\EntityOC\OcAttributeDescription;
 use App\EntityOC\OcCategory;
+use App\EntityOC\OcCategoryFilter;
+use App\EntityOC\OcFilter;
+use App\EntityOC\OcFilterDescription;
+use App\EntityOC\OcFilterGroupDescription;
 use App\EntityOC\OcManufacturer;
 use App\EntityOC\OcProduct;
+use App\EntityOC\OcProductAttribute;
 use App\EntityOC\OcProductDescription;
+use App\EntityOC\OcProductFilter;
 use App\EntityOC\OcProductImage;
 use App\EntityOC\OcProductOption;
 use App\EntityOC\OcProductOptionValue;
 use App\EntityOC\OcProductToCategory;
 use App\EntityOC\OcProductToStore;
+use App\Utils\Repository\WhereBuilder;
 use App\Utils\StringUtils;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -68,6 +76,11 @@ class ProdutoBusiness
                 'name' => $ocProductDescription->getName(),
                 'description' => $ocProductDescription->getDescription()
             ];
+
+            $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProduct->getProductId()]);
+            foreach ($ocProductFilters as $ocProductFilter) {
+                $ocProductArray['filters'][] = $ocProductFilter->getFilterId();
+            }
 
             return $ocProductArray;
 
@@ -221,6 +234,7 @@ class ProdutoBusiness
 
             // percorre todos os saldos de cada gradeTamanho do produto
             foreach ($produto->getSaldos() as $saldo) {
+                if (!$saldo->getSelec()) continue;
                 // de-para entre est_grade_tamanho e oc_option_value
                 $gradeTamanhoOcOptionValue = $this->doctrine->getRepository(GradeTamanhoOcOptionValue::class)->findOneBy(['gradeTamanho' => $saldo->getGradeTamanho()]);
                 if (!$gradeTamanhoOcOptionValue) {
@@ -286,6 +300,12 @@ class ProdutoBusiness
             $this->saveImages($produto, $ocProduct);
         } catch (\Exception $e) {
             throw new \Exception('Erro ao salvar imagens do produto', 0, $e);
+        }
+
+        try {
+            $this->saveOcProductFilter($produto, $ocProductArray);
+        } catch (\Exception $e) {
+            throw new \Exception('Erro ao salvar filtros.', 0, $e);
         }
 
 
@@ -473,6 +493,102 @@ class ProdutoBusiness
 
     }
 
+    private function saveOcProductFilter(Produto $produto, $ocProductArray)
+    {
+        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+
+        $ocProductId = $ocProductArray['id'];
+
+        // primeiro removo todos para depois inserir novamente
+        $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
+        foreach ($productFilters as $productFilter) {
+            $ocEntityManager->remove($productFilter);
+        }
+        $ocEntityManager->flush();
+
+        if (isset($ocProductArray['filters'])) {
+            foreach ($ocProductArray['filters'] as $filter) {
+                $ocProductFilter = new OcProductFilter();
+                $ocProductFilter->setProductId($ocProductId);
+                $ocProductFilter->setFilterId($filter);
+                $ocEntityManager->persist($ocProductFilter);
+            }
+        } else {
+            // Percorre os tamanhos e verifica se precisa inserir o oc_filter para o oc_product
+            foreach ($produto->getSaldos() as $saldo) {
+                if (!$saldo->getSelec()) continue;
+
+                $tamanho = $saldo->getGradeTamanho()->getTamanho();
+                $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['name' => $tamanho]);
+
+                $ocProductFilter = $ocEntityManager->getRepository(OcProductFilter::class)
+                    ->findOneBy([
+                        'filterId' => $ocFilterDescription->getFilterId(),
+                        'productId' => $ocProductId
+                    ]);
+
+                if (!$ocProductFilter) {
+                    $ocProductFilter = new OcProductFilter();
+                    $ocProductFilter->setProductId($ocProductId);
+                    $ocProductFilter->setFilterId($ocFilterDescription->getFilterId());
+                    $ocEntityManager->persist($ocProductFilter);
+                }
+            }
+        }
+        $ocEntityManager->flush();
+
+        // Percorre todos as categorias do produto e verifica se elas possuem todos os filtros do produto, senão insere.
+        $ocProductCategories = $ocEntityManager->getRepository(OcProductToCategory::class)->findBy(['productId' => $ocProductId]);
+        foreach ($ocProductCategories as $category) {
+
+            $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)
+                ->findBy([
+                    'productId' => $ocProductId
+                ]);
+
+            if ($ocProductFilters) {
+                foreach ($ocProductFilters as $filter) {
+
+                    $ocCategoryFilter = $ocEntityManager->getRepository(OcCategoryFilter::class)
+                        ->findOneBy([
+                            'categoryId' => $category->getCategoryId(),
+                            'filterId' => $filter->getFilterId()
+                        ]);
+                    if (!$ocCategoryFilter) {
+                        $ocCategoryFilter = new OcCategoryFilter();
+                        $ocCategoryFilter->setCategoryId($category->getCategoryId());
+                        $ocCategoryFilter->setFilterId($filter->getFilterId());
+                        $ocEntityManager->persist($ocCategoryFilter);
+                    }
+                }
+            }
+        }
+
+        // Salva os filtros como atributos
+        $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
+        foreach ($productFilters as $productFilter) {
+            $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['filterId' => $productFilter->getFilterId()]);
+            $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['filterGroupId' => $ocFilterDescription->getFilterGroupId()]);
+            $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => $ocFilterGroupDescription->getName()]);
+
+            $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['attributeId' => $ocAttributeDescription->getAttributeId()]);
+            if (!$ocProductAttribute) {
+                $ocProductAttribute = new OcProductAttribute();
+                $ocProductAttribute->setProductId($ocProductId);
+                $ocProductAttribute->setAttributeId($ocAttributeDescription->getAttributeId());
+                $ocProductAttribute->setLanguageId(2); // fixo na base
+                $ocProductAttribute->setText($ocFilterDescription->getName());
+                $ocEntityManager->persist($ocProductAttribute);
+            }
+        }
+        $ocEntityManager->flush();
+
+
+
+        $ocEntityManager->flush();
+
+    }
+
     private function recursiveDeleteDirFTP($ftpConn, $dir)
     {
         // here we attempt to delete the file/directory
@@ -489,6 +605,28 @@ class ProdutoBusiness
             // if the file list is empty, delete the DIRECTORY we passed
             $this->recursiveDeleteDirFTP($ftpConn, $dir);
         }
+    }
+
+
+    public function corrigirEstProdutoOcProduct()
+    {
+        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+
+        $produtosNaLoja = $this->doctrine->getRepository(ProdutoOcProduct::class)->findAll(WhereBuilder::buildOrderBy('productId DESC'));
+
+        $qtdeTotal = count($produtosNaLoja);
+        $qtdeRemovidos = 0;
+        foreach ($produtosNaLoja as $prod) {
+            $ocProduct = $ocEntityManager->getRepository(OcProduct::class)->find($prod->getProductId());
+            if (!$ocProduct) {
+                $this->doctrine->getEntityManager()->remove($prod);
+                $prod->getProduto()->setNaLojaVirtual(false);
+                $this->doctrine->getEntityManager()->persist($prod->getProduto());
+                $this->doctrine->getEntityManager()->flush();
+                $qtdeRemovidos++;
+            }
+        }
+        return 'Removidos: ' . $qtdeRemovidos . '/' . $qtdeTotal;
     }
 
 }

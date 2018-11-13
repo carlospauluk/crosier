@@ -30,5 +30,37 @@ class OcProductFilter
      */
     private $filterId;
 
+    /**
+     * @return int
+     */
+    public function getProductId(): int
+    {
+        return $this->productId;
+    }
+
+    /**
+     * @param int $productId
+     */
+    public function setProductId(int $productId): void
+    {
+        $this->productId = $productId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFilterId(): int
+    {
+        return $this->filterId;
+    }
+
+    /**
+     * @param int $filterId
+     */
+    public function setFilterId(int $filterId): void
+    {
+        $this->filterId = $filterId;
+    }
+
 
 }
