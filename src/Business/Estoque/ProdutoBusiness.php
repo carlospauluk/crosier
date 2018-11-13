@@ -9,7 +9,6 @@ use App\Entity\Estoque\ProdutoOcProduct;
 use App\EntityOC\OcAttributeDescription;
 use App\EntityOC\OcCategory;
 use App\EntityOC\OcCategoryFilter;
-use App\EntityOC\OcFilter;
 use App\EntityOC\OcFilterDescription;
 use App\EntityOC\OcFilterGroupDescription;
 use App\EntityOC\OcManufacturer;
@@ -133,7 +132,7 @@ class ProdutoBusiness
 
             if ($editando) {
                 // Se estiver editando, pega do array (que veio do form)
-                $ocProduct->setSku($ocProductArray['sku']);
+                $ocProduct->setSku($produto->getReduzido()); // $ocProductArray['sku']);   SEMPRE VINCULA
                 $ocProduct->setModel($ocProductArray['model']);
                 $ocProduct->setHeight($ocProductArray['height']);
                 $ocProduct->setLength($ocProductArray['length']);
@@ -582,7 +581,6 @@ class ProdutoBusiness
             }
         }
         $ocEntityManager->flush();
-
 
 
         $ocEntityManager->flush();
