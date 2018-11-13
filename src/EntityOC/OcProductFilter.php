@@ -41,7 +41,7 @@ class OcProductFilter
     /**
      * @param int $productId
      */
-    public function setProductId(int $productId): void
+    public function setProductId($productId): void
     {
         $this->productId = $productId;
     }
