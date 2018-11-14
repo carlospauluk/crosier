@@ -8,6 +8,7 @@ use App\Business\Security\SecurityBusiness;
 use App\Entity\Base\EntityId;
 use App\EntityHandler\EntityHandler;
 use App\Utils\ExceptionUtils;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +27,9 @@ abstract class FormListController extends Controller
     private $storedViewInfoBusiness;
 
     private $securityBusiness;
+
+    private $logger;
+
 
     abstract public function getEntityHandler(): ?EntityHandler;
 
@@ -328,6 +332,23 @@ abstract class FormListController extends Controller
         }
 
         return $this->redirectToRoute($this->getListRoute());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @required
+     * @param mixed $logger
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
 

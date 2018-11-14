@@ -46,6 +46,7 @@ class ProdutoController extends FormListController
 
         if ($ocProductForm->isSubmitted()) {
             if ($ocProductForm->isValid()) {
+                $this->getLogger()->info('Iniciando o saveOcProduct()');
                 try {
                     $ocProductArray = $ocProductForm->getData();
                     $this->getProdutoBusiness()->saveOcProduct($produto, $ocProductArray);
@@ -215,6 +216,8 @@ class ProdutoController extends FormListController
      * @Route("/est/produto/corrigirEstProdutoOcProduct/", name="est_produto_corrigirEstProdutoOcProduct")
      * @param Request $request
      * @return Response
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function corrigirEstProdutoOcProduct(Request $request)
     {
