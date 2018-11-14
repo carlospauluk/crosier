@@ -205,6 +205,7 @@ class ProdutoBusiness extends BaseBusiness
                 $this->getDoctrine()->getEntityManager()->persist($produtoOcProduct);
                 $this->getDoctrine()->getEntityManager()->flush();
             }
+            $ocProductArray = $this->getOcProductArrayByProduto($produto);
 
             // de-para entre est_grade e oc_option
             $gradeOcOption = $this->getDoctrine()->getRepository(GradeOcOption::class)->findOneBy(['grade' => $produto->getGrade()]);
@@ -365,10 +366,10 @@ class ProdutoBusiness extends BaseBusiness
         $ftpConn = ftp_connect($ftpServer);
         $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
         if (!$logged) {
-            throw new \Exception('Erro ao conectar ao FTP', 0, $e);
+            throw new \Exception('Erro ao conectar ao FTP', 0);
         }
         if (!ftp_chdir($ftpConn, $ftpProductImagesFolder)) {
-            throw new \Exception('Erro ao abrir pasta das imagens no FTP', 0, $e);
+            throw new \Exception('Erro ao abrir pasta das imagens no FTP', 0);
         }
 
         // manda criar com supressão de erros (caso exista, não retorna o erro)
@@ -575,9 +576,10 @@ class ProdutoBusiness extends BaseBusiness
                     $ocProductFilter->setProductId($ocProductId);
                     $ocProductFilter->setFilterId($ocFilterDescription->getFilterId());
                     $ocEntityManager->persist($ocProductFilter);
+                    $ocEntityManager->flush();
                 }
             }
-        } catch (ORMException $e) {
+        } catch (\Exception $e) {
             throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
         }
     }
@@ -629,7 +631,7 @@ class ProdutoBusiness extends BaseBusiness
             $ocProductFilter->setFilterId($filtroPorMarca->getFilterId());
             $ocEntityManager->persist($ocProductFilter);
             $ocEntityManager->flush();
-        } catch (ORMException $e) {
+        } catch (\Exception $e) {
             throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
         }
     }
@@ -664,6 +666,7 @@ class ProdutoBusiness extends BaseBusiness
                             $ocCategoryFilter->setCategoryId($category->getCategoryId());
                             $ocCategoryFilter->setFilterId($filter->getFilterId());
                             $ocEntityManager->persist($ocCategoryFilter);
+                            $ocEntityManager->flush();
                         }
                     }
                 }
@@ -700,9 +703,9 @@ class ProdutoBusiness extends BaseBusiness
                     $ocProductAttribute->setLanguageId(2); // fixo na base
                     $ocProductAttribute->setText($ocFilterDescription->getName());
                     $ocEntityManager->persist($ocProductAttribute);
+                    $ocEntityManager->flush();
                 }
             }
-            $ocEntityManager->flush();
         } catch (ORMException $e) {
             throw new \Exception('Erro ao salvarFiltrosComoAtributos()', 0, $e);
         }
