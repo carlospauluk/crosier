@@ -30,8 +30,8 @@ class OcStockStatusController extends Controller
 
         $rs = array();
         foreach ($itens as $item) {
-            $r['id'] = $item->getCategoryId();
-            $r['text'] = $this->getDescricao($item, "");
+            $r['id'] = $item->getStockStatusId();
+            $r['text'] = $this->getName($item, "");
             $rs[] = $r;
         }
 
