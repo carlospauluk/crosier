@@ -2,6 +2,7 @@
 
 namespace App\Business\Estoque;
 
+use App\Business\BaseBusiness;
 use App\Entity\Estoque\GradeOcOption;
 use App\Entity\Estoque\GradeTamanhoOcOptionValue;
 use App\Entity\Estoque\Produto;
@@ -25,25 +26,17 @@ use App\EntityOC\OcProductToStore;
 use App\Utils\Repository\WhereBuilder;
 use App\Utils\StringUtils;
 use Doctrine\ORM\ORMException;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class ProdutoBusiness
+class ProdutoBusiness extends BaseBusiness
 {
-
-    private $doctrine;
-
-    public function __construct(RegistryInterface $doctrine)
-    {
-        $this->doctrine = $doctrine;
-    }
 
     public function getOcProductArrayByProduto(?Produto $produto)
     {
         if (!$produto or !$produto->getNaLojaVirtual()) return null;
 
-        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+        $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
 
-        $produtoOcProduct = $this->doctrine->getRepository(ProdutoOcProduct::class)->findOneby(['produto' => $produto]);
+        $produtoOcProduct = $this->getDoctrine()->getRepository(ProdutoOcProduct::class)->findOneby(['produto' => $produto]);
 
         if ($produtoOcProduct and $produtoOcProduct->getProductId()) {
             $ocProductId = $produtoOcProduct->getProductId();
@@ -100,7 +93,7 @@ class ProdutoBusiness
      */
     public function saveOcProduct(Produto $produto, $ocProductArray = null)
     {
-        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+        $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
         try {
             $editando = false;
             $ocEntityManager->beginTransaction();
@@ -209,12 +202,12 @@ class ProdutoBusiness
                 $produtoOcProduct = new ProdutoOcProduct();
                 $produtoOcProduct->setProduto($produto);
                 $produtoOcProduct->setProductId($ocProduct->getProductId());
-                $this->doctrine->getEntityManager()->persist($produtoOcProduct);
-                $this->doctrine->getEntityManager()->flush();
+                $this->getDoctrine()->getEntityManager()->persist($produtoOcProduct);
+                $this->getDoctrine()->getEntityManager()->flush();
             }
 
             // de-para entre est_grade e oc_option
-            $gradeOcOption = $this->doctrine->getRepository(GradeOcOption::class)->findOneBy(['grade' => $produto->getGrade()]);
+            $gradeOcOption = $this->getDoctrine()->getRepository(GradeOcOption::class)->findOneBy(['grade' => $produto->getGrade()]);
             if (!$gradeOcOption) {
                 throw new \Exception('de-para entre est_grade e oc_option não encontrado');
             }
@@ -237,7 +230,7 @@ class ProdutoBusiness
             foreach ($produto->getSaldos() as $saldo) {
                 if (!$saldo->getSelec()) continue;
                 // de-para entre est_grade_tamanho e oc_option_value
-                $gradeTamanhoOcOptionValue = $this->doctrine->getRepository(GradeTamanhoOcOptionValue::class)->findOneBy(['gradeTamanho' => $saldo->getGradeTamanho()]);
+                $gradeTamanhoOcOptionValue = $this->getDoctrine()->getRepository(GradeTamanhoOcOptionValue::class)->findOneBy(['gradeTamanho' => $saldo->getGradeTamanho()]);
                 if (!$gradeTamanhoOcOptionValue) {
                     throw new \Exception('de-para entre est_grade_tamanho e oc_option_value não encontrado');
                 }
@@ -300,6 +293,8 @@ class ProdutoBusiness
         try {
             $this->saveImages($produto, $ocProduct);
         } catch (\Exception $e) {
+            $this->getLogger()->error('Erro ao salvar imagens do produto');
+            $this->getLogger()->error($e->getMessage());
             throw new \Exception('Erro ao salvar imagens do produto', 0, $e);
         }
 
@@ -323,11 +318,11 @@ class ProdutoBusiness
      */
     public function saveImages(Produto $produto, OcProduct $ocProduct)
     {
-        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+        $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
         $productId = $ocProduct->getProductId();
 
         $crosierfolder = getenv('CROSIER_FOLDER');
-        $ocProductImagesFolder = $crosierfolder . '/product-images/';
+        $ocProductImagesFolder = $crosierfolder . '/product-images';
 
         $fornecedoresFolders = scandir($ocProductImagesFolder);
         $fornecedorFolder = null;
@@ -338,11 +333,11 @@ class ProdutoBusiness
             }
         }
         if (!$fornecedorFolder) {
-            $fornecedorFolder = $ocProductImagesFolder . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());;
+            $fornecedorFolder = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
             mkdir($fornecedorFolder, 0777);
         }
 
-        $ents = scandir($ocProductImagesFolder . $fornecedorFolder);
+        $ents = scandir($ocProductImagesFolder . '/' . $fornecedorFolder);
         $produtoFolder = null;
         // tenta encontrar uma pasta que tenha seu nome começando pelo reduzido
         foreach ($ents as $ent) {
@@ -515,7 +510,7 @@ class ProdutoBusiness
     private function saveOcProductFilter(Produto $produto, $ocProductArray)
     {
         try {
-            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
             $ocProductId = $ocProductArray['id'];// primeiro removo todos para depois inserir novamente
             $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
             foreach ($productFilters as $productFilter) {
@@ -556,7 +551,7 @@ class ProdutoBusiness
     private function salvarGradeTamanhosComoFiltros(Produto $produto, $ocProductArray)
     {
         try {
-            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
             $ocProductId = $ocProductArray['id'];
             foreach ($produto->getSaldos() as $saldo) {
                 if (!$saldo->getSelec()) continue; // somente para gradeTamanho selecionado.
@@ -596,7 +591,7 @@ class ProdutoBusiness
     private function salvarMarcaComoFiltro(Produto $produto, $ocProductArray)
     {
         try {
-            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
             $ocProductId = $ocProductArray['id'];
 
             // Salvo a marca como um filtro
@@ -647,7 +642,7 @@ class ProdutoBusiness
     private function salvarFiltrosProdutoNosFiltrosDaCategoria(Produto $produto, $ocProductArray)
     {
         try {
-            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
             $ocProductId = $ocProductArray['id'];
             $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
 
@@ -687,7 +682,7 @@ class ProdutoBusiness
     {
 
         try {
-            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
             $ocProductId = $ocProductArray['id'];
             $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
             foreach ($productFilters as $productFilter) {
@@ -745,19 +740,19 @@ class ProdutoBusiness
      */
     public function corrigirEstProdutoOcProduct()
     {
-        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+        $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
 
-        $produtosNaLoja = $this->doctrine->getRepository(ProdutoOcProduct::class)->findAll(WhereBuilder::buildOrderBy('productId DESC'));
+        $produtosNaLoja = $this->getDoctrine()->getRepository(ProdutoOcProduct::class)->findAll(WhereBuilder::buildOrderBy('productId DESC'));
 
         $qtdeTotal = count($produtosNaLoja);
         $qtdeRemovidos = 0;
         foreach ($produtosNaLoja as $prod) {
             $ocProduct = $ocEntityManager->getRepository(OcProduct::class)->find($prod->getProductId());
             if (!$ocProduct) {
-                $this->doctrine->getEntityManager()->remove($prod);
+                $this->getDoctrine()->getEntityManager()->remove($prod);
                 $prod->getProduto()->setNaLojaVirtual(false);
-                $this->doctrine->getEntityManager()->persist($prod->getProduto());
-                $this->doctrine->getEntityManager()->flush();
+                $this->getDoctrine()->getEntityManager()->persist($prod->getProduto());
+                $this->getDoctrine()->getEntityManager()->flush();
                 $qtdeRemovidos++;
             }
         }
