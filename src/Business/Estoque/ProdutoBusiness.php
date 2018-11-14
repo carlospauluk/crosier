@@ -300,7 +300,7 @@ class ProdutoBusiness extends BaseBusiness
         }
 
         try {
-            $filters = isset($ocProductArray['filter']) ? $ocProductArray['filter'] : null;
+            $filters = isset($ocProductArray['filters']) ? $ocProductArray['filters'] : null;
             $this->saveOcProductFilter($produto, $ocProduct, $filters);
         } catch (\Exception $e) {
             $this->getLogger()->error('Erro ao salvar filtros');
@@ -682,7 +682,7 @@ class ProdutoBusiness extends BaseBusiness
      * Salva os filtros do produto como atributos.
      *
      * @param Produto $produto
-     * @param $ocProductArray
+     * @param OcProduct $ocProduct
      * @throws \Exception
      */
     private function salvarFiltrosComoAtributos(Produto $produto, OcProduct $ocProduct)
@@ -697,6 +697,9 @@ class ProdutoBusiness extends BaseBusiness
                 $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['filterGroupId' => $ocFilterDescription->getFilterGroupId()]);
                 $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => $ocFilterGroupDescription->getName()]);
 
+                if (!$ocAttributeDescription) {
+                    throw new \Exception('Atributo não encontrado para o filtro "' . $ocFilterGroupDescription->getName() . '". É necessário criá-lo');
+                }
                 $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['attributeId' => $ocAttributeDescription->getAttributeId()]);
                 if (!$ocProductAttribute) {
                     $ocProductAttribute = new OcProductAttribute();
