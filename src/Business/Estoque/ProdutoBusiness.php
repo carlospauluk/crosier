@@ -617,19 +617,19 @@ class ProdutoBusiness
                 $ocEntityManager->persist($ocFilter);
                 $ocEntityManager->flush();
 
-                $ocFilterDescription = new OcFilterDescription();
-                $ocFilterDescription->setFilterId($ocFilter->getFilterId());
-                $ocFilterDescription->setFilterGroupId($ocFilterGroupDescription->getFilterGroupId());
-                $ocFilterDescription->setLanguageId(2); // fixo na base
-                $ocFilterDescription->setName($manufacturer->getName());
-                $ocEntityManager->persist($ocFilterDescription);
+                $filtroPorMarca = new OcFilterDescription();
+                $filtroPorMarca->setFilterId($ocFilter->getFilterId());
+                $filtroPorMarca->setFilterGroupId($ocFilterGroupDescription->getFilterGroupId());
+                $filtroPorMarca->setLanguageId(2); // fixo na base
+                $filtroPorMarca->setName($manufacturer->getName());
+                $ocEntityManager->persist($filtroPorMarca);
                 $ocEntityManager->flush();
             }
 
             // Como todos os filtros foram removidos do produto, apenas incluo
             $ocProductFilter = new OcProductFilter();
             $ocProductFilter->setProductId($ocProductId);
-            $ocProductFilter->setFilterId($ocFilterDescription->getFilterId());
+            $ocProductFilter->setFilterId($filtroPorMarca->getFilterId());
             $ocEntityManager->persist($ocProductFilter);
             $ocEntityManager->flush();
         } catch (ORMException $e) {
