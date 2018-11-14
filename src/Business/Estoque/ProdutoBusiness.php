@@ -700,7 +700,7 @@ class ProdutoBusiness extends BaseBusiness
                 if (!$ocAttributeDescription) {
                     throw new \Exception('Atributo não encontrado para o filtro "' . $ocFilterGroupDescription->getName() . '". É necessário criá-lo');
                 }
-                $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['attributeId' => $ocAttributeDescription->getAttributeId()]);
+                $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['productId' => $ocProductId, 'attributeId' => $ocAttributeDescription->getAttributeId()]);
                 if (!$ocProductAttribute) {
                     $ocProductAttribute = new OcProductAttribute();
                     $ocProductAttribute->setProductId($ocProductId);
