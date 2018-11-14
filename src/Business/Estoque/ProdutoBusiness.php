@@ -9,6 +9,7 @@ use App\Entity\Estoque\ProdutoOcProduct;
 use App\EntityOC\OcAttributeDescription;
 use App\EntityOC\OcCategory;
 use App\EntityOC\OcCategoryFilter;
+use App\EntityOC\OcFilter;
 use App\EntityOC\OcFilterDescription;
 use App\EntityOC\OcFilterGroupDescription;
 use App\EntityOC\OcManufacturer;
@@ -23,6 +24,7 @@ use App\EntityOC\OcProductToCategory;
 use App\EntityOC\OcProductToStore;
 use App\Utils\Repository\WhereBuilder;
 use App\Utils\StringUtils;
+use Doctrine\ORM\ORMException;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class ProdutoBusiness
@@ -492,40 +494,85 @@ class ProdutoBusiness
 
     }
 
+    /**
+     * FIXME: RTA ???
+     *
+     * @param Produto $produto
+     * @return bool
+     */
+    public function ehUniformeEscolar(Produto $produto)
+    {
+        return $produto and $produto->getSubdepto() and $produto->getSubdepto()->getDepto() and $produto->getSubdepto()->getDepto()->getCodigo() == 1;
+    }
+
+    /**
+     * Salva os filtros do produto.
+     *
+     * @param Produto $produto
+     * @param $ocProductArray
+     * @throws \Exception
+     */
     private function saveOcProductFilter(Produto $produto, $ocProductArray)
     {
-        $ocEntityManager = $this->doctrine->getEntityManager('oc');
-
-        $ocProductId = $ocProductArray['id'];
-
-        // primeiro removo todos para depois inserir novamente
-        $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
-        foreach ($productFilters as $productFilter) {
-            $ocEntityManager->remove($productFilter);
-        }
-        $ocEntityManager->flush();
-
-        if (isset($ocProductArray['filters'])) {
-            foreach ($ocProductArray['filters'] as $filter) {
-                $ocProductFilter = new OcProductFilter();
-                $ocProductFilter->setProductId($ocProductId);
-                $ocProductFilter->setFilterId($filter);
-                $ocEntityManager->persist($ocProductFilter);
+        try {
+            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocProductId = $ocProductArray['id'];// primeiro removo todos para depois inserir novamente
+            $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
+            foreach ($productFilters as $productFilter) {
+                $ocEntityManager->remove($productFilter);
             }
-        } else {
-            // Percorre os tamanhos e verifica se precisa inserir o oc_filter para o oc_product
+            $ocEntityManager->flush();
+            if (isset($ocProductArray['filters']) and count($ocProductArray['filters']) > 0) {
+                // Se veio pelo form
+                foreach ($ocProductArray['filters'] as $filter) {
+                    $ocProductFilter = new OcProductFilter();
+                    $ocProductFilter->setProductId($ocProductId);
+                    $ocProductFilter->setFilterId($filter);
+                    $ocEntityManager->persist($ocProductFilter);
+                }
+                $ocEntityManager->flush();
+            } else {
+                // Se é o primeiro save
+                // Percorre os tamanhos e verifica se precisa inserir o oc_filter para o oc_product
+                $this->salvarGradeTamanhosComoFiltros($produto, $ocProductArray);
+                // Depois, salva a marca como um filtro
+                $this->salvarMarcaComoFiltro($produto, $ocProductArray);
+            }
+            $this->salvarFiltrosProdutoNosFiltrosDaCategoria($produto, $ocProductArray);
+            $this->salvarFiltrosComoAtributos($produto, $ocProductArray);
+            $ocEntityManager->flush();
+        } catch (\Exception $e) {
+            throw new \Exception('Erro - saveOcProductFilter()', 0, $e);
+        }
+    }
+
+    /**
+     * Salva os 'gradeTamanho' do produto como filtros.
+     *
+     * @param Produto $produto
+     * @param $ocProductArray
+     * @throws \Exception
+     */
+    private function salvarGradeTamanhosComoFiltros(Produto $produto, $ocProductArray)
+    {
+        try {
+            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocProductId = $ocProductArray['id'];
             foreach ($produto->getSaldos() as $saldo) {
-                if (!$saldo->getSelec()) continue;
+                if (!$saldo->getSelec()) continue; // somente para gradeTamanho selecionado.
 
                 $tamanho = $saldo->getGradeTamanho()->getTamanho();
+                // encontra o filtro correspondente ao gradeTamanho
                 $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['name' => $tamanho]);
 
+                // Verifica se o produto já possui este filtro
                 $ocProductFilter = $ocEntityManager->getRepository(OcProductFilter::class)
                     ->findOneBy([
                         'filterId' => $ocFilterDescription->getFilterId(),
                         'productId' => $ocProductId
                     ]);
 
+                // Se não, salva
                 if (!$ocProductFilter) {
                     $ocProductFilter = new OcProductFilter();
                     $ocProductFilter->setProductId($ocProductId);
@@ -533,60 +580,144 @@ class ProdutoBusiness
                     $ocEntityManager->persist($ocProductFilter);
                 }
             }
+        } catch (ORMException $e) {
+            throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
         }
-        $ocEntityManager->flush();
+    }
 
-        // Percorre todos as categorias do produto e verifica se elas possuem todos os filtros do produto, senão insere.
-        $ocProductCategories = $ocEntityManager->getRepository(OcProductToCategory::class)->findBy(['productId' => $ocProductId]);
-        foreach ($ocProductCategories as $category) {
 
-            $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)
-                ->findBy([
-                    'productId' => $ocProductId
-                ]);
+    /**
+     * Salva a marca do produto como um filtro.
+     *
+     * @param Produto $produto
+     * @param $ocProductArray
+     * @throws \Exception
+     */
+    private function salvarMarcaComoFiltro(Produto $produto, $ocProductArray)
+    {
+        try {
+            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocProductId = $ocProductArray['id'];
 
-            if ($ocProductFilters) {
-                foreach ($ocProductFilters as $filter) {
+            // Salvo a marca como um filtro
+            $manufacturer = $ocEntityManager->getRepository(OcManufacturer::class)->find($ocProductArray['manufacturerId']);
+            $filtro = $this->ehUniformeEscolar($produto) ? 'Escola' : 'Marca';
+            $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['name' => $filtro]);
+            if (!$ocFilterGroupDescription) {
+                throw new \Exception('Faltando o filtro "' . $filtro . '"');
+            }
+            $filtroPorMarca = $ocEntityManager->getRepository(OcFilterDescription::class)
+                ->findOneBy([
+                    'name' => $manufacturer->getName(),
+                    'filterGroupId' => $ocFilterGroupDescription->getFilterGroupId()]);
+            if (!$filtroPorMarca) {
+                $ocFilter = new OcFilter();
+                $ocFilter->setFilterGroupId($ocFilterGroupDescription->getFilterGroupId());
+                $ocFilter->setSortOrder(0);
+                $ocEntityManager->persist($ocFilter);
+                $ocEntityManager->flush();
 
-                    $ocCategoryFilter = $ocEntityManager->getRepository(OcCategoryFilter::class)
-                        ->findOneBy([
-                            'categoryId' => $category->getCategoryId(),
-                            'filterId' => $filter->getFilterId()
-                        ]);
-                    if (!$ocCategoryFilter) {
-                        $ocCategoryFilter = new OcCategoryFilter();
-                        $ocCategoryFilter->setCategoryId($category->getCategoryId());
-                        $ocCategoryFilter->setFilterId($filter->getFilterId());
-                        $ocEntityManager->persist($ocCategoryFilter);
+                $ocFilterDescription = new OcFilterDescription();
+                $ocFilterDescription->setFilterId($ocFilter->getFilterId());
+                $ocFilterDescription->setFilterGroupId($ocFilterGroupDescription->getFilterGroupId());
+                $ocFilterDescription->setLanguageId(2); // fixo na base
+                $ocFilterDescription->setName($manufacturer->getName());
+                $ocEntityManager->persist($ocFilterDescription);
+                $ocEntityManager->flush();
+            }
+
+            // Como todos os filtros foram removidos do produto, apenas incluo
+            $ocProductFilter = new OcProductFilter();
+            $ocProductFilter->setProductId($ocProductId);
+            $ocProductFilter->setFilterId($ocFilterDescription->getFilterId());
+            $ocEntityManager->persist($ocProductFilter);
+            $ocEntityManager->flush();
+        } catch (ORMException $e) {
+            throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
+        }
+    }
+
+    /**
+     * Salva os filtros do produto como filtros das categorias do produto.
+     *
+     * @param Produto $produto
+     * @param $ocProductArray
+     * @throws \Exception
+     */
+    private function salvarFiltrosProdutoNosFiltrosDaCategoria(Produto $produto, $ocProductArray)
+    {
+        try {
+            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocProductId = $ocProductArray['id'];
+            $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
+
+            $ocProductCategories = $ocEntityManager->getRepository(OcProductToCategory::class)->findBy(['productId' => $ocProductId]);
+            foreach ($ocProductCategories as $category) {
+
+                if ($ocProductFilters) {
+                    foreach ($ocProductFilters as $filter) {
+
+                        $ocCategoryFilter = $ocEntityManager->getRepository(OcCategoryFilter::class)
+                            ->findOneBy([
+                                'categoryId' => $category->getCategoryId(),
+                                'filterId' => $filter->getFilterId()
+                            ]);
+                        if (!$ocCategoryFilter) {
+                            $ocCategoryFilter = new OcCategoryFilter();
+                            $ocCategoryFilter->setCategoryId($category->getCategoryId());
+                            $ocCategoryFilter->setFilterId($filter->getFilterId());
+                            $ocEntityManager->persist($ocCategoryFilter);
+                        }
                     }
                 }
             }
+        } catch (ORMException $e) {
+            throw new \Exception('Erro ao salvarFiltrosProdutoNosFiltrosDaCategoria()', 0, $e);
         }
+    }
 
-        // Salva os filtros como atributos
-        $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
-        foreach ($productFilters as $productFilter) {
-            $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['filterId' => $productFilter->getFilterId()]);
-            $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['filterGroupId' => $ocFilterDescription->getFilterGroupId()]);
-            $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => $ocFilterGroupDescription->getName()]);
+    /**
+     * Salva os filtros do produto como atributos.
+     *
+     * @param Produto $produto
+     * @param $ocProductArray
+     * @throws \Exception
+     */
+    private function salvarFiltrosComoAtributos(Produto $produto, $ocProductArray)
+    {
 
-            $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['attributeId' => $ocAttributeDescription->getAttributeId()]);
-            if (!$ocProductAttribute) {
-                $ocProductAttribute = new OcProductAttribute();
-                $ocProductAttribute->setProductId($ocProductId);
-                $ocProductAttribute->setAttributeId($ocAttributeDescription->getAttributeId());
-                $ocProductAttribute->setLanguageId(2); // fixo na base
-                $ocProductAttribute->setText($ocFilterDescription->getName());
-                $ocEntityManager->persist($ocProductAttribute);
+        try {
+            $ocEntityManager = $this->doctrine->getEntityManager('oc');
+            $ocProductId = $ocProductArray['id'];
+            $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
+            foreach ($productFilters as $productFilter) {
+                $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['filterId' => $productFilter->getFilterId()]);
+                $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['filterGroupId' => $ocFilterDescription->getFilterGroupId()]);
+                $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => $ocFilterGroupDescription->getName()]);
+
+                $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['attributeId' => $ocAttributeDescription->getAttributeId()]);
+                if (!$ocProductAttribute) {
+                    $ocProductAttribute = new OcProductAttribute();
+                    $ocProductAttribute->setProductId($ocProductId);
+                    $ocProductAttribute->setAttributeId($ocAttributeDescription->getAttributeId());
+                    $ocProductAttribute->setLanguageId(2); // fixo na base
+                    $ocProductAttribute->setText($ocFilterDescription->getName());
+                    $ocEntityManager->persist($ocProductAttribute);
+                }
             }
+            $ocEntityManager->flush();
+        } catch (ORMException $e) {
+            throw new \Exception('Erro ao salvarFiltrosComoAtributos()', 0, $e);
         }
-        $ocEntityManager->flush();
-
-
-        $ocEntityManager->flush();
 
     }
 
+    /**
+     * Apaga todos os arquivos e subdiretórios de um diretório no ftp.
+     *
+     * @param $ftpConn
+     * @param $dir
+     */
     private function recursiveDeleteDirFTP($ftpConn, $dir)
     {
         // here we attempt to delete the file/directory
@@ -605,7 +736,13 @@ class ProdutoBusiness
         }
     }
 
-
+    /**
+     * Remove da est_produto_oc_product os registros que tiverem sido deletados da oc_product.
+     *
+     * @return string
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function corrigirEstProdutoOcProduct()
     {
         $ocEntityManager = $this->doctrine->getEntityManager('oc');

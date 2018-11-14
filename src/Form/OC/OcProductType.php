@@ -185,7 +185,7 @@ class OcProductType extends AbstractType
                 'label' => 'Filtros',
                 'choices' => $filters,
                 'multiple' => true,
-                'expanded' => true,
+                'expanded' => false,
                 'required' => false
             ));
 
