@@ -301,6 +301,8 @@ class ProdutoBusiness extends BaseBusiness
         try {
             $this->saveOcProductFilter($produto, $ocProductArray);
         } catch (\Exception $e) {
+            $this->getLogger()->error('Erro ao salvar filtros');
+            $this->getLogger()->error($e->getMessage());
             throw new \Exception('Erro ao salvar filtros.', 0, $e);
         }
 
