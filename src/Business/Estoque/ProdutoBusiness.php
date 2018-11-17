@@ -2,10 +2,12 @@
 
 namespace App\Business\Estoque;
 
+use App\Entity\Estoque\FornecedorOcManufacturer;
 use App\Entity\Estoque\GradeOcOption;
 use App\Entity\Estoque\GradeTamanhoOcOptionValue;
 use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\ProdutoOcProduct;
+use App\Entity\Estoque\SubdeptoOcCategory;
 use App\EntityOC\OcCategory;
 use App\EntityOC\OcManufacturer;
 use App\EntityOC\OcProduct;
@@ -148,16 +150,29 @@ class ProdutoBusiness
                 $ocProduct->setStatus(0); // inativo, a princípio
                 $ocProduct->setStockStatusId(5);
                 $ocProduct->setPrice($produto->getPrecoAtual()->getPrecoPrazo());
-                $ocProduct->setManufacturerId(0); // Não informado
+
+                if ($produto->getFornecedor()) {
+                    $fornecedor2manufacturer = $this->doctrine->getRepository(FornecedorOcManufacturer::class)->findOneBy(['fornecedor' => $produto->getFornecedor()]);
+                    if ($fornecedor2manufacturer) {
+                        $ocProduct->setManufacturerId($fornecedor2manufacturer->getManufacturerId());
+                    }
+                } else {
+                    $ocProduct->setManufacturerId(0); // Não informado
+                }
                 $ocProduct->setQuantity(0);
 
                 $ocProductDescription->setName($produto->getDescricao());
                 $ocProductDescription->setMetaTitle($produto->getDescricao());
                 $ocProductDescription->setDescription($produto->getDescricao());
 
-                // fixo. A princípio: 'Não informado'
-                // FIXME: aqui teria de ter uma de-para entre est_subdepto e oc_category
-                $ocProductToCategory->setCategoryId(1);
+                if ($produto->getSubdepto()) {
+                    $subdepto2category = $this->doctrine->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
+                    if ($subdepto2category) {
+                        $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+                    }
+                } else {
+                    $ocProductToCategory->setCategoryId(1);
+                }
             }
 
             $agora = new \DateTime('now');
