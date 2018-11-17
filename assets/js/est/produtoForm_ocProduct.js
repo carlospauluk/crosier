@@ -16,6 +16,9 @@ $(document).ready(function () {
     let $depto = $('#oc_product_categoryId');
     let $statusEstoque = $('#oc_product_stockStatusid');
     let $descricao = $('#oc_product_description');
+    let $filters = $('#oc_product_filters');
+
+    $filters.select2();
 
     $descricao.summernote();
 

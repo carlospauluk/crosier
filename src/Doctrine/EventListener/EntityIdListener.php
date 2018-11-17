@@ -4,9 +4,11 @@ namespace App\Doctrine\EventListener;
 
 
 use App\Entity\Base\EntityId;
+use App\Entity\Security\User;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use ReflectionClass;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -22,6 +24,8 @@ class EntityIdListener
     private $security;
 
     private $doctrine;
+
+    private $params;
 
     /**
      * @required
@@ -46,14 +50,38 @@ class EntityIdListener
         $this->security = $security;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getParams(): ParameterBagInterface
+    {
+        return $this->params;
+    }
+
+    /**
+     * @required
+     * @param mixed $params
+     */
+    public function setParams(ParameterBagInterface $params): void
+    {
+        $this->params = $params;
+    }
+
     public function prePersist(LifecycleEventArgs $args)
     {
         $entityId = $args->getObject();
         if (!$entityId instanceof EntityId) return;
         $this->handleUppercaseFields($entityId);
         $entityId->setInserted(new \DateTime('now'));
-        $entityId->setEstabelecimento($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()->getEstabelecimento()));
-        $entityId->setUserInserted($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
+        if ($this->security->getUser()) {
+            $entityId->setEstabelecimento($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()->getEstabelecimento()));
+            $entityId->setUserInserted($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
+        } else {
+            // FIXME: corrigir isto
+            $user = $this->getDoctrine()->getRepository(User::class)->find(1);
+            $entityId->setEstabelecimento($user->getEstabelecimento());
+            $entityId->setUserInserted($user);
+        }
         $entityId->setUpdated(new \DateTime('now'));
         $entityId->setUserUpdated($entityId->getUserInserted());
     }
@@ -64,14 +92,16 @@ class EntityIdListener
         if (!$entityId instanceof EntityId) return;
         $this->handleUppercaseFields($entityId);
         $entityId->setUpdated(new \DateTime());
-        $entityId->setUserUpdated($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
+        if ($this->security->getUser()) {
+            $entityId->setUserUpdated($this->getDoctrine()->getEntityManager()->merge($this->security->getUser()));
+        }
     }
 
 
     private function handleUppercaseFields($entityId)
     {
         if (!$entityId instanceof EntityId) return;
-        $uppercaseFieldsJson = file_get_contents('../src/Entity/uppercaseFields.json');
+        $uppercaseFieldsJson = file_get_contents($this->getParams()->get('kernel.project_dir') . '/src/Entity/uppercaseFields.json');
         $uppercaseFields = json_decode($uppercaseFieldsJson);
         $class = str_replace('\\', '_', get_class($entityId));
         $reflectionClass = new ReflectionClass(get_class($entityId));

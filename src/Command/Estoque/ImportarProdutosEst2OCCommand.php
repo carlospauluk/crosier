@@ -82,10 +82,7 @@ class ImportarProdutosEst2OCCommand extends Command
         $ocEntityManager = $this->doctrine->getEntityManager('oc');
         $em = $this->doctrine->getEntityManager();
 
-        $ocEntityManager->beginTransaction();
-        $em->beginTransaction();
 
-        try {
             $deptoUniformes = $em->getRepository(Depto::class)->find(1);
 
             $ql = "SELECT p " .
@@ -103,18 +100,15 @@ class ImportarProdutosEst2OCCommand extends Command
                 if (!$produtoOcProduct) {
 
                     $this->getProdutoBusiness()->saveOcProduct($prod, null);
+//                    $em->persist($prod);
+                    $prod->setNaLojaVirtual(true);
+                    $em->flush();
 
                 }
 
             }
 
 
-            $ocEntityManager->commit();
-            $em->commit();
-        } catch (\Exception $e) {
-            $ocEntityManager->rollback();
-            $em->rollback();
-        }
 
 
     }

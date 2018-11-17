@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * OcProductAttribute
  *
  * @ORM\Table(name="oc_product_attribute")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\OC\OcProductAttributeRepository")
  */
 class OcProductAttribute
 {
@@ -45,6 +45,70 @@ class OcProductAttribute
      * @ORM\Column(name="text", type="text", length=65535, nullable=false)
      */
     private $text;
+
+    /**
+     * @return int
+     */
+    public function getProductId(): int
+    {
+        return $this->productId;
+    }
+
+    /**
+     * @param int $productId
+     */
+    public function setProductId(int $productId): void
+    {
+        $this->productId = $productId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAttributeId(): int
+    {
+        return $this->attributeId;
+    }
+
+    /**
+     * @param int $attributeId
+     */
+    public function setAttributeId(int $attributeId): void
+    {
+        $this->attributeId = $attributeId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLanguageId(): int
+    {
+        return $this->languageId;
+    }
+
+    /**
+     * @param int $languageId
+     */
+    public function setLanguageId(int $languageId): void
+    {
+        $this->languageId = $languageId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getText(): string
+    {
+        return $this->text;
+    }
+
+    /**
+     * @param string $text
+     */
+    public function setText(string $text): void
+    {
+        $this->text = $text;
+    }
 
 
 }

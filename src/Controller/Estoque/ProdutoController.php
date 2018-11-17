@@ -13,6 +13,7 @@ use App\Utils\ExceptionUtils;
 use App\Utils\Repository\FilterData;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -45,6 +46,7 @@ class ProdutoController extends FormListController
 
         if ($ocProductForm->isSubmitted()) {
             if ($ocProductForm->isValid()) {
+                $this->getLogger()->info('Iniciando o saveOcProduct()');
                 try {
                     $ocProductArray = $ocProductForm->getData();
                     $this->getProdutoBusiness()->saveOcProduct($produto, $ocProductArray);
@@ -68,12 +70,6 @@ class ProdutoController extends FormListController
         $params['ocProductForm'] = $ocProductForm->createView();
 
         return $this->doForm($request, $produto, $params);
-    }
-
-
-    public function saveOcProduct()
-    {
-
     }
 
     public function getOcProduct(?Produto $produto)
@@ -104,6 +100,8 @@ class ProdutoController extends FormListController
      */
     public function list(Request $request)
     {
+//        $parameters['filter']['atual'] = true;
+//        $request->query->add($parameters);
         return $this->doList($request);
     }
 
@@ -211,6 +209,20 @@ class ProdutoController extends FormListController
     public function getFormView()
     {
         return 'Estoque/produtoForm.html.twig';
+    }
+
+    /**
+     *
+     * @Route("/est/produto/corrigirEstProdutoOcProduct/", name="est_produto_corrigirEstProdutoOcProduct")
+     * @param Request $request
+     * @return Response
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function corrigirEstProdutoOcProduct(Request $request)
+    {
+        $r = $this->getProdutoBusiness()->corrigirEstProdutoOcProduct();
+        return new Response($r);
     }
 
 

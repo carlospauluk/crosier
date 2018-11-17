@@ -3,6 +3,8 @@
 namespace App\Form\OC;
 
 use App\EntityOC\OcCategoryDescription;
+use App\EntityOC\OcFilterDescription;
+use App\EntityOC\OcFilterGroupDescription;
 use App\EntityOC\OcManufacturer;
 use App\EntityOC\OcStockStatus;
 use App\Utils\Repository\WhereBuilder;
@@ -166,6 +168,25 @@ class OcProductType extends AbstractType
                     'Inativo' => 0,
                     'Ativo' => 1
                 )
+            ));
+
+            $ocFilterGroupDescriptions = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findAll(WhereBuilder::buildOrderBy('filterGroupId ASC'));
+            $filterGroups = [];
+            foreach ($ocFilterGroupDescriptions as $ocFilterDescription) {
+                $filterGroups[$ocFilterDescription->getFilterGroupId()] = $ocFilterDescription->getName();
+            }
+
+            $ocFilterDescriptions = $ocEntityManager->getRepository(OcFilterDescription::class)->findAll(WhereBuilder::buildOrderBy('filterGroupId ASC'));
+            $filters = [];
+            foreach ($ocFilterDescriptions as $ocFilterDescription) {
+                $filters[$filterGroups[$ocFilterDescription->getFilterGroupId()] . ' > ' . $ocFilterDescription->getName()] = $ocFilterDescription->getFilterId();
+            }
+            $builder->add('filters', ChoiceType::class, array(
+                'label' => 'Filtros',
+                'choices' => $filters,
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false
             ));
 
 
