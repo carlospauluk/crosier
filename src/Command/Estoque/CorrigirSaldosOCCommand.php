@@ -2,6 +2,7 @@
 
 namespace App\Command\Estoque;
 
+use App\Business\Estoque\OCBusiness;
 use App\Business\Estoque\ProdutoBusiness;
 use App\Entity\Estoque\ProdutoOcProduct;
 use App\Utils\Repository\WhereBuilder;
@@ -19,7 +20,7 @@ class CorrigirSaldosOCCommand extends Command
 
     private $doctrine;
 
-    private $produtoBusiness;
+    private $ocBusiness;
 
     public function __construct(RegistryInterface $doctrine)
     {
@@ -47,7 +48,7 @@ class CorrigirSaldosOCCommand extends Command
         foreach ($produtosOcProducts as $produtoOcProduct) {
             try {
                 $output->writeln('Atualizando produto "' . $produtoOcProduct->getProduto()->getReduzido() . ' - ' . $produtoOcProduct->getProduto()->getDescricao() . '"');
-                $this->getProdutoBusiness()->saveOcProduct($produtoOcProduct->getProduto());
+                $this->getOcBusiness()->saveOcProduct($produtoOcProduct->getProduto());
             } catch (\Exception $e) {
                 $output->writeln($e->getMessage());
             }
@@ -75,18 +76,18 @@ class CorrigirSaldosOCCommand extends Command
     /**
      * @return mixed
      */
-    public function getProdutoBusiness(): ProdutoBusiness
+    public function getOcBusiness(): OCBusiness
     {
-        return $this->produtoBusiness;
+        return $this->ocBusiness;
     }
 
     /**
      * @required
-     * @param mixed $produtoBusiness
+     * @param OCBusiness $ocBusiness
      */
-    public function setProdutoBusiness(ProdutoBusiness $produtoBusiness): void
+    public function setOcBusiness(OCBusiness $ocBusiness): void
     {
-        $this->produtoBusiness = $produtoBusiness;
+        $this->ocBusiness = $ocBusiness;
     }
 
 

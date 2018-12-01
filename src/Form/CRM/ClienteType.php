@@ -98,7 +98,6 @@ class ClienteType extends AbstractType
 
 
         // Campos PESSOA_FISICA
-
         $builder->add('cpf', TextType::class, array(
             'label' => 'CPF',
             'attr' => array(

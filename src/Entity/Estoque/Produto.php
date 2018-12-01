@@ -658,4 +658,16 @@ class Produto extends EntityId
         return $this->saldos;
     }
 
+    public function getSaldoTotal(): ?float
+    {
+        $total = null;
+        if ($this->getSaldos()) {
+            $total = 0;
+            foreach ($this->getSaldos() as $saldo) {
+                $total = bcadd($saldo->getQtde(), $total);
+            }
+        }
+        return $total;
+    }
+
 }

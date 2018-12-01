@@ -24,7 +24,7 @@ function getDatatablesColumns() {
             title: 'Descrição'
         },
         {
-            name: 'e.fornecedor.pessoa.nomeFantasia',
+            name: 'fp.nomeFantasia',
             data: 'e.fornecedor',
             title: 'Fornecedor',
             render: function (data, type, row) {

@@ -49,6 +49,7 @@ Encore
     .addEntry('est/produtoList', './assets/js/est/produtoList.js')
     .addEntry('est/produtoForm', './assets/js/est/produtoForm.js')
     .addEntry('est/produtoForm_ocProduct', './assets/js/est/produtoForm_ocProduct.js')
+    .addEntry('est/produtosOCCompare', './assets/js/est/produtosOCCompare.js')
 
     .addEntry('crm/clienteList', './assets/js/crm/clienteList.js')
     .addEntry('crm/clienteForm', './assets/js/crm/clienteForm.js')

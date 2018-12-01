@@ -2,7 +2,7 @@
 
 namespace App\Controller\Estoque;
 
-use App\Business\Estoque\ProdutoBusiness;
+use App\Business\Estoque\OCBusiness;
 use App\Controller\FormListController;
 use App\Entity\Estoque\Produto;
 use App\EntityHandler\EntityHandler;
@@ -25,7 +25,7 @@ class ProdutoController extends FormListController
 
     private $entityHandler;
 
-    private $produtoBusiness;
+    private $ocBusiness;
 
     /**
      *
@@ -49,7 +49,7 @@ class ProdutoController extends FormListController
                 $this->getLogger()->info('Iniciando o saveOcProduct()');
                 try {
                     $ocProductArray = $ocProductForm->getData();
-                    $this->getProdutoBusiness()->saveOcProduct($produto, $ocProductArray);
+                    $this->getOcBusiness()->saveOcProduct($produto, $ocProductArray);
                     $this->addFlash('success', 'Registro salvo com sucesso!');
                     return $this->redirectToRoute('est_produto_form', array(
                         'id' => $produto->getId(),
@@ -74,7 +74,7 @@ class ProdutoController extends FormListController
 
     public function getOcProduct(?Produto $produto)
     {
-        return $this->getProdutoBusiness()->getOcProductArrayByProduto($produto);
+        return $this->getOcBusiness()->getOcProductArrayByProduto($produto);
     }
 
 
@@ -183,24 +183,6 @@ class ProdutoController extends FormListController
         return $this->entityHandler;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getProdutoBusiness(): ProdutoBusiness
-    {
-        return $this->produtoBusiness;
-    }
-
-    /**
-     * @required
-     * @param mixed $produtoBusiness
-     */
-    public function setProdutoBusiness(ProdutoBusiness $produtoBusiness): void
-    {
-        $this->produtoBusiness = $produtoBusiness;
-    }
-
-
     public function getFormRoute()
     {
         return 'est_produto_form';
@@ -212,6 +194,24 @@ class ProdutoController extends FormListController
     }
 
     /**
+     * @return mixed
+     */
+    public function getOcBusiness(): OCBusiness
+    {
+        return $this->ocBusiness;
+    }
+
+    /**
+     * @required
+     * @param mixed $ocBusiness
+     */
+    public function setOcBusiness(OCBusiness $ocBusiness): void
+    {
+        $this->ocBusiness = $ocBusiness;
+    }
+
+
+    /**
      *
      * @Route("/est/produto/corrigirEstProdutoOcProduct/", name="est_produto_corrigirEstProdutoOcProduct")
      * @param Request $request
@@ -221,8 +221,49 @@ class ProdutoController extends FormListController
      */
     public function corrigirEstProdutoOcProduct(Request $request)
     {
-        $r = $this->getProdutoBusiness()->corrigirEstProdutoOcProduct();
+        $r = $this->getOcBusiness()->corrigirEstProdutoOcProduct();
         return new Response($r);
+    }
+
+    /**
+     *
+     * @Route("/est/produto/saveOcImages/{produto}", name="est_produto_saveOcImages", requirements={"produto"="\d+"})
+     * @param Request $request
+     * @param Produto $produto
+     * @return Response
+     */
+    public function saveOcImages(Request $request, Produto $produto)
+    {
+        try {
+            $qtdeImagensAtualizadas = $this->getOcBusiness()->saveImages($produto);
+            if ($qtdeImagensAtualizadas > 0) {
+                $this->addFlash('success', $qtdeImagensAtualizadas . ' fotos atualizadas!');
+            } else {
+                $this->addFlash('warn', 'Nenhuma imagem para atualizar. Elas realmente estão na pasta? E os nomes?');
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erro ao salvar imagens do produtos');
+        }
+        return $this->redirectToRoute('est_produto_form', ['id' => $produto->getId(), '_fragment' => 'loja-virtual']);
+    }
+
+    /**
+     *
+     * @Route("/est/produto/corrigirOcNomeEDescricao/{produto}", name="est_produto_corrigirOcNomeEDescricao", requirements={"produto"="\d+"})
+     * @param Request $request
+     * @param Produto $produto
+     * @return Response
+     */
+    public function corrigirOcNomeEDescricao(Request $request, Produto $produto)
+    {
+        try {
+            $this->getOcBusiness()->corrigirOcNomeEDescricao($produto);
+            $this->addFlash('success', 'Nome e descrição corrigidos no site com sucesso!');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erro ao corrigir nome e descrição do produto no site');
+        }
+        return $this->redirectToRoute('est_produto_form', ['id' => $produto->getId(), '_fragment' => 'loja-virtual']);
+
     }
 
 
