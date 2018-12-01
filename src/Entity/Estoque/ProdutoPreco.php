@@ -269,4 +269,8 @@ class ProdutoPreco extends EntityId
     {
         $this->mesano = $mesano;
     }
+
+    public function getPrecoVenda() {
+        return $this->getPrecoPromo() ? $this->getPrecoPromo() : $this->getPrecoPrazo();
+    }
 }

@@ -76,8 +76,8 @@ class FornecedorController extends FormListController
     public function getFilterDatas($params)
     {
         return array(
-            new FilterData('e.codigo', 'LIKE', $params['filter']['codigo']),
-            new FilterData(['p.nome', 'p.nomeFantasia'], 'LIKE', $params['filter']['nome'])
+            new FilterData('e.codigo', 'LIKE', isset($params['filter']['codigo']) ? $params['filter']['codigo'] : null),
+            new FilterData(['p.nome', 'p.nomeFantasia'], 'LIKE', isset($params['filter']['nome']) ? $params['filter']['nome'] : null)
         );
     }
 
@@ -269,8 +269,8 @@ class FornecedorController extends FormListController
             'fone4',
             'inscricao_estadual',
             'pessoa' => ['id', 'nome', 'nomeFantasia', 'documento',
-            'endereco' => ['id', 'bairro', 'cep', 'cidade', 'estado', 'complemento', 'logradouro', 'numero']
-        ]];
+                'endereco' => ['id', 'bairro', 'cep', 'cidade', 'estado', 'complemento', 'logradouro', 'numero']
+            ]];
 
         $serializer = new Serializer(array($normalizer), array($encoder));
         $json = $serializer->serialize($fornecedor, 'json', ['attributes' => $attributes]);
@@ -280,16 +280,16 @@ class FornecedorController extends FormListController
 
     /**
      *
-     * @Route("/est/fornecedor/findByCodigoOuNome/{str}", name="est_fornecedor_findByCodigoOuNome")
+     * @Route("/est/fornecedor/findByCodigoOuNome/{str}", name="est_fornecedor_findByCodigoOuNome", defaults={"str"=null})
      * @param $str
-     * @return Response|void
+     * @return JSONResponse
      * @throws \Exception
      */
-    public function findByCodigoOuNome($str)
+    public function findByCodigoOuNome($str = null)
     {
-        if ($str == null) {
-            return;
-        }
+//        if ($str == null) {
+//            return;
+//        }
         if (is_numeric($str)) {
             $params['filter']['codigo'] = $str;
         }
@@ -297,7 +297,7 @@ class FornecedorController extends FormListController
 
         $filterDatas = $this->doGetFilterDatas($params);
 
-        $fornecedores = $this->getDoctrine()->getRepository(Fornecedor::class)->findByFilters($filterDatas,WhereBuilder::buildOrderBy('codigo ASC'));
+        $fornecedores = $this->getDoctrine()->getRepository(Fornecedor::class)->findByFilters($filterDatas, WhereBuilder::buildOrderBy('codigo ASC'), 0, null);
         if (!$fornecedores or count($fornecedores) < 0) {
             return null;
         }
@@ -309,13 +309,31 @@ class FornecedorController extends FormListController
                 $this->pessoaBusiness->fillTransients($fornecedor->getPessoa());
             }
 
-            $rs[]['id'] = $fornecedor->getId();
-            $rs[]['codigo'] = $fornecedor->getCodigo();
-            $rs[]['pessoa']['nome'] = $fornecedor->getPessoa()->getNome();
-            $rs[]['pessoa']['nomeFantasia'] = $fornecedor->getPessoa()->getNomeFantasia();
+
+            $r['id'] = $fornecedor->getId();
+            $r['codigo'] = $fornecedor->getCodigo();
+            $r['pessoa']['nome'] = $fornecedor->getPessoa()->getNome();
+            $r['pessoa']['nomeFantasia'] = $fornecedor->getPessoa()->getNomeFantasia();
+
+            $rs[] = $r;
         }
 
         return new JsonResponse($rs);
+    }
+
+    /**
+     *
+     * @Route("/est/fornecedor/findById/{fornecedor}", name="est_fornecedor_findById", requirements={"fornecedor"="\d+"})
+     * @param Fornecedor $fornecedor
+     * @return JSONResponse
+     */
+    public function findById(Fornecedor $fornecedor)
+    {
+        $r['id'] = $fornecedor->getId();
+        $r['codigo'] = $fornecedor->getCodigo();
+        $r['pessoa']['nome'] = $fornecedor->getPessoa()->getNome();
+        $r['pessoa']['nomeFantasia'] = $fornecedor->getPessoa()->getNomeFantasia();
+        return new JsonResponse($r);
     }
 
 

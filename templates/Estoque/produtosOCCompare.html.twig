@@ -1,0 +1,113 @@
+{% extends 'index.html.twig' %}
+
+{% block page_content %}
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-8">
+                    <h3>Comparação de Produtos (Estoque x Loja Virtual)</h3>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+            <form action="{{ url('est_produtosOCCompare_list') }}" method="get" id="form">
+                <div class="form-group row">
+
+                    <label class="col-form-label col-sm-2 form-control-label required">Fornecedor</label>
+                    <div class="col-sm-8">
+                        <select id="fornecedor" name="fornecedor" class="form-control"
+                                data-val="{{ fornecedor }}"></select>
+                    </div>
+                    <div class="col-sm-2">
+                        <select id="somenteNaLoja" name="somenteNaLoja" class="form-control"
+                                data-value="{{ somenteNaLoja }}">
+                            <option value="">Ambos</option>
+                            <option value="S">Já na loja</option>
+                            <option value="N">Não na loja</option>
+                        </select>
+                    </div>
+
+                </div>
+            </form>
+
+            {% if compare is defined %}
+                <div class="table-responsive-sm">
+
+                    <table class="table table-striped table-hover crsr-datatable">
+
+                        <thead>
+                        <tr>
+                            <th scope="col">Produto Estoque</th>
+                            <th scope="col">Saldo</th>
+                            <th scope="col">Preço</th>
+                            <th scope="col">Produto Loja Virtual</th>
+                            <th scope="col">Saldo</th>
+                            <th scope="col">Preço</th>
+                            <th scope="col">Status</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for subdepto in compare %}
+                            <tr style="background-color: lightsteelblue">
+                                <td colspan="999">
+                                    <div style="float: left">
+                                        <h3>{{ subdepto.subdepto.nome }}</h3>
+                                    </div>
+                                    <div class="text-right">
+                                        <button type="button" class="btn btn-primary" value="Regerar"
+                                                data-url="{{ url('est_produtosOCCompare_regerar', {'fornecedor': fornecedor, 'subdepto': subdepto.subdepto.id}) }}"
+                                                data-target="#confirmationModal" data-toggle="modal">
+                                            <i class="fas fa-sync"></i> Regerar
+                                        </button>
+
+                                        <button type="button" class="btn btn-secondary" value="Regerar" title="Corrigir nomes e descrições"
+                                                data-url="{{ url('est_produtosOCCompare_corrigirNomesEDescricoes', {'fornecedor': fornecedor, 'subdepto': subdepto.subdepto.id}) }}"
+                                                data-target="#confirmationModal" data-toggle="modal">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </button>
+                                    </div>
+
+                                </td>
+                            </tr>
+                            {% for r in subdepto.produtos %}
+                                <tr>
+                                    <td>{{ r.produto.descricao }}</td>
+                                    <td class="text-right">{{ r.produto.saldo|number_format(3,',','.') }}</td>
+                                    <td class="text-right">{{ r.produto.preco|number_format(3,',','.') }}</td>
+
+                                    <td class="ocProductName">{{ r.ocProduct.name|default('') }}</td>
+                                    <td class="text-right">{{ r.ocProduct.saldo|default(0)|number_format(3,',','.') }}</td>
+                                    <td class="text-right">{{ r.ocProduct.preco|default(0)|number_format(3,',','.') }}</td>
+                                    <td class="text-right">{{ r.ocProduct.status|default('') }}</td>
+
+
+                                    <td class="text-right">
+                                        <a role="button" class="btn btn-primary" target="_blank" href="{{ url('est_produto_form', {id: r.produto.id}) }}#loja-virtual">
+                                            <i class="fas fa-wrench" aria-hidden="true"></i>
+                                        </a>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block down_scripts %}
+    <script src="{{ asset('build/est/produtosOCCompare.js') }}"></script>
+{% endblock %}

@@ -151,27 +151,29 @@ $(document).ready(function () {
      */
     $('.autoSelect2').each(function () {
         let elem = $(this);
-        $.getJSON(
-            Routing.generate($(this).data('route')),
-            function (results) {
-                elem.select2({
-                    data: results,
-                    sorter: function (data) {
-                        return data.sort(function (a, b) {
-                            a = a.text.toLowerCase();
-                            b = b.text.toLowerCase();
-                            if (a > b) {
-                                return 1;
-                            } else if (a < b) {
-                                return -1;
-                            }
-                            return 0;
-                        });
-                    }
-                });
-                elem.val(elem.val()).trigger('change').trigger('select2:select');
-            }
-        );
+        if ($(this).data('route')) {
+            $.getJSON(
+                Routing.generate($(this).data('route')),
+                function (results) {
+                    elem.select2({
+                        data: results,
+                        sorter: function (data) {
+                            return data.sort(function (a, b) {
+                                a = a.text.toLowerCase();
+                                b = b.text.toLowerCase();
+                                if (a > b) {
+                                    return 1;
+                                } else if (a < b) {
+                                    return -1;
+                                }
+                                return 0;
+                            });
+                        }
+                    });
+                    elem.val(elem.val()).trigger('change').trigger('select2:select');
+                }
+            );
+        }
     });
     $.fn.select2.defaults.set("theme", "bootstrap");
 
