@@ -3,7 +3,6 @@
 namespace App\Command\Estoque;
 
 use App\Business\Estoque\OCBusiness;
-use App\Business\Estoque\ProdutoBusiness;
 use App\Entity\Estoque\ProdutoOcProduct;
 use App\Utils\Repository\WhereBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
