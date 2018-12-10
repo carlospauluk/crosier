@@ -171,7 +171,7 @@ class UnimakeBusiness
                 } else {
                     $nfe->infNFe->dest->indIEDest = 1;
                     if ($notaFiscal->getPessoaDestinatario()->getInscricaoEstadual()) {
-                        $nfe->infNFe->dest->IE = $notaFiscal->getPessoaDestinatario()->getInscricaoEstadual();
+                        $nfe->infNFe->dest->IE = trim($notaFiscal->getPessoaDestinatario()->getInscricaoEstadual());
                     } else {
                         unset($nfe->infNFe->dest->IE);
                     }
@@ -296,7 +296,7 @@ class UnimakeBusiness
                 $nfe->infNFe->transp->transporta->CNPJ = $notaFiscal->getTranspFornecedor()->getPessoa()->getDocumento();
                 $nfe->infNFe->transp->transporta->xNome = trim($notaFiscal->getTranspFornecedor()->getPessoa()->getNome());
                 if ($notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual()) {
-                    $nfe->infNFe->transp->transporta->IE = $notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual();
+                    $nfe->infNFe->transp->transporta->IE = trim($notaFiscal->getTranspFornecedor()->getPessoa()->getInscricaoEstadual());
                 }
 
                 // FIXME: depois que arrumar a bagunça com 'bon_pessoa', trocar aqui
@@ -342,7 +342,7 @@ class UnimakeBusiness
         if ($notaFiscal->getInfoCompl()) {
             $infoCompl = preg_replace("/\r/", "", $notaFiscal->getInfoCompl());
             $infoCompl = preg_replace("/\n/", ";", $infoCompl);
-            $nfe->infNFe->infAdic->infCpl = $infoCompl;
+            $nfe->infNFe->infAdic->infCpl = trim($infoCompl);
         }
 
 
