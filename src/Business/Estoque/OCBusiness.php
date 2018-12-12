@@ -14,6 +14,9 @@ use App\Entity\Estoque\SubdeptoOcCategory;
 use App\EntityOC\OcAttributeDescription;
 use App\EntityOC\OcCategory;
 use App\EntityOC\OcManufacturer;
+use App\EntityOC\OcOptionDescription;
+use App\EntityOC\OcOptionValue;
+use App\EntityOC\OcOptionValueDescription;
 use App\EntityOC\OcProduct;
 use App\EntityOC\OcProductAttribute;
 use App\EntityOC\OcProductDescription;
@@ -334,20 +337,22 @@ class OCBusiness extends BaseBusiness
                 $this->getDoctrine()->getEntityManager()->flush();
             }
 
-            // A est_grade no opencart é um oc_product_option
-            // de-para entre est_grade e oc_option
-            $gradeOcOption = $this->getDoctrine()->getRepository(GradeOcOption::class)->findOneBy(['grade' => $produto->getGrade()]);
-            if (!$gradeOcOption) {
-                throw new \Exception('de-para entre est_grade e oc_option não encontrado');
+
+            // Pega o option 'Tamanho' (que é um único para todas as grades por causa do filtro do Journal Theme)
+            $ocOptionDescription_Tamanho = $ocEntityManager->getRepository(OcOptionDescription::class)->findOneBy(['name' => 'Tamanho']);
+            if (!$ocOptionDescription_Tamanho) {
+                throw new \Exception('Option "Tamanho" não encontrada. É necessário cadastra-la manualmente.');
             }
-            // Verifica se por acaso não tem já para não precisar inserir novamente
+            $optionId = $ocOptionDescription_Tamanho->getOptionId();
+
+            // Verifico se já existe esta opção para o ocProduct
             $ocProductOption = $ocEntityManager->getRepository(OcProductOption::class)
                 ->findOneBy(['productId' => $ocProduct->getProductId(),
-                    'optionId' => $gradeOcOption->getOptionId()]);
+                    'optionId' => $ocOptionDescription_Tamanho->getOptionId()]);
             if (!$ocProductOption) {
                 // Se ainda não tem, insere
                 $ocProductOption = new OcProductOption();
-                $ocProductOption->setOptionId($gradeOcOption->getOptionId());
+                $ocProductOption->setOptionId($optionId);
                 $ocProductOption->setProductId($ocProduct->getProductId());
                 $ocProductOption->setValue(''); // pra q serve??
                 $ocProductOption->setRequired(1);
@@ -355,20 +360,43 @@ class OCBusiness extends BaseBusiness
                 $ocEntityManager->flush();
             }
 
+
+
             // A est_grade_tamanho no opencart é um oc_product_option_value
             // percorre todos os saldos de cada gradeTamanho do produto
             foreach ($produto->getSaldos() as $saldo) {
                 if (!$saldo->getSelec()) continue;
-                // de-para entre est_grade_tamanho e oc_option_value
-                $gradeTamanhoOcOptionValue = $this->getDoctrine()->getRepository(GradeTamanhoOcOptionValue::class)->findOneBy(['gradeTamanho' => $saldo->getGradeTamanho()]);
-                if (!$gradeTamanhoOcOptionValue) {
-                    throw new \Exception('de-para entre est_grade_tamanho e oc_option_value não encontrado');
+
+                // Verifica se já existe uma optionValue para a gradeTamanho (com o tempo todas as grades já serão importadas).
+                $ocOptionValueDescription = $ocEntityManager->getRepository(OcOptionDescription::class)
+                    ->findOneBy(['optionId' => $optionId,
+                        'name' => $saldo->getGradeTamanho()->getTamanho()]);
+
+                // se não existir, cadastra.
+                if (!$ocOptionValueDescription) {
+                    $ocOptionValue = new OcOptionValue();
+                    $ocOptionValue->setOptionId($optionId);
+                    $ocOptionValue->setSortOrder(0);
+                    $ocOptionValue->setImage('');
+                    $ocEntityManager->persist($ocOptionValue);
+                    $ocEntityManager->flush();
+
+                    $ocOptionValueDescription = new OcOptionValueDescription();
+                    $ocOptionValueDescription->setOptionId($optionId);
+                    $ocOptionValueDescription->setOptionValueId($ocOptionValue->getOptionValueId());
+                    $ocOptionValueDescription->setLanguageId(2); // fixo na base
+                    $ocOptionValueDescription->setName($saldo->getGradeTamanho()->getTamanho());
+                    $ocEntityManager->persist($ocOptionValueDescription);
+                    $ocEntityManager->flush();
                 }
+
+                $optionValueId = $ocOptionValueDescription->getOptionValueId();
+
                 $ocProductOptionValue = null;
                 // Verifico se essa opção já não existe (pra não precisar inserir novamente)
                 $ocProductOptionValue = $ocEntityManager->getRepository(OcProductOptionValue::class)
                     ->findOneBy(['productId' => $ocProduct->getProductId(),
-                        'optionValueId' => $gradeTamanhoOcOptionValue->getOptionValueId()]);
+                        'optionValueId' => $optionValueId]);
 
                 if (!$ocProductOptionValue) {
                     $ocProductOptionValue = new OcProductOptionValue();
@@ -382,8 +410,8 @@ class OCBusiness extends BaseBusiness
                 }
 
                 $ocProductOptionValue->setProductOptionId($ocProductOption->getProductOptionId());
-                $ocProductOptionValue->setOptionId($gradeOcOption->getOptionId());
-                $ocProductOptionValue->setOptionValueId($gradeTamanhoOcOptionValue->getOptionValueId());
+                $ocProductOptionValue->setOptionId($optionId);
+                $ocProductOptionValue->setOptionValueId($optionValueId);
                 $ocProductOptionValue->setQuantity($saldo->getQtde());
                 $ocProductOptionValue->setPrice('');
 
@@ -400,14 +428,14 @@ class OCBusiness extends BaseBusiness
             // caso a grade do est_produto tenha sido alterada
             $ocProductOptionValues = $ocEntityManager->getRepository(OcProductOptionValue::class)->findBy(['productId' => $ocProduct->getProductId()]);
             foreach ($ocProductOptionValues as $ocProductOptionValue) {
-                if ($ocProductOptionValue->getOptionId() != $gradeOcOption->getOptionId()) {
+                if ($ocProductOptionValue->getOptionId() != $optionId) {
                     $ocEntityManager->remove($ocProductOptionValue);
                 }
             }
             $ocEntityManager->flush();
             $ocProductOptions = $ocEntityManager->getRepository(OcProductOption::class)->findBy(['productId' => $ocProduct->getProductId()]);
             foreach ($ocProductOptions as $ocProductOption) {
-                if ($ocProductOption->getOptionId() !== $gradeOcOption->getOptionId()) {
+                if ($ocProductOption->getOptionId() !== $optionId) {
                     $ocEntityManager->remove($ocProductOption);
                 }
             }
