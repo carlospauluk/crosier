@@ -538,7 +538,8 @@ class OCBusiness extends BaseBusiness
         }
         if (!$fornecedorFolder) {
             $fornecedorFolder = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
-            mkdir($fornecedorFolder, 0777);
+            mkdir($fornecedorFolder);
+            chmod($fornecedorFolder,0777);
         }
 
         $ents = scandir($ocProductImagesFolder . '/' . $fornecedorFolder);
@@ -553,7 +554,8 @@ class OCBusiness extends BaseBusiness
         if (!$produtoFolder) {
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
             $produtoFolder = $nome . '-' . $produto->getReduzido();
-            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
+            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
+            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder,0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
