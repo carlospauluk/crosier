@@ -368,7 +368,7 @@ class OCBusiness extends BaseBusiness
                 if (!$saldo->getSelec()) continue;
 
                 // Verifica se já existe uma optionValue para a gradeTamanho (com o tempo todas as grades já serão importadas).
-                $ocOptionValueDescription = $ocEntityManager->getRepository(OcOptionDescription::class)
+                $ocOptionValueDescription = $ocEntityManager->getRepository(OcOptionValueDescription::class)
                     ->findOneBy(['optionId' => $optionId,
                         'name' => $saldo->getGradeTamanho()->getTamanho()]);
 
