@@ -5,8 +5,6 @@ namespace App\Business\Estoque;
 use App\Business\BaseBusiness;
 use App\Entity\Estoque\Fornecedor;
 use App\Entity\Estoque\FornecedorOcManufacturer;
-use App\Entity\Estoque\GradeOcOption;
-use App\Entity\Estoque\GradeTamanhoOcOptionValue;
 use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\ProdutoOcProduct;
 use App\Entity\Estoque\Subdepto;
@@ -145,6 +143,27 @@ class OCBusiness extends BaseBusiness
     }
 
     /**
+     * @param Fornecedor $fornecedor
+     * @param Subdepto|null $subdepto
+     * @param $ativarDesativar
+     * @throws ViewException
+     */
+    public function ativarDesativar(Fornecedor $fornecedor, Subdepto $subdepto = null, $ativarDesativar)
+    {
+        try {
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
+            $produtos = $this->getDoctrine()->getRepository(Produto::class)->findBy(['fornecedor' => $fornecedor, 'subdepto' => $subdepto, 'atual' => true], ['descricao' => 'ASC']);
+            foreach ($produtos as $produto) {
+                $ocProduct = $this->getOcProductByProduto($produto);
+                $ocProduct->setStatus($ativarDesativar);
+            }
+            $ocEntityManager->flush();
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao corrigir nomes e descrições produtos para a loja virtual.');
+        }
+    }
+
+    /**
      * Array com dados idênticos ao que vem do form.
      *
      * @param Produto|null $produto
@@ -271,7 +290,7 @@ class OCBusiness extends BaseBusiness
                 $ocProduct->setWidth(0);
                 $ocProduct->setWeight(0);
                 $ocProduct->setStatus(0); // inativo, a princípio
-                $ocProduct->setStockStatusId(5);
+                $ocProduct->setStockStatusId(6);
                 $ocProduct->setPrice($produto->getPrecoAtual()->getPrecoPrazo());
 
                 if ($produto->getFornecedor()) {
@@ -359,7 +378,6 @@ class OCBusiness extends BaseBusiness
                 $ocEntityManager->persist($ocProductOption);
                 $ocEntityManager->flush();
             }
-
 
 
             // A est_grade_tamanho no opencart é um oc_product_option_value
@@ -539,7 +557,7 @@ class OCBusiness extends BaseBusiness
         if (!$fornecedorFolder) {
             $fornecedorFolder = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
             mkdir($fornecedorFolder);
-            chmod($fornecedorFolder,0777);
+            chmod($fornecedorFolder, 0777);
         }
 
         $ents = scandir($ocProductImagesFolder . '/' . $fornecedorFolder);
@@ -555,7 +573,7 @@ class OCBusiness extends BaseBusiness
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
             $produtoFolder = $nome . '-' . $produto->getReduzido();
             mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
-            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder,0777);
+            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
@@ -775,9 +793,9 @@ class OCBusiness extends BaseBusiness
         // >>> CORES
         $cores['AZUL'] = 'Azul';
         $cores['ROSA'] = 'Rosa';
-        $cores['AMA'] = 'Amarelo';
-        $cores['AMAR'] = 'Amarelo';
-        $cores['AMR'] = 'Amarelo';
+        $cores['AMA '] = 'Amarelo';
+        $cores['AMAR '] = 'Amarelo';
+        $cores['AMR '] = 'Amarelo';
         $cores['AZ'] = 'Azul';
         $cores['(AZ){1}(.)+(CLR){1}'] = 'Azul Claro';
         $cores['(AZ){1}(.)+(ROY){1}'] = 'Azul Royal';
@@ -822,7 +840,12 @@ class OCBusiness extends BaseBusiness
         $moldes['REG'] = 'Regata';
         $moldes['S/CAP'] = 'Sem Capuz';
 
-        $novaDescricao = $subdeptos[trim($produto->getSubdepto()->getNome())];
+        // RTA, pois os shorts-saias estão nos deptos de bermudas
+        if (preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
+            $novaDescricao = "Short-saia";
+        } else {
+            $novaDescricao = $subdeptos[trim($produto->getSubdepto()->getNome())];
+        }
 
         $ocManufacturer = $ocEntityManager->getRepository(OcManufacturer::class)->find($ocProduct->getManufacturerId());
 
