@@ -279,7 +279,6 @@ class OCBusiness extends BaseBusiness
                 } else {
                     $ocProduct->setManufacturerId(0); // Não informado
                 }
-                $ocProduct->setQuantity(0);
 
                 $ocProductDescription->setName($produto->getDescricao());
                 $ocProductDescription->setMetaTitle($produto->getDescricao());
@@ -394,6 +393,9 @@ class OCBusiness extends BaseBusiness
                 }
                 $ocEntityManager->flush();
             }
+
+            $ocProduct->setQuantity($produto->getSaldoTotal());
+
 
 
             // Por fim, removo as productOptionValue e productOption que não condizam com a grade atual do produto,
