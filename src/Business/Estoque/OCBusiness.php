@@ -804,7 +804,7 @@ class OCBusiness extends BaseBusiness
         $cores['AMA '] = 'Amarelo';
         $cores['AMAR '] = 'Amarelo';
         $cores['AMR '] = 'Amarelo';
-        $cores['AZ'] = 'Azul';
+        $cores['AZ '] = 'Azul';
         $cores['(AZ){1}(.)+(CLR){1}'] = 'Azul Claro';
         $cores['(AZ){1}(.)+(ROY){1}'] = 'Azul Royal';
         $cores['AZM'] = 'Azul Marinho';
