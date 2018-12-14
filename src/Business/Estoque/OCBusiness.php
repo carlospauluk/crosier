@@ -308,10 +308,18 @@ class OCBusiness extends BaseBusiness
                 $ocProductDescription->setDescription($produto->getDescricao());
 
                 if ($produto->getSubdepto()) {
-                    $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
-                    if ($subdepto2category) {
-                        $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+
+                    // RTA, pois os shorts-saias estão nos deptos de bermudas
+                    if (preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
+                        $ocProductToCategory->setCategoryId(65);
+                    } else {
+                        $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
+                        if ($subdepto2category) {
+                            $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+                        }
                     }
+
+
                 } else {
                     $ocProductToCategory->setCategoryId(1); // categoria padrão (INDEFINIDA)
                 }
