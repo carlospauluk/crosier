@@ -17,7 +17,7 @@ $(document).ready(function () {
 
     $fornecedor.select2({
         ajax: {
-            delay: 250,
+            delay: 800,
             url: function (params) {
                 return Routing.generate('est_fornecedor_findByCodigoOuNome') + '/' + params.term;
             },

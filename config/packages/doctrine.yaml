@@ -21,10 +21,21 @@ doctrine:
       oc:
         url: '%env(resolve:DATABASE_URL_OC)%'
         driver: 'pdo_mysql'
-        server_version: '5.6'
+        server_version: '5.7'
         charset: utf8mb4
         mapping_types:
           enum:       string
+        default_table_options:
+          charset: utf8mb4
+          collate: utf8mb4_unicode_ci
+      ekt:
+        url: '%env(resolve:DATABASE_URL_EKT)%'
+        driver: 'pdo_mysql'
+        server_version: '5.7'
+        charset: utf8mb4
+        mapping_types:
+          enum:       string
+          bit: boolean
         default_table_options:
           charset: utf8mb4
           collate: utf8mb4_unicode_ci
@@ -53,3 +64,13 @@ doctrine:
             dir: '%kernel.project_dir%/src/EntityOC'
             prefix: 'App\EntityOC\'
             alias: AppOC
+      ekt:
+        connection: ekt
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        mappings:
+          AppOC:
+            is_bundle: false
+            type: annotation
+            dir: '%kernel.project_dir%/src/EntityEKT'
+            prefix: 'App\EntityEKT\'
+            alias: AppEKT

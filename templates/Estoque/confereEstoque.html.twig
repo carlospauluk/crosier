@@ -1,0 +1,95 @@
+{% extends 'index.html.twig' %}
+
+{% block page_content %}
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-8">
+                    <h3>Conferência de Estoques</h3>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+            <form action="{{ url('est_produtosOCCompare_list') }}" method="get" id="form">
+                <div class="form-group row">
+
+                </div>
+            </form>
+
+            {% if rs is defined %}
+                <div class="table-responsive-sm">
+
+                    <table class="table table-striped table-hover crsr-datatable">
+
+                        <thead>
+                        <tr>
+                            <th scope="col">Produto</th>
+                            <th scope="col">Detalhes</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        {% for r in rs %}
+                            <tr>
+                                <td>{{ r.estProduto.reduzido }} - {{  r.estProduto.descricao }} ({{  r.estProduto.reduzidoEkt }})<br />
+                                    {{ r.estProduto.id }}</td>
+                                <td class="text-right">
+                                    <table style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <td></td>
+                                                <td>Est</td>
+                                                <td>Ekt</td>
+                                                <td>Online</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Dt Custo</td>
+                                                <td>{{ r.estProduto.precoAtual.dtCusto|date('d/m/Y') }}</td>
+                                                <td>{{ r.ektProduto.dataPcusto|date('d/m/Y') }}</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Preço Custo</td>
+                                                <td>{{ r.estProduto.precoAtual.precoCusto|number_format(2,',','.') }}</td>
+                                                <td>{{ r.ektProduto.pcusto|number_format(2,',','.') }}</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Preço Vista</td>
+                                                <td>{{ r.estProduto.precoAtual.precoVista|number_format(2,',','.') }}</td>
+                                                <td>{{ r.ektProduto.pvista|number_format(2,',','.') }}</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Preço Prazo</td>
+                                                <td>{{ r.estProduto.precoAtual.precoPrazo|number_format(2,',','.') }}</td>
+                                                <td>{{ r.ektProduto.pprazo|number_format(2,',','.') }}</td>
+                                                <td></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block down_scripts %}
+    <script src="{{ asset('build/est/produtosOCCompare.js') }}"></script>
+{% endblock %}

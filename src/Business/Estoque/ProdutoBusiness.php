@@ -63,6 +63,53 @@ class ProdutoBusiness extends BaseBusiness
         return $msg;
     }
 
+    public function conferirEstoques() {
+        //Executar com debug para verificar se não vai dar problema.
+        $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
+        $ektEntityManager = $this->getDoctrine()->getEntityManager('ekt');
+        $em = $this->getDoctrine()->getEntityManager();
+
+        $mesano = (new \DateTime())->format('Ym');
+
+        $qryEktProdutos = $ektEntityManager->createQuery("SELECT p FROM App\EntityEKT\EktProduto p WHERE p.mesano = :mesano AND p.reduzido != 88888 AND trim(p.descricao) != ''");
+        $qryEktProdutos->setParameter('mesano', $mesano);
+        $rEktProdutos = $qryEktProdutos->getResult();
+        $ektProdutos = [];
+
+        foreach ($rEktProdutos as $ektProduto) {
+
+//            $ektProduto['REDUZIDO'] = $r->getReduzido();
+//            $ektProduto['DESCRICAO'] = $r->getDescricao();
+//            $ektProduto['PCUSTO'] = $r->getPCusto();
+//            $ektProduto['PPRAZO'] = $r->getPPrazo();
+//            $ektProduto['PPROMO'] = $r->getPPromo();
+//            $ektProduto['PVISTA'] = $r->getPVista();
+//            $ektProduto['DATAPCUSTO'] = $r->getDataPcusto();
+            $ektProdutos[$ektProduto->getReduzido()] = $ektProduto;
+
+        }
+
+        $estProdutos = $em->createQuery("SELECT p FROM App\Entity\Estoque\Produto p WHERE p.atual = TRUE AND trim(p.descricao) != '' AND p.reduzidoEkt != 88888")->getResult();
+
+        if (count($estProdutos) != count($ektProdutos)) {
+            throw new \Exception("Qtde de produtos difere... EKT: " . count($ektProdutos) . ". EST: " . count($estProdutos));
+        }
+        $rs = [];
+        foreach ($estProdutos as $estProduto) {
+            $ektProduto = $ektProdutos[$estProduto->getReduzidoEkt()];
+            $precoAtual = $estProduto->getPrecoAtual();
+            if ($precoAtual->getPrecoCusto() != $ektProduto->getPcusto() or
+                $precoAtual->getPrecoVista() != $ektProduto->getPvista() or
+                $precoAtual->getPrecoPrazo() != $ektProduto->getPprazo()) {
+
+                $r['estProduto'] = $estProduto;
+                $r['ektProduto'] = $ektProduto;
+                $rs[] = $r;
+            }
+        }
+        return $rs;
+    }
+
     /**
      * @return mixed
      */
