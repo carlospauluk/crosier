@@ -307,10 +307,18 @@ class OCBusiness extends BaseBusiness
                 $ocProductDescription->setDescription($produto->getDescricao());
 
                 if ($produto->getSubdepto()) {
-                    $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
-                    if ($subdepto2category) {
-                        $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+
+                    // RTA, pois os shorts-saias estão nos deptos de bermudas
+                    if (preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
+                        $ocProductToCategory->setCategoryId(65);
+                    } else {
+                        $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
+                        if ($subdepto2category) {
+                            $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+                        }
                     }
+
+
                 } else {
                     $ocProductToCategory->setCategoryId(1); // categoria padrão (INDEFINIDA)
                 }
@@ -381,6 +389,9 @@ class OCBusiness extends BaseBusiness
 
             // A est_grade_tamanho no opencart é um oc_product_option_value
             // percorre todos os saldos de cada gradeTamanho do produto
+
+            // mas antes remove tudo.
+            $ocEntityManager->createQuery('DELETE FROM App\EntityOC\OcProductOptionValue pov WHERE pov.productId = ' . $ocProduct->getProductId())->execute();
             foreach ($produto->getSaldos() as $saldo) {
                 if (!$saldo->getSelec()) continue;
 
@@ -798,7 +809,7 @@ class OCBusiness extends BaseBusiness
         $cores['AMA '] = 'Amarelo';
         $cores['AMAR '] = 'Amarelo';
         $cores['AMR '] = 'Amarelo';
-        $cores['AZ'] = 'Azul';
+        $cores['AZ '] = 'Azul';
         $cores['(AZ){1}(.)+(CLR){1}'] = 'Azul Claro';
         $cores['(AZ){1}(.)+(ROY){1}'] = 'Azul Royal';
         $cores['AZM'] = 'Azul Marinho';
@@ -815,9 +826,10 @@ class OCBusiness extends BaseBusiness
         $cores['PTA/VRD'] = 'Preto/Verde';
         $cores['ROYAL'] = 'Azul Royal';
         $cores['VDE'] = 'Verde';
-        $cores['VERM'] = 'Vermelho';
-        $cores['VM'] = 'Vermelho';
         $cores['VRD'] = 'Verde';
+        $cores['VERM'] = 'Vermelho';
+        $cores['VER '] = 'Vermelho';
+        $cores['VM'] = 'Vermelho';
         $cores['VRM'] = 'Vermelho';
 
         $tamanhos = ['02', '04', '06', '08', '10', '12', '14', '16', 'P', 'M', 'G', 'XG'];
@@ -831,6 +843,7 @@ class OCBusiness extends BaseBusiness
         $moldes['CANG FEC'] = 'Canguru Fechado';
         $moldes['CG FC'] = 'Canguru Fechado';
         $moldes['CNG FC'] = 'Canguru Fechado';
+        $moldes['CANGURU'] = 'Canguru Fechado';
         $moldes['CNG FEC'] = 'Canguru Fechado';
         $moldes['CNG FEC CAP'] = 'Canguru Fechado com Capuz';
         $moldes['CNG S/C'] = 'Canguru sem Capuz';

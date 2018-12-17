@@ -642,11 +642,18 @@ class Produto extends EntityId
 
     public function getPrecoAtual(): ?ProdutoPreco
     {
-        $precosArray = $this->precos->toArray();
-        usort($precosArray, function (ProdutoPreco $a, ProdutoPreco $b) {
-            return ($a->getDtPrecoVenda() >= $b->getDtPrecoVenda());
-        });
-        return $this->precos->get(0);
+        if ($this->precos) {
+            $precosArray = $this->precos->toArray();
+            if (count($precosArray) > 0) {
+                usort($precosArray, function (ProdutoPreco $a, ProdutoPreco $b) {
+                    return ($a->getDtPrecoVenda() < $b->getDtPrecoVenda() or
+                        ($a->getDtPrecoVenda() == $b->getDtPrecoVenda() and $a->getId() < $b->getId())
+                    );
+                });
+                return $precosArray[0];
+            }
+        }
+        return null;
     }
 
     /**

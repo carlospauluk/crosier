@@ -9,7 +9,7 @@ use App\Entity\Base\EntityId;
 use App\EntityHandler\EntityHandler;
 use App\Utils\ExceptionUtils;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -21,7 +21,7 @@ use Symfony\Component\Serializer\Serializer;
  *
  * @package App\Controller
  */
-abstract class FormListController extends Controller
+abstract class FormListController extends AbstractController
 {
 
     private $storedViewInfoBusiness;

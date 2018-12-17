@@ -13,11 +13,13 @@ $(document).ready(function () {
 
     let $form = $('#form');
     let $fornecedor = $('#fornecedor');
-    let $somenteNaLoja = $('#somenteNaLoja');
+    let $tamanho = $('#tamanho');
+    let $msg = $('#msg');
+    let $btnCtrlC = $('#btnCtrlC');
 
     $fornecedor.select2({
         ajax: {
-            delay: 800,
+            delay: 250,
             url: function (params) {
                 return Routing.generate('est_fornecedor_findByCodigoOuNome') + '/' + params.term;
             },
@@ -44,7 +46,6 @@ $(document).ready(function () {
                 type: 'GET'
             }
         ).done(function (results) {
-            console.dir(results);
             let newOption = new Option(results.pessoa.nomeFantasia, results.id, false, false);
             $fornecedor.append(newOption).trigger('change');
 
@@ -55,28 +56,22 @@ $(document).ready(function () {
 
     }
 
-    $fornecedor.on('select2:select', function () {
-        $form.submit();
-    });
 
 
-    $somenteNaLoja.select2();
-    $somenteNaLoja.on('select2:select', function () {
-        $('.ocProductName').each(function (k) {
-            // Exibe as linhas conforme tem ou não na loja (verifica pelo ocProduct.name)
-            console.log($(this).parent());
+    $tamanho.select2();
 
-            if ($somenteNaLoja.val() === 'S') {
-                $(this).parent().css('display', ($(this).html() === '') ? 'none' : '');
-            } else if ($somenteNaLoja.val() === 'N') {
-                $(this).parent().css('display', ($(this).html() !== '') ? 'none' : '');
-            } else {
-                $(this).parent().css('display', '');
-            }
 
-        });
+    $btnCtrlC.on('click', function (e) {
+
+        if ($msg.val()) {
+            $msg.select();
+            document.execCommand("copy");
+        }
 
     });
+
+
+
 
 
 });
