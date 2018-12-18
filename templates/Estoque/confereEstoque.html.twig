@@ -6,8 +6,15 @@
         <div class="card-header">
 
             <div class="row">
-                <div class="col-8">
+                <div class="col-4">
                     <h3>Conferência de Estoques</h3>
+                </div>
+                <div class="col-8 text-right">
+                    <button type="button" class="btn btn-success" value="Regerar"
+                            data-url="{{ url('est_confereEstoque_list', {'regerar': 'true'}) }}"
+                            data-target="#confirmationModal" data-toggle="modal">
+                        <i class="fas fa-wrench" aria-hidden="true"></i> Regerar
+                    </button>
                 </div>
             </div>
 
@@ -52,26 +59,32 @@
                                             <tr>
                                                 <td>Dt Custo</td>
                                                 <td>{{ r.estProduto.precoAtual.dtCusto|date('d/m/Y') }}</td>
-                                                <td>{{ r.ektProduto.dataPcusto|date('d/m/Y') }}</td>
-                                                <td></td>
+                                                <td>{{ r.ektProduto.dataPcusto|default('')|date('d/m/Y') }}</td>
+                                                <td>-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Dt Preço Venda</td>
+                                                <td>{{ r.estProduto.precoAtual.dtPrecoVenda|date('d/m/Y') }}</td>
+                                                <td>{{ r.ektProduto.dataPvenda|default('')|date('d/m/Y') }}</td>
+                                                <td>-</td>
                                             </tr>
                                             <tr>
                                                 <td>Preço Custo</td>
                                                 <td>{{ r.estProduto.precoAtual.precoCusto|number_format(2,',','.') }}</td>
-                                                <td>{{ r.ektProduto.pcusto|number_format(2,',','.') }}</td>
-                                                <td></td>
+                                                <td>{{ r.ektProduto.pcusto|default('')|number_format(2,',','.') }}</td>
+                                                <td>-</td>
                                             </tr>
                                             <tr>
                                                 <td>Preço Vista</td>
                                                 <td>{{ r.estProduto.precoAtual.precoVista|number_format(2,',','.') }}</td>
-                                                <td>{{ r.ektProduto.pvista|number_format(2,',','.') }}</td>
-                                                <td></td>
+                                                <td>{{ r.ektProduto.pvista|default('')|number_format(2,',','.') }}</td>
+                                                <td>-</td>
                                             </tr>
                                             <tr>
                                                 <td>Preço Prazo</td>
                                                 <td>{{ r.estProduto.precoAtual.precoPrazo|number_format(2,',','.') }}</td>
-                                                <td>{{ r.ektProduto.pprazo|number_format(2,',','.') }}</td>
-                                                <td></td>
+                                                <td>{{ r.ektProduto.pprazo|default('')|number_format(2,',','.') }}</td>
+                                                <td>{{ r.ocProduct.price|number_format(2,',','.') }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
