@@ -160,7 +160,7 @@ class ClienteController extends FormListController
      */
     public function enderecoForm(Request $request, Cliente $ref, Endereco $endereco = null)
     {
-        return $this->enderecoController->doEnderecoForm($this, $request, $ref, $endereco);
+        return $this->enderecoController->doEnderecoForm($request, $ref, $endereco);
     }
 
     /**
@@ -174,7 +174,7 @@ class ClienteController extends FormListController
     public function enderecoDelete(Request $request, Cliente $ref, Endereco $endereco)
     {
         $this->getSecurityBusiness()->checkAccess("crm_cliente_form");
-        return $this->enderecoController->doEnderecoDelete($this, $request, $ref, $endereco);
+        return $this->enderecoController->doEnderecoDelete($request, $ref, $endereco);
     }
 
     /**
@@ -182,6 +182,7 @@ class ClienteController extends FormListController
      * @Route("/crm/cliente/list/", name="crm_cliente_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function list(Request $request)
     {
