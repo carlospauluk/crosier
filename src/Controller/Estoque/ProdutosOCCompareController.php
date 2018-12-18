@@ -114,6 +114,27 @@ class ProdutosOCCompareController extends Controller
     }
 
     /**
+     *
+     * @Route("/est/produtosOCCompare/ativarDesativar", name="est_produtosOCCompare_ativarDesativar")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function ativarDesativar(Request $request)
+    {
+        $fornecedorId = $request->get('fornecedor');
+        $fornecedor = $this->getDoctrine()->getRepository(Fornecedor::class)->find($fornecedorId);
+        $subdeptoId = $request->get('subdepto');
+        $subdepto = $this->getDoctrine()->getRepository(Subdepto::class)->find($subdeptoId);
+        $ativarDesativar = $request->get('ativarDesativar');
+        try {
+            $this->getOcBusiness()->ativarDesativar($fornecedor, $subdepto, $ativarDesativar);
+        } catch (ViewException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+        return $this->redirectToRoute('est_produtosOCCompare_list', ['fornecedor' => $fornecedor->getId()]);
+    }
+
+    /**
      * @return OCBusiness
      */
     public function getOcBusiness(): OCBusiness

@@ -2,35 +2,37 @@
 
 namespace App\EntityHandler\Estoque;
 
-use App\Business\Estoque\ProdutoBusiness;
+use App\Business\Estoque\OCBusiness;
 use App\Entity\Estoque\Produto;
 use App\EntityHandler\EntityHandler;
 
 class ProdutoEntityHandler extends EntityHandler
 {
 
-    private $produtoBusiness;
+    private $ocBusiness;
 
     public function beforeSave($produto)
     {
-        $this->getProdutoBusiness()->saveOcProduct($produto, null);
+        if ($produto->getNaLojaVirtual() == true) {
+            $this->getOcBusiness()->saveOcProduct($produto, null);
+        }
     }
 
     /**
-     * @return mixed
+     * @return OCBusiness
      */
-    public function getProdutoBusiness():ProdutoBusiness
+    public function getOcBusiness(): OCBusiness
     {
-        return $this->produtoBusiness;
+        return $this->ocBusiness;
     }
 
     /**
      * @required
-     * @param mixed $produtoBusiness
+     * @param OCBusiness $ocBusiness
      */
-    public function setProdutoBusiness(ProdutoBusiness $produtoBusiness): void
+    public function setOcBusiness(OCBusiness $ocBusiness): void
     {
-        $this->produtoBusiness = $produtoBusiness;
+        $this->ocBusiness = $ocBusiness;
     }
 
 

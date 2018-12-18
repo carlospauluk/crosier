@@ -1,0 +1,76 @@
+{% extends 'index.html.twig' %}
+
+{% block page_content %}
+
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row">
+                <div class="col-8">
+                    <h3>Consulta de Preços</h3>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-body">
+            <form action="{{ url('est_consultaPrecos_list') }}" method="get" id="form">
+
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 form-control-label required">Fornecedor</label>
+                    <div class="col-sm-10">
+                        <select id="fornecedor" name="fornecedor" class="form-control"
+                                data-val="{{ fornecedor }}"></select>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 form-control-label required">Tamanho</label>
+                    <div class="col-sm-8">
+
+                        <select id="tamanho" name="tamanho" class="form-control"
+                                data-val="{{ tamanho }}">
+                            <option value="02">02</option>
+                            <option value="04">04</option>
+                            <option value="06">06</option>
+                            <option value="08">08</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="P">P</option>
+                            <option value="M">M</option>
+                            <option value="G">G</option>
+                            <option value="XG">XG</option>
+                        </select>
+
+                    </div>
+                    <div class="col-sm-2">
+                        <button type="submit" class="btn btn-primary" style="width: 100%" value="Gerar">
+                            <i class="fas fa-search" aria-hidden="true"></i> Consultar
+                        </button>
+
+                    </div>
+                </div>
+            </form>
+
+            {% if msg is defined %}
+                <div class="col-sm-12">
+                    <textarea rows="12" class="form-control" id="msg">{{ msg }}</textarea>
+                </div>
+                <div class="col-sm-12">
+                    <button type="button" class="btn btn-secondary" style="width: 100%" id="btnCtrlC" value="Copiar">
+                        <i class="fas fa-copy" aria-hidden="true"></i> Copiar
+                    </button>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block down_scripts %}
+    <script src="{{ asset('build/est/consultaPrecos.js') }}"></script>
+{% endblock %}

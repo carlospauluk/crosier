@@ -5,23 +5,19 @@ namespace App\Business\Estoque;
 use App\Business\BaseBusiness;
 use App\Entity\Estoque\Fornecedor;
 use App\Entity\Estoque\FornecedorOcManufacturer;
-use App\Entity\Estoque\GradeOcOption;
-use App\Entity\Estoque\GradeTamanhoOcOptionValue;
 use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\ProdutoOcProduct;
 use App\Entity\Estoque\Subdepto;
 use App\Entity\Estoque\SubdeptoOcCategory;
 use App\EntityOC\OcAttributeDescription;
 use App\EntityOC\OcCategory;
-use App\EntityOC\OcCategoryFilter;
-use App\EntityOC\OcFilter;
-use App\EntityOC\OcFilterDescription;
-use App\EntityOC\OcFilterGroupDescription;
 use App\EntityOC\OcManufacturer;
+use App\EntityOC\OcOptionDescription;
+use App\EntityOC\OcOptionValue;
+use App\EntityOC\OcOptionValueDescription;
 use App\EntityOC\OcProduct;
 use App\EntityOC\OcProductAttribute;
 use App\EntityOC\OcProductDescription;
-use App\EntityOC\OcProductFilter;
 use App\EntityOC\OcProductImage;
 use App\EntityOC\OcProductOption;
 use App\EntityOC\OcProductOptionValue;
@@ -149,6 +145,27 @@ class OCBusiness extends BaseBusiness
     }
 
     /**
+     * @param Fornecedor $fornecedor
+     * @param Subdepto|null $subdepto
+     * @param $ativarDesativar
+     * @throws ViewException
+     */
+    public function ativarDesativar(Fornecedor $fornecedor, Subdepto $subdepto = null, $ativarDesativar)
+    {
+        try {
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
+            $produtos = $this->getDoctrine()->getRepository(Produto::class)->findBy(['fornecedor' => $fornecedor, 'subdepto' => $subdepto, 'atual' => true], ['descricao' => 'ASC']);
+            foreach ($produtos as $produto) {
+                $ocProduct = $this->getOcProductByProduto($produto);
+                $ocProduct->setStatus($ativarDesativar);
+            }
+            $ocEntityManager->flush();
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao corrigir nomes e descrições produtos para a loja virtual.');
+        }
+    }
+
+    /**
      * Array com dados idênticos ao que vem do form.
      *
      * @param Produto|null $produto
@@ -191,11 +208,6 @@ class OCBusiness extends BaseBusiness
                 'name' => $ocProductDescription->getName(),
                 'description' => $ocProductDescription->getDescription()
             ];
-
-            $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProduct->getProductId()]);
-            foreach ($ocProductFilters as $ocProductFilter) {
-                $ocProductArray['filters'][] = $ocProductFilter->getFilterId();
-            }
 
             return $ocProductArray;
 
@@ -280,7 +292,7 @@ class OCBusiness extends BaseBusiness
                 $ocProduct->setWidth(0);
                 $ocProduct->setWeight(0);
                 $ocProduct->setStatus(0); // inativo, a princípio
-                $ocProduct->setStockStatusId(5);
+                $ocProduct->setStockStatusId(6);
                 $ocProduct->setPrice($produto->getPrecoAtual()->getPrecoPrazo());
 
                 if ($produto->getFornecedor()) {
@@ -291,17 +303,24 @@ class OCBusiness extends BaseBusiness
                 } else {
                     $ocProduct->setManufacturerId(0); // Não informado
                 }
-                $ocProduct->setQuantity(0);
 
                 $ocProductDescription->setName($produto->getDescricao());
                 $ocProductDescription->setMetaTitle($produto->getDescricao());
                 $ocProductDescription->setDescription($produto->getDescricao());
 
                 if ($produto->getSubdepto()) {
-                    $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
-                    if ($subdepto2category) {
-                        $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+
+                    // RTA, pois os shorts-saias estão nos deptos de bermudas
+                    if (preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
+                        $ocProductToCategory->setCategoryId(65);
+                    } else {
+                        $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
+                        if ($subdepto2category) {
+                            $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+                        }
                     }
+
+
                 } else {
                     $ocProductToCategory->setCategoryId(1); // categoria padrão (INDEFINIDA)
                 }
@@ -346,20 +365,22 @@ class OCBusiness extends BaseBusiness
                 $this->getDoctrine()->getEntityManager()->flush();
             }
 
-            // A est_grade no opencart é um oc_product_option
-            // de-para entre est_grade e oc_option
-            $gradeOcOption = $this->getDoctrine()->getRepository(GradeOcOption::class)->findOneBy(['grade' => $produto->getGrade()]);
-            if (!$gradeOcOption) {
-                throw new \Exception('de-para entre est_grade e oc_option não encontrado');
+
+            // Pega o option 'Tamanho' (que é um único para todas as grades por causa do filtro do Journal Theme)
+            $ocOptionDescription_Tamanho = $ocEntityManager->getRepository(OcOptionDescription::class)->findOneBy(['name' => 'Tamanho']);
+            if (!$ocOptionDescription_Tamanho) {
+                throw new \Exception('Option "Tamanho" não encontrada. É necessário cadastra-la manualmente.');
             }
-            // Verifica se por acaso não tem já para não precisar inserir novamente
+            $optionId = $ocOptionDescription_Tamanho->getOptionId();
+
+            // Verifico se já existe esta opção para o ocProduct
             $ocProductOption = $ocEntityManager->getRepository(OcProductOption::class)
                 ->findOneBy(['productId' => $ocProduct->getProductId(),
-                    'optionId' => $gradeOcOption->getOptionId()]);
+                    'optionId' => $ocOptionDescription_Tamanho->getOptionId()]);
             if (!$ocProductOption) {
                 // Se ainda não tem, insere
                 $ocProductOption = new OcProductOption();
-                $ocProductOption->setOptionId($gradeOcOption->getOptionId());
+                $ocProductOption->setOptionId($optionId);
                 $ocProductOption->setProductId($ocProduct->getProductId());
                 $ocProductOption->setValue(''); // pra q serve??
                 $ocProductOption->setRequired(1);
@@ -367,20 +388,45 @@ class OCBusiness extends BaseBusiness
                 $ocEntityManager->flush();
             }
 
+
             // A est_grade_tamanho no opencart é um oc_product_option_value
             // percorre todos os saldos de cada gradeTamanho do produto
+
+            // mas antes remove tudo.
+            $ocEntityManager->createQuery('DELETE FROM App\EntityOC\OcProductOptionValue pov WHERE pov.productId = ' . $ocProduct->getProductId())->execute();
             foreach ($produto->getSaldos() as $saldo) {
                 if (!$saldo->getSelec()) continue;
-                // de-para entre est_grade_tamanho e oc_option_value
-                $gradeTamanhoOcOptionValue = $this->getDoctrine()->getRepository(GradeTamanhoOcOptionValue::class)->findOneBy(['gradeTamanho' => $saldo->getGradeTamanho()]);
-                if (!$gradeTamanhoOcOptionValue) {
-                    throw new \Exception('de-para entre est_grade_tamanho e oc_option_value não encontrado');
+
+                // Verifica se já existe uma optionValue para a gradeTamanho (com o tempo todas as grades já serão importadas).
+                $ocOptionValueDescription = $ocEntityManager->getRepository(OcOptionValueDescription::class)
+                    ->findOneBy(['optionId' => $optionId,
+                        'name' => $saldo->getGradeTamanho()->getTamanho()]);
+
+                // se não existir, cadastra.
+                if (!$ocOptionValueDescription) {
+                    $ocOptionValue = new OcOptionValue();
+                    $ocOptionValue->setOptionId($optionId);
+                    $ocOptionValue->setSortOrder(0);
+                    $ocOptionValue->setImage('');
+                    $ocEntityManager->persist($ocOptionValue);
+                    $ocEntityManager->flush();
+
+                    $ocOptionValueDescription = new OcOptionValueDescription();
+                    $ocOptionValueDescription->setOptionId($optionId);
+                    $ocOptionValueDescription->setOptionValueId($ocOptionValue->getOptionValueId());
+                    $ocOptionValueDescription->setLanguageId(2); // fixo na base
+                    $ocOptionValueDescription->setName($saldo->getGradeTamanho()->getTamanho());
+                    $ocEntityManager->persist($ocOptionValueDescription);
+                    $ocEntityManager->flush();
                 }
+
+                $optionValueId = $ocOptionValueDescription->getOptionValueId();
+
                 $ocProductOptionValue = null;
                 // Verifico se essa opção já não existe (pra não precisar inserir novamente)
                 $ocProductOptionValue = $ocEntityManager->getRepository(OcProductOptionValue::class)
                     ->findOneBy(['productId' => $ocProduct->getProductId(),
-                        'optionValueId' => $gradeTamanhoOcOptionValue->getOptionValueId()]);
+                        'optionValueId' => $optionValueId]);
 
                 if (!$ocProductOptionValue) {
                     $ocProductOptionValue = new OcProductOptionValue();
@@ -394,8 +440,8 @@ class OCBusiness extends BaseBusiness
                 }
 
                 $ocProductOptionValue->setProductOptionId($ocProductOption->getProductOptionId());
-                $ocProductOptionValue->setOptionId($gradeOcOption->getOptionId());
-                $ocProductOptionValue->setOptionValueId($gradeTamanhoOcOptionValue->getOptionValueId());
+                $ocProductOptionValue->setOptionId($optionId);
+                $ocProductOptionValue->setOptionValueId($optionValueId);
                 $ocProductOptionValue->setQuantity($saldo->getQtde());
                 $ocProductOptionValue->setPrice('');
 
@@ -407,19 +453,22 @@ class OCBusiness extends BaseBusiness
                 $ocEntityManager->flush();
             }
 
+            $ocProduct->setQuantity($produto->getSaldoTotal());
+
+
 
             // Por fim, removo as productOptionValue e productOption que não condizam com a grade atual do produto,
             // caso a grade do est_produto tenha sido alterada
             $ocProductOptionValues = $ocEntityManager->getRepository(OcProductOptionValue::class)->findBy(['productId' => $ocProduct->getProductId()]);
             foreach ($ocProductOptionValues as $ocProductOptionValue) {
-                if ($ocProductOptionValue->getOptionId() != $gradeOcOption->getOptionId()) {
+                if ($ocProductOptionValue->getOptionId() != $optionId) {
                     $ocEntityManager->remove($ocProductOptionValue);
                 }
             }
             $ocEntityManager->flush();
             $ocProductOptions = $ocEntityManager->getRepository(OcProductOption::class)->findBy(['productId' => $ocProduct->getProductId()]);
             foreach ($ocProductOptions as $ocProductOption) {
-                if ($ocProductOption->getOptionId() !== $gradeOcOption->getOptionId()) {
+                if ($ocProductOption->getOptionId() !== $optionId) {
                     $ocEntityManager->remove($ocProductOption);
                 }
             }
@@ -431,18 +480,11 @@ class OCBusiness extends BaseBusiness
             $ocEntityManager->rollback();
             throw new \Exception('Erro ao salvar produto oc', 0, $e);
         }
-
         try {
-            // Salva os filtros do produto
-            $filters = isset($ocProductArray['filters']) ? $ocProductArray['filters'] : null;
-            $this->saveOcProductFilter($produto, $ocProduct, $filters);
+            $this->salvarFornecedorComoAtributo($produto, $ocProduct);
         } catch (\Exception $e) {
-            $this->getLogger()->error('Erro ao salvar filtros');
-            $this->getLogger()->error($e->getMessage());
-            throw new \Exception('Erro ao salvar filtros.', 0, $e);
+            throw new ViewException('Erro ao salvar fornecedor como atributo', 0, $e);
         }
-
-
         try {
             $produto->setNaLojaVirtual(true);
             $this->getDoctrine()->getEntityManager()->flush();
@@ -451,6 +493,52 @@ class OCBusiness extends BaseBusiness
         }
 
 
+    }
+
+
+    /**
+     * Salva o fornecedor como um atributo ('Escola' se for uniforme escolar, senão 'Marca').
+     *
+     * @param Produto $produto
+     * @param OcProduct $ocProduct
+     * @throws \Exception
+     */
+    private function salvarFornecedorComoAtributo(Produto $produto, OcProduct $ocProduct)
+    {
+        try {
+            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
+            $ocProductId = $ocProduct->getProductId();
+
+            if ($this->getProdutoBusiness()->ehUniformeEscolar($produto)) {
+                $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => 'Escola']);
+                if (!$ocAttributeDescription) {
+                    throw new \Exception('Atributo "Escola" não encontrado. É necessário criá-lo');
+                }
+            } else {
+                $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => 'Marca']);
+                if (!$ocAttributeDescription) {
+                    throw new \Exception('Atributo "Marca" não encontrado. É necessário criá-lo');
+                }
+            }
+
+            $ocManufacturer = $ocEntityManager->getRepository(OcManufacturer::class)->find($ocProduct->getManufacturerId());
+            $text = $ocManufacturer->getName();
+
+            $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findOneBy(['productId' => $ocProductId, 'attributeId' => $ocAttributeDescription->getAttributeId()]);
+            if (!$ocProductAttribute) {
+                $ocProductAttribute = new OcProductAttribute();
+                $ocProductAttribute->setProductId($ocProductId);
+                $ocProductAttribute->setAttributeId($ocAttributeDescription->getAttributeId());
+                $ocProductAttribute->setLanguageId(2); // fixo na base
+            }
+
+            $ocProductAttribute->setText($text);
+            $ocEntityManager->persist($ocProductAttribute);
+            $ocEntityManager->flush();
+
+        } catch (\Exception $e) {
+            throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
+        }
     }
 
 
@@ -485,7 +573,8 @@ class OCBusiness extends BaseBusiness
         }
         if (!$fornecedorFolder) {
             $fornecedorFolder = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
-            mkdir($fornecedorFolder, 0777);
+            mkdir($fornecedorFolder);
+            chmod($fornecedorFolder, 0777);
         }
 
         $ents = scandir($ocProductImagesFolder . '/' . $fornecedorFolder);
@@ -500,7 +589,8 @@ class OCBusiness extends BaseBusiness
         if (!$produtoFolder) {
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
             $produtoFolder = $nome . '-' . $produto->getReduzido();
-            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
+            mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
+            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
@@ -668,220 +758,6 @@ class OCBusiness extends BaseBusiness
     }
 
     /**
-     * Salva os filtros do produto.
-     *
-     * @param Produto $produto
-     * @param OcProduct $ocProduct
-     * @param null $filters
-     * @throws \Exception
-     */
-    private function saveOcProductFilter(Produto $produto, OcProduct $ocProduct, $filters = null)
-    {
-        try {
-            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
-            $ocProductId = $ocProduct->getProductId();// primeiro removo todos para depois inserir novamente
-            $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
-            foreach ($productFilters as $productFilter) {
-                $ocEntityManager->remove($productFilter);
-            }
-            $ocEntityManager->flush();
-            if (isset($filters) and count($filters) > 0) {
-                // Se veio pelo form
-                foreach ($filters as $filter) {
-                    $ocProductFilter = new OcProductFilter();
-                    $ocProductFilter->setProductId($ocProductId);
-                    $ocProductFilter->setFilterId($filter);
-                    $ocEntityManager->persist($ocProductFilter);
-                }
-                $ocEntityManager->flush();
-            } else {
-                // Se é o primeiro save
-                // Percorre os tamanhos e verifica se precisa inserir o oc_filter para o oc_product
-                $this->salvarGradeTamanhosComoFiltros($produto, $ocProduct);
-                // Depois, salva a marca como um filtro
-                $this->salvarMarcaComoFiltro($produto, $ocProduct);
-            }
-            $this->salvarFiltrosProdutoNosFiltrosDaCategoria($ocProduct);
-            $this->salvarFiltrosComoAtributos($ocProduct);
-            $ocEntityManager->flush();
-        } catch (\Exception $e) {
-            throw new \Exception('Erro - saveOcProductFilter()', 0, $e);
-        }
-    }
-
-    /**
-     * Salva os 'gradeTamanho' do produto como filtros.
-     *
-     * @param Produto $produto
-     * @param OcProduct $ocProduct
-     * @throws \Exception
-     */
-    private function salvarGradeTamanhosComoFiltros(Produto $produto, OcProduct $ocProduct)
-    {
-        try {
-            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
-            $ocProductId = $ocProduct->getProductId();
-            foreach ($produto->getSaldos() as $saldo) {
-                if (!$saldo->getSelec()) continue; // somente para gradeTamanho selecionado.
-
-                $tamanho = $saldo->getGradeTamanho()->getTamanho();
-                // encontra o filtro correspondente ao gradeTamanho
-                $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['name' => $tamanho]);
-
-                // Verifica se o produto já possui este filtro
-                $ocProductFilter = $ocEntityManager->getRepository(OcProductFilter::class)
-                    ->findOneBy([
-                        'filterId' => $ocFilterDescription->getFilterId(),
-                        'productId' => $ocProductId
-                    ]);
-
-                // Se não, salva
-                if (!$ocProductFilter) {
-                    $ocProductFilter = new OcProductFilter();
-                    $ocProductFilter->setProductId($ocProductId);
-                    $ocProductFilter->setFilterId($ocFilterDescription->getFilterId());
-                    $ocEntityManager->persist($ocProductFilter);
-                    $ocEntityManager->flush();
-                }
-            }
-        } catch (\Exception $e) {
-            throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
-        }
-    }
-
-
-    /**
-     * Salva a marca do produto como um filtro.
-     *
-     * @param Produto $produto
-     * @param OcProduct $ocProduct
-     * @throws \Exception
-     */
-    private function salvarMarcaComoFiltro(Produto $produto, OcProduct $ocProduct)
-    {
-        try {
-            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
-            $ocProductId = $ocProduct->getProductId();
-
-            // Salvo a marca como um filtro
-            $manufacturer = $ocEntityManager->getRepository(OcManufacturer::class)->find($ocProduct->getManufacturerId());
-            // No caso de uniformes escolares, chamado o filtro de 'Escola' para não confundir os clientes da loja virtual
-            $filtro = $this->getProdutoBusiness()->ehUniformeEscolar($produto) ? 'Escola' : 'Marca';
-            $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['name' => $filtro]);
-            if (!$ocFilterGroupDescription) {
-                throw new \Exception('Faltando o filtro "' . $filtro . '"');
-            }
-            $filtroPorMarca = $ocEntityManager->getRepository(OcFilterDescription::class)
-                ->findOneBy([
-                    'name' => $manufacturer->getName(),
-                    'filterGroupId' => $ocFilterGroupDescription->getFilterGroupId()]);
-            if (!$filtroPorMarca) {
-                $ocFilter = new OcFilter();
-                $ocFilter->setFilterGroupId($ocFilterGroupDescription->getFilterGroupId());
-                $ocFilter->setSortOrder(0);
-                $ocEntityManager->persist($ocFilter);
-                $ocEntityManager->flush();
-
-                $filtroPorMarca = new OcFilterDescription();
-                $filtroPorMarca->setFilterId($ocFilter->getFilterId());
-                $filtroPorMarca->setFilterGroupId($ocFilterGroupDescription->getFilterGroupId());
-                $filtroPorMarca->setLanguageId(2); // fixo na base
-                $filtroPorMarca->setName($manufacturer->getName());
-                $ocEntityManager->persist($filtroPorMarca);
-                $ocEntityManager->flush();
-            }
-
-            // Como todos os filtros foram removidos do produto, apenas incluo
-            $ocProductFilter = new OcProductFilter();
-            $ocProductFilter->setProductId($ocProductId);
-            $ocProductFilter->setFilterId($filtroPorMarca->getFilterId());
-            $ocEntityManager->persist($ocProductFilter);
-            $ocEntityManager->flush();
-        } catch (\Exception $e) {
-            throw new \Exception('Erro ao salvarMarcaComoFiltro()', 0, $e);
-        }
-    }
-
-    /**
-     * Salva os filtros do produto como filtros das categorias do produto.
-     * É necessário para que os filtros sejam exibidos no menu esquerdo quando uma categoria é selecionada.
-     *
-     * @param OcProduct $ocProduct
-     * @throws \Exception
-     */
-    private function salvarFiltrosProdutoNosFiltrosDaCategoria(OcProduct $ocProduct)
-    {
-        try {
-            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
-            $ocProductId = $ocProduct->getProductId();
-            $ocProductFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
-
-            $ocProductCategories = $ocEntityManager->getRepository(OcProductToCategory::class)->findBy(['productId' => $ocProductId]);
-            foreach ($ocProductCategories as $category) {
-
-                if ($ocProductFilters) {
-                    foreach ($ocProductFilters as $filter) {
-
-                        $ocCategoryFilter = $ocEntityManager->getRepository(OcCategoryFilter::class)
-                            ->findOneBy([
-                                'categoryId' => $category->getCategoryId(),
-                                'filterId' => $filter->getFilterId()
-                            ]);
-                        if (!$ocCategoryFilter) {
-                            $ocCategoryFilter = new OcCategoryFilter();
-                            $ocCategoryFilter->setCategoryId($category->getCategoryId());
-                            $ocCategoryFilter->setFilterId($filter->getFilterId());
-                            $ocEntityManager->persist($ocCategoryFilter);
-                            $ocEntityManager->flush();
-                        }
-                    }
-                }
-            }
-        } catch (ORMException $e) {
-            throw new \Exception('Erro ao salvarFiltrosProdutoNosFiltrosDaCategoria()', 0, $e);
-        }
-    }
-
-    /**
-     * Salva os filtros do produto como atributos.
-     * Para ficar bem especificado na página no produto.
-     *
-     * @param OcProduct $ocProduct
-     * @throws \Exception
-     */
-    private function salvarFiltrosComoAtributos(OcProduct $ocProduct)
-    {
-        try {
-            $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
-            $ocProductId = $ocProduct->getProductId();
-            $productFilters = $ocEntityManager->getRepository(OcProductFilter::class)->findBy(['productId' => $ocProductId]);
-            foreach ($productFilters as $productFilter) {
-                $ocFilterDescription = $ocEntityManager->getRepository(OcFilterDescription::class)->findOneBy(['filterId' => $productFilter->getFilterId()]);
-                $ocFilterGroupDescription = $ocEntityManager->getRepository(OcFilterGroupDescription::class)->findOneBy(['filterGroupId' => $ocFilterDescription->getFilterGroupId()]);
-                $ocAttributeDescription = $ocEntityManager->getRepository(OcAttributeDescription::class)->findOneBy(['name' => $ocFilterGroupDescription->getName()]);
-
-                if (!$ocAttributeDescription) {
-                    throw new \Exception('Atributo não encontrado para o filtro "' . $ocFilterGroupDescription->getName() . '". É necessário criá-lo');
-                }
-                $ocProductAttribute = $ocEntityManager->getRepository(OcProductAttribute::class)->findBy(['productId' => $ocProductId, 'attributeId' => $ocAttributeDescription->getAttributeId()]);
-                if (!$ocProductAttribute) {
-                    $ocProductAttribute = new OcProductAttribute();
-                    $ocProductAttribute->setProductId($ocProductId);
-                    $ocProductAttribute->setAttributeId($ocAttributeDescription->getAttributeId());
-                    $ocProductAttribute->setLanguageId(2); // fixo na base
-                    $ocProductAttribute->setText($ocFilterDescription->getName());
-                    $ocEntityManager->persist($ocProductAttribute);
-                    $ocEntityManager->flush();
-                }
-            }
-        } catch (ORMException $e) {
-            throw new \Exception('Erro ao salvarFiltrosComoAtributos()', 0, $e);
-        }
-
-    }
-
-
-    /**
      * Remove da est_produto_oc_product os registros que tiverem sido deletados da oc_product.
      *
      * @return string
@@ -956,10 +832,10 @@ class OCBusiness extends BaseBusiness
         // >>> CORES
         $cores['AZUL'] = 'Azul';
         $cores['ROSA'] = 'Rosa';
-        $cores['AMA'] = 'Amarelo';
-        $cores['AMAR'] = 'Amarelo';
-        $cores['AMR'] = 'Amarelo';
-        $cores['AZ'] = 'Azul';
+        $cores['AMA '] = 'Amarelo';
+        $cores['AMAR '] = 'Amarelo';
+        $cores['AMR '] = 'Amarelo';
+        $cores['AZ '] = 'Azul';
         $cores['(AZ){1}(.)+(CLR){1}'] = 'Azul Claro';
         $cores['(AZ){1}(.)+(ROY){1}'] = 'Azul Royal';
         $cores['AZM'] = 'Azul Marinho';
@@ -976,9 +852,10 @@ class OCBusiness extends BaseBusiness
         $cores['PTA/VRD'] = 'Preto/Verde';
         $cores['ROYAL'] = 'Azul Royal';
         $cores['VDE'] = 'Verde';
-        $cores['VERM'] = 'Vermelho';
-        $cores['VM'] = 'Vermelho';
         $cores['VRD'] = 'Verde';
+        $cores['VERM'] = 'Vermelho';
+        $cores['VER '] = 'Vermelho';
+        $cores['VM'] = 'Vermelho';
         $cores['VRM'] = 'Vermelho';
 
         $tamanhos = ['02', '04', '06', '08', '10', '12', '14', '16', 'P', 'M', 'G', 'XG'];
@@ -992,6 +869,7 @@ class OCBusiness extends BaseBusiness
         $moldes['CANG FEC'] = 'Canguru Fechado';
         $moldes['CG FC'] = 'Canguru Fechado';
         $moldes['CNG FC'] = 'Canguru Fechado';
+        $moldes['CANGURU'] = 'Canguru Fechado';
         $moldes['CNG FEC'] = 'Canguru Fechado';
         $moldes['CNG FEC CAP'] = 'Canguru Fechado com Capuz';
         $moldes['CNG S/C'] = 'Canguru sem Capuz';
@@ -1003,7 +881,12 @@ class OCBusiness extends BaseBusiness
         $moldes['REG'] = 'Regata';
         $moldes['S/CAP'] = 'Sem Capuz';
 
-        $novaDescricao = $subdeptos[trim($produto->getSubdepto()->getNome())];
+        // RTA, pois os shorts-saias estão nos deptos de bermudas
+        if (preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
+            $novaDescricao = "Short-saia";
+        } else {
+            $novaDescricao = $subdeptos[trim($produto->getSubdepto()->getNome())];
+        }
 
         $ocManufacturer = $ocEntityManager->getRepository(OcManufacturer::class)->find($ocProduct->getManufacturerId());
 
