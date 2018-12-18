@@ -1815,18 +1815,12 @@ class EktProduto
         $this->unidadeCorr = $unidadeCorr;
     }
 
-    /**
-     * @return \CfgEstabelecimento
-     */
-    public function getEstabelecimento(): \CfgEstabelecimento
+    public function getEstabelecimento()
     {
         return $this->estabelecimento;
     }
 
-    /**
-     * @param \CfgEstabelecimento $estabelecimento
-     */
-    public function setEstabelecimento(\CfgEstabelecimento $estabelecimento): void
+    public function setEstabelecimento($estabelecimento): void
     {
         $this->estabelecimento = $estabelecimento;
     }
