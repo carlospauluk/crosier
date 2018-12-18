@@ -40,6 +40,8 @@ class OCBusiness extends BaseBusiness
 
     private $ftpUtils;
 
+    private $ftpConn;
+
 
     /**
      * Monta um array 'de-para' entre est_produto e oc_product.
@@ -462,8 +464,10 @@ class OCBusiness extends BaseBusiness
      * @throws ViewException
      * @throws \Exception
      */
-    public function saveImages(Produto $produto)
+    public function saveImages(Produto $produto, $ftpConn = null)
     {
+        $ftpAberto = $ftpConn != null;
+
         $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
 
         $ocProduct = $this->getOcProductByProduto($produto);
@@ -495,19 +499,22 @@ class OCBusiness extends BaseBusiness
         }
         if (!$produtoFolder) {
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
-            $produtoFolder = $nome  . '-' . $produto->getReduzido();
+            $produtoFolder = $nome . '-' . $produto->getReduzido();
             mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
 
-        $ftpServer = getenv('OC_FTP_SERVER');
-        $ftpUsername = getenv('OC_FTP_USERNAME');
-        $ftpPassword = getenv('OC_FTP_PASSWORD');
         $ftpProductImagesFolder = getenv('OC_FTP_PRODUCT_IMAGE_FOLDER');
         $httpProductImagesFolder = getenv('OC_HTTP_PRODUCT_IMAGE_FOLDER');
 
-        $ftpConn = ftp_connect($ftpServer);
+
+        if (!$ftpAberto) {
+            $ftpServer = getenv('OC_FTP_SERVER');
+            $ftpUsername = getenv('OC_FTP_USERNAME');
+            $ftpPassword = getenv('OC_FTP_PASSWORD');
+            $ftpConn = ftp_connect($ftpServer);
+        }
         $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
         if (!$logged) {
             throw new ViewException('Erro ao conectar ao FTP', 0);
@@ -634,11 +641,30 @@ class OCBusiness extends BaseBusiness
         $ftpProductImagesCacheFolder = getenv('OC_FTP_PRODUCT_IMAGE_CACHE_FOLDER');
         $this->getFtpUtils()->recursiveDeleteDirFTP($ftpConn, $ftpProductImagesCacheFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
 
-        ftp_close($ftpConn);
+        if (!$ftpAberto) {
+            ftp_close($ftpConn);
+        }
 
         return $qtdeImagensAtualizadas;
+    }
 
-
+    /**
+     * Salva todas as imagens dos produtos passados abrindo e fechando apenas uma vez a conexão FTP.
+     * @param $produtos
+     * @throws ORMException
+     * @throws ViewException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function saveImagesBatch($produtos)
+    {
+        $ftpServer = getenv('OC_FTP_SERVER');
+        $ftpUsername = getenv('OC_FTP_USERNAME');
+        $ftpPassword = getenv('OC_FTP_PASSWORD');
+        $ftpConn = ftp_connect($ftpServer);
+        foreach ($produtos as $produto) {
+            $this->saveImages($produto, $ftpConn);
+        }
+        ftp_close($ftpConn);
     }
 
     /**
@@ -984,7 +1010,6 @@ class OCBusiness extends BaseBusiness
         $novaDescricao .= ' ' . mb_strtoupper($ocManufacturer->getName());
 
 
-
         foreach ($materiais as $key => $material) {
             if (strpos($produto->getDescricao(), ' ' . $key) !== FALSE) {
                 $novaDescricao .= ' em ' . $material;
@@ -1016,17 +1041,17 @@ class OCBusiness extends BaseBusiness
         $ocProductDescription->setName($novaDescricao);
 
         $tipo = null;
-        if (strpos($novaDescricao,'Action') !== FALSE) {
+        if (strpos($novaDescricao, 'Action') !== FALSE) {
             $tipo = 'action';
-        } else if (strpos($novaDescricao,'Malha') !== FALSE) {
+        } else if (strpos($novaDescricao, 'Malha') !== FALSE) {
             $tipo = 'gaucha';
-        } else if (strpos($novaDescricao,'Moleto') !== FALSE) {
+        } else if (strpos($novaDescricao, 'Moleto') !== FALSE) {
             $tipo = 'moletom';
-        } else if (strpos($novaDescricao,'Polialgodão') !== FALSE) {
+        } else if (strpos($novaDescricao, 'Polialgodão') !== FALSE) {
             $tipo = 'pa';
-        } else if (strpos($novaDescricao,'Poliviscose') !== FALSE) {
+        } else if (strpos($novaDescricao, 'Poliviscose') !== FALSE) {
             $tipo = 'pv';
-        } else if (strpos($novaDescricao,'Suplex') !== FALSE) {
+        } else if (strpos($novaDescricao, 'Suplex') !== FALSE) {
             $tipo = 'suplex';
         }
 
