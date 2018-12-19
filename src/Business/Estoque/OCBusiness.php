@@ -572,9 +572,9 @@ class OCBusiness extends BaseBusiness
             }
         }
         if (!$fornecedorFolder) {
-            $fornecedorFolder = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
-            mkdir($fornecedorFolder);
-            chmod($fornecedorFolder, 0777);
+            $novaPasta = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
+            mkdir($novaPasta);
+            chmod($novaPasta, 0777);
         }
 
         $ents = scandir($ocProductImagesFolder . '/' . $fornecedorFolder);
@@ -591,6 +591,7 @@ class OCBusiness extends BaseBusiness
             $produtoFolder = $nome . '-' . $produto->getReduzido();
             mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
             chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
+            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
@@ -604,11 +605,12 @@ class OCBusiness extends BaseBusiness
             $ftpUsername = getenv('OC_FTP_USERNAME');
             $ftpPassword = getenv('OC_FTP_PASSWORD');
             $ftpConn = ftp_connect($ftpServer);
+            $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
+            if (!$logged) {
+                throw new ViewException('Erro ao conectar ao FTP', 0);
+            }
         }
-        $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
-        if (!$logged) {
-            throw new ViewException('Erro ao conectar ao FTP', 0);
-        }
+
         if (!ftp_chdir($ftpConn, $ftpProductImagesFolder)) {
             throw new ViewException('Erro ao abrir pasta das imagens no FTP', 0);
         }
@@ -632,72 +634,77 @@ class OCBusiness extends BaseBusiness
         $ocProductImages = $ocEntityManager->getRepository(OcProductImage::class)->findBy(['productId' => $ocProduct->getProductId()]);
         $ocProductImages_existemNaBase = [];
         $qtdeImagensAtualizadas = 0;
-        foreach ($imagens as $img) {
-            // Só aceita arquivos com o formato '99.extt'
-            if (!preg_match('/^\d{2}\.{1}\w{3,4}$/', $img)) continue;
+        if ($imagens) {
+            foreach ($imagens as $img) {
+                // Só aceita arquivos com o formato '99.extt'
+                if (!preg_match('/^\d{2}\.{1}\w{3,4}$/', $img)) continue;
 
-            $qtdeImagens++;
-            $existe = false;
-            $pathParts = pathinfo($produtoFolder_compl . '/' . $img);
+                $qtdeImagens++;
+                $existe = false;
+                $pathParts = pathinfo($produtoFolder_compl . '/' . $img);
 
-            foreach ($remoteFiles as $remoteFile) {
-                if ($img == $remoteFile['name']) {
-                    $existe = true;
-                    $md5Remote = md5_file($httpProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
-                    $md5Local = md5_file($produtoFolder_compl . '/' . $img);
-                    // O arquivo foi alterado, reenvia...
-                    if ($md5Remote !== $md5Local) {
-                        ftp_delete($ftpConn, $remoteFile['name']);
-                        ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
-                    }
-                    break;
-                }
-            }
-            // Não achou o arquivo
-            if (!$existe) {
-                ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
-            }
-
-            $sortOrder = intval($pathParts['filename']);
-            $fileNameRemotoCompl = 'catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img;
-
-            if ($sortOrder == 1) {
-                // a primeira imagem sempre vai como principal do produto (registro direto na oc_product)
-                if ($ocProduct->getImage() != $fileNameRemotoCompl) {
-                    $ocProduct->setImage($fileNameRemotoCompl);
-                    $ocEntityManager->persist($ocProduct);
-                    $ocEntityManager->flush();
-                }
-            } else {
-                // as demais vão na oc_product_image
-                $existeNaBase = false;
-
-                foreach ($ocProductImages as $ocProductImage) {
-                    if ($ocProductImage->getSortOrder() == $sortOrder) {
-                        $ocProductImages_existemNaBase[] = $ocProductImage;
-                        $existeNaBase = true;
-                        // se, por acaso, o nome do arquivo está errado, altera na base.
-                        if ($ocProductImage->getImage() != $fileNameRemotoCompl) {
-                            $ocProductImage->setImage($fileNameRemotoCompl);
-                            $ocEntityManager->persist($ocProduct);
-                            $ocEntityManager->flush();
+                if ($remoteFiles) {
+                    foreach ($remoteFiles as $remoteFile) {
+                        if ($img == $remoteFile['name']) {
+                            $existe = true;
+                            $md5Remote = md5_file($httpProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img);
+                            $md5Local = md5_file($produtoFolder_compl . '/' . $img);
+                            // O arquivo foi alterado, reenvia...
+                            if ($md5Remote !== $md5Local) {
+                                ftp_delete($ftpConn, $remoteFile['name']);
+                                ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
+                            }
+                            break;
                         }
                     }
                 }
-                if (!$existeNaBase) {
-                    $ocProductImage = new OcProductImage();
-                    $ocProductImage->setImage($fileNameRemotoCompl);
-                    $ocProductImage->setProductId($ocProduct->getProductId());
-                    $ocProductImage->setSortOrder(intval($pathParts['filename']));
-                    $ocEntityManager->persist($ocProductImage);
-                    $ocEntityManager->flush();
-                    $ocProductImages_existemNaBase[] = $ocProductImage;
+                // Não achou o arquivo
+                if (!$existe) {
+                    ftp_put($ftpConn, $img, $produtoFolder_compl . '/' . $img, FTP_BINARY);
                 }
+
+                $sortOrder = intval($pathParts['filename']);
+                $fileNameRemotoCompl = 'catalog/produtos/' . $fornecedorFolder . '/' . $produtoFolder . '/' . $img;
+
+                if ($sortOrder == 1) {
+                    // a primeira imagem sempre vai como principal do produto (registro direto na oc_product)
+                    if ($ocProduct->getImage() != $fileNameRemotoCompl) {
+                        $ocProduct->setImage($fileNameRemotoCompl);
+                        $ocEntityManager->persist($ocProduct);
+                        $ocEntityManager->flush();
+                    }
+                } else {
+                    // as demais vão na oc_product_image
+                    $existeNaBase = false;
+
+                    foreach ($ocProductImages as $ocProductImage) {
+                        if ($ocProductImage->getSortOrder() == $sortOrder) {
+                            $ocProductImages_existemNaBase[] = $ocProductImage;
+                            $existeNaBase = true;
+                            // se, por acaso, o nome do arquivo está errado, altera na base.
+                            if ($ocProductImage->getImage() != $fileNameRemotoCompl) {
+                                $ocProductImage->setImage($fileNameRemotoCompl);
+                                $ocEntityManager->persist($ocProduct);
+                                $ocEntityManager->flush();
+                            }
+                        }
+                    }
+                    if (!$existeNaBase) {
+                        $ocProductImage = new OcProductImage();
+                        $ocProductImage->setImage($fileNameRemotoCompl);
+                        $ocProductImage->setProductId($ocProduct->getProductId());
+                        $ocProductImage->setSortOrder(intval($pathParts['filename']));
+                        $ocEntityManager->persist($ocProductImage);
+                        $ocEntityManager->flush();
+                        $ocProductImages_existemNaBase[] = $ocProductImage;
+                    }
+                }
+                $qtdeImagensAtualizadas++;
             }
-            $qtdeImagensAtualizadas++;
         }
 
         // Por fim, remove todos os oc_product_image que não existam...
+
         foreach ($ocProductImages as $ocProductImage) {
             if (!in_array($ocProductImage, $ocProductImages_existemNaBase)) {
                 $ocEntityManager->remove($ocProductImage);
@@ -751,6 +758,10 @@ class OCBusiness extends BaseBusiness
         $ftpUsername = getenv('OC_FTP_USERNAME');
         $ftpPassword = getenv('OC_FTP_PASSWORD');
         $ftpConn = ftp_connect($ftpServer);
+        $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
+        if (!$logged) {
+            throw new ViewException('Erro ao conectar ao FTP', 0);
+        }
         foreach ($produtos as $produto) {
             $this->saveImages($produto, $ftpConn);
         }
