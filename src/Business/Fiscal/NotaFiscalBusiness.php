@@ -534,6 +534,12 @@ class NotaFiscalBusiness
         $notaFiscal->setValorTotal($subTotal - $descontos);
     }
 
+    /**
+     * @param NotaFiscal $nf
+     * @return NotaFiscal
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function corrigirPessoaDestinatario(NotaFiscal $nf)
     {
         $documento = $nf->getPessoaDestinatario()->getDocumento();
@@ -577,6 +583,26 @@ class NotaFiscalBusiness
         $entityManager->flush();
 
         return $nf;
+    }
+
+    /**
+     * Corrige os NCMs. Na verdade troca para um NCM genérico nos casos onde o NCM informado não exista na base.
+     * @param NotaFiscal $notaFiscal
+     * @return NotaFiscal
+     * @throws \Exception
+     */
+    public function corrigirNCMs(NotaFiscal $notaFiscal) {
+        $this->doctrine->getManager()->refresh($notaFiscal);
+        if ($notaFiscal->getItens()) {
+            foreach ($notaFiscal->getItens() as $item) {
+                $existe = $this->doctrine->getRepository(NCM::class)->findByNCM($item->getNcm());
+                if (!$existe) {
+                    $item->setNcm('62179000');
+                }
+            }
+        }
+        $this->doctrine->getManager()->flush();
+        return $notaFiscal;
     }
 
     /**

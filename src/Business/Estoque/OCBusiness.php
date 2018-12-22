@@ -795,7 +795,7 @@ class OCBusiness extends BaseBusiness
         $materiais['MALHA'] = 'Malha Escolar';
         $materiais['MATEL'] = 'Matelada';
         $materiais['MLH'] = 'Malha Escolar';
-        $materiais['PA'] = 'Polialgodão';
+        $materiais['PA '] = 'Polialgodão';
         $materiais['POLITEL'] = 'Action (Tactel)';
         $materiais['PV'] = 'Poliviscose';
         $materiais['SUPLEX'] = 'Suplex';
@@ -838,6 +838,7 @@ class OCBusiness extends BaseBusiness
         $moldes['BAS'] = 'Básico';
         $moldes['BAS.CAP.'] = 'Básico com Capuz';
         $moldes['BASICO'] = 'Básico';
+        $moldes['CNG '] = 'Canguru Fechado';
         $moldes['CANG FEC'] = 'Canguru Fechado';
         $moldes['CG FC'] = 'Canguru Fechado';
         $moldes['CNG FC'] = 'Canguru Fechado';
@@ -864,13 +865,19 @@ class OCBusiness extends BaseBusiness
 
         $novaDescricao .= ' ' . mb_strtoupper($ocManufacturer->getName());
 
-
-        foreach ($materiais as $key => $material) {
-            if (strpos($produto->getDescricao(), ' ' . $key) !== FALSE) {
-                $novaDescricao .= ' em ' . $material;
-                break;
+        // Caso específico: jaquetas que são em malha porém não tem na descrição o termo MALHA
+        if ($produto->getSubdepto()->getNome() == 'JAQUETA ESCOLAR MALHA') {
+            $novaDescricao .= ' em Malha Escolar';
+        } else {
+            foreach ($materiais as $key => $material) {
+                if (strpos($produto->getDescricao(), ' ' . $key) !== FALSE) {
+                    $novaDescricao .= ' em ' . $material;
+                    break;
+                }
             }
         }
+
+
 
         foreach ($moldes as $key => $molde) {
             if (strpos($produto->getDescricao(), ' ' . $key) !== FALSE) {

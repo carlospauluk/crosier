@@ -263,4 +263,24 @@ class VendaBusiness
         }
         return false;
     }
+
+    /**
+     * Corrige os NCMs. Na verdade troca para um NCM genérico nos casos onde o NCM informado não exista na base.
+     * @param Venda $venda
+     * @return Venda
+     * @throws \Exception
+     */
+    public function corrigirNCMs(Venda $venda) {
+        $this->doctrine->getManager()->refresh($venda);
+        if ($venda->getItens()) {
+            foreach ($venda->getItens() as $item) {
+                $existe = $this->doctrine->getRepository(NCM::class)->findByNCM($item->getNcm());
+                if (!$existe) {
+                    $item->setNcm('62179000');
+                }
+            }
+        }
+        $this->doctrine->getManager()->flush();
+        return $venda;
+    }
 }

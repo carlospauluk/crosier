@@ -63,6 +63,7 @@ class EmissaoFiscalPVController extends Controller
             return $this->redirectToRoute('fis_emissaofiscalpv_ini');
         } else {
             $venda = $this->vendaBusiness->recalcularTotais($venda);
+            $venda = $this->vendaBusiness->corrigirNCMs($venda);
         }
 
         // Verifica se a venda já tem uma NotaFiscal associada
