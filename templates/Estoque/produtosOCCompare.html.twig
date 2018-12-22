@@ -72,6 +72,12 @@
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
 
+                                        <button type="button" class="btn btn-secondary" value="Regerar" title="Salvar todas as imagens"
+                                                data-url="{{ url('est_produtosOCCompare_saveOcImagesBatch', {'fornecedor': fornecedor, 'subdepto': subdepto.subdepto.id}) }}"
+                                                data-target="#confirmationModal" data-toggle="modal">
+                                            <i class="fas fa-images"></i>
+                                        </button>
+
                                         <button type="button" class="btn btn-secondary" value="Ativar todos" title="Ativar todos"
                                                 data-url="{{ url('est_produtosOCCompare_ativarDesativar', {'fornecedor': fornecedor, 'subdepto': subdepto.subdepto.id, 'ativarDesativar': 1}) }}"
                                                 data-target="#confirmationModal" data-toggle="modal">
@@ -83,7 +89,6 @@
                                                 data-target="#confirmationModal" data-toggle="modal">
                                             <i class="fas fa-pause"></i>
                                         </button>
-
 
                                     </div>
 

@@ -35,6 +35,11 @@ class ConfereEstoqueController extends Controller
         $vParams = [];
 
         $session = $request->hasSession() ? $request->getSession() : new Session();
+        if ($request->get('regerar')) {
+            $session->set('rs', null);
+            return $this->redirectToRoute('est_confereEstoque_list');
+        }
+
         if (!$session->get('rs')) {
             $rs = $this->getProdutoBusiness()->conferirEstoques();
             $session->set('rs', $rs);

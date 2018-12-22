@@ -4,6 +4,7 @@ namespace App\Controller\Estoque;
 
 use App\Business\Estoque\OCBusiness;
 use App\Entity\Estoque\Fornecedor;
+use App\Entity\Estoque\Produto;
 use App\Entity\Estoque\Subdepto;
 use App\Exception\ViewException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -89,6 +90,30 @@ class ProdutosOCCompareController extends Controller
     }
 
     /**
+     * Salva todas as imagens de uma única vez.
+     *
+     * @Route("/est/produtosOCCompare/saveOcImagesBatch", name="est_produtosOCCompare_saveOcImagesBatch")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function saveOcImagesBatch(Request $request)
+    {
+        $fornecedorId = $request->get('fornecedor');
+        $fornecedor = $this->getDoctrine()->getRepository(Fornecedor::class)->find($fornecedorId);
+        $subdeptoId = $request->get('subdepto');
+        $subdepto = $this->getDoctrine()->getRepository(Subdepto::class)->find($subdeptoId);
+        try {
+            $produtos = $this->getDoctrine()->getRepository(Produto::class)->findBy(['fornecedor' => $fornecedor, 'subdepto' => $subdepto, 'atual' => true], ['descricao' => 'ASC']);
+            $this->getOcBusiness()->saveImagesBatch($produtos);
+        } catch (ViewException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+        return $this->redirectToRoute('est_produtosOCCompare_list', ['fornecedor' => $fornecedor->getId()]);
+    }
+
+    /**
      *
      * @Route("/est/produtosOCCompare/ativarDesativar", name="est_produtosOCCompare_ativarDesativar")
      * @param Request $request
@@ -100,7 +125,6 @@ class ProdutosOCCompareController extends Controller
         $fornecedor = $this->getDoctrine()->getRepository(Fornecedor::class)->find($fornecedorId);
         $subdeptoId = $request->get('subdepto');
         $subdepto = $this->getDoctrine()->getRepository(Subdepto::class)->find($subdeptoId);
-
         $ativarDesativar = $request->get('ativarDesativar');
         try {
             $this->getOcBusiness()->ativarDesativar($fornecedor, $subdepto, $ativarDesativar);

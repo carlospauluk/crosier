@@ -6,19 +6,31 @@ use App\Entity\Base\Endereco;
 use App\Entity\Base\EntityId;
 use App\EntityHandler\Base\EnderecoEntityHandler;
 use App\Form\Base\EnderecoType;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-class EnderecoController extends Controller
+class EnderecoController extends AbstractController
 {
 
     private $routeToRedirect;
 
     private $entityHandler;
 
-    public function __construct(EnderecoEntityHandler $enderecoEntityHandler)
+    /**
+     * @return EnderecoEntityHandler
+     */
+    public function getEntityHandler(): EnderecoEntityHandler
     {
-        $this->entityHandler = $enderecoEntityHandler;
+        return $this->entityHandler;
+    }
+
+    /**
+     * @required
+     * @param EnderecoEntityHandler $entityHandler
+     */
+    public function setEntityHandler(EnderecoEntityHandler $entityHandler): void
+    {
+        $this->entityHandler = $entityHandler;
     }
 
     /**
@@ -38,49 +50,47 @@ class EnderecoController extends Controller
     }
 
 
-    public function doEnderecoForm(Controller $controller, Request $request, EntityId $ref, Endereco $endereco = null)
+    public function doEnderecoForm(Request $request, EntityId $ref, Endereco $endereco = null)
     {
         if (!$endereco) {
             $endereco = new Endereco();
         }
-        $formEndereco = $controller->createForm(EnderecoType::class, $endereco);
+        $formEndereco = $this->createForm(EnderecoType::class, $endereco);
         $formEndereco->handleRequest($request);
 
         if ($formEndereco->isSubmitted()) {
             if ($formEndereco->isValid()) {
                 $endereco = $formEndereco->getData();
                 $ref->addEndereco($endereco);
-                $controller->getEntityHandler()->save($ref);
-                $controller->addFlash('success', 'Registro salvo com sucesso!');
-                return $controller->redirectToRoute($this->getRouteToRedirect(), array('id' => $ref->getId(), '_fragment' => 'enderecos'));
+                $this->getEntityHandler()->save($ref);
+                $this->addFlash('success', 'Registro salvo com sucesso!');
+                return $this->redirectToRoute($this->getRouteToRedirect(), array('id' => $ref->getId(), '_fragment' => 'enderecos'));
             } else {
                 $formEndereco->getErrors(true, false);
             }
         }
 
-        return $controller->render('Base/enderecoForm.html.twig', array(
+        return $this->render('Base/enderecoForm.html.twig', array(
             'ref' => $ref,
             'routeToRedirect' => $this->getRouteToRedirect(),
             'formEndereco' => $formEndereco->createView()
         ));
-
-
     }
 
-    public function doEnderecoDelete(Controller $controller, Request $request, EntityId $ref, Endereco $endereco)
+    public function doEnderecoDelete(Request $request, EntityId $ref, Endereco $endereco)
     {
-        if (!$controller->isCsrfTokenValid('delete', $request->request->get('token'))) {
-            $controller->addFlash('error', 'Erro interno do sistema.');
+        if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
+            $this->addFlash('error', 'Erro interno do sistema.');
         } else {
             try {
-                $controller->getEnderecoEntityHandler()->delete($endereco);
-                $controller->addFlash('success', 'Registro deletado com sucesso.');
+                $this->getEnderecoEntityHandler()->delete($endereco);
+                $this->addFlash('success', 'Registro deletado com sucesso.');
             } catch (\Exception $e) {
-                $controller->addFlash('error', 'Erro ao deletar registro.');
+                $this->addFlash('error', 'Erro ao deletar registro.');
             }
         }
 
-        return $controller->redirectToRoute($this->getRouteToRedirect(), array('id' => $ref->getId(), '_fragment' => 'enderecos'));
+        return $this->redirectToRoute($this->getRouteToRedirect(), array('id' => $ref->getId(), '_fragment' => 'enderecos'));
     }
 
 }

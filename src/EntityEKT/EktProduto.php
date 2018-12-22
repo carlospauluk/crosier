@@ -554,7 +554,7 @@ class EktProduto
     private $unidadeCorr;
 
     /**
-     * @var \CfgEstabelecimento
+     * @var CfgEstabelecimento
      *
      * @ORM\ManyToOne(targetEntity="CfgEstabelecimento")
      * @ORM\JoinColumns({
@@ -564,7 +564,7 @@ class EktProduto
     private $estabelecimento;
 
     /**
-     * @var \SecUser
+     * @var SecUser
      *
      * @ORM\ManyToOne(targetEntity="SecUser")
      * @ORM\JoinColumns({
@@ -574,7 +574,7 @@ class EktProduto
     private $userUpdated;
 
     /**
-     * @var \SecUser
+     * @var SecUser
      *
      * @ORM\ManyToOne(targetEntity="SecUser")
      * @ORM\JoinColumns({
@@ -1816,49 +1816,49 @@ class EktProduto
     }
 
     /**
-     * @return \CfgEstabelecimento
+     * @return CfgEstabelecimento
      */
-    public function getEstabelecimento(): \CfgEstabelecimento
+    public function getEstabelecimento(): CfgEstabelecimento
     {
         return $this->estabelecimento;
     }
 
     /**
-     * @param \CfgEstabelecimento $estabelecimento
+     * @param CfgEstabelecimento $estabelecimento
      */
-    public function setEstabelecimento(\CfgEstabelecimento $estabelecimento): void
+    public function setEstabelecimento(CfgEstabelecimento $estabelecimento): void
     {
         $this->estabelecimento = $estabelecimento;
     }
 
     /**
-     * @return \SecUser
+     * @return SecUser
      */
-    public function getUserUpdated(): \SecUser
+    public function getUserUpdated(): SecUser
     {
         return $this->userUpdated;
     }
 
     /**
-     * @param \SecUser $userUpdated
+     * @param SecUser $userUpdated
      */
-    public function setUserUpdated(\SecUser $userUpdated): void
+    public function setUserUpdated(SecUser $userUpdated): void
     {
         $this->userUpdated = $userUpdated;
     }
 
     /**
-     * @return \SecUser
+     * @return SecUser
      */
-    public function getUserInserted(): \SecUser
+    public function getUserInserted(): SecUser
     {
         return $this->userInserted;
     }
 
     /**
-     * @param \SecUser $userInserted
+     * @param SecUser $userInserted
      */
-    public function setUserInserted(\SecUser $userInserted): void
+    public function setUserInserted(SecUser $userInserted): void
     {
         $this->userInserted = $userInserted;
     }
