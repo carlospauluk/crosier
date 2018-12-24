@@ -49,8 +49,9 @@ class ImportarProdutosEst2OCCommand extends Command
 
         if ($input->getArgument('doWhat') == 'corrigirPrecosOcProducts') {
             $this->corrigirPrecos($output);
+        } else if ($input->getArgument('doWhat') == 'corrigirProdutoOcProduct') {
+            $this->corrigirProdutoOcProduct($output);
         }
-
     }
 
     private function corrigirPrecos(OutputInterface $output)
@@ -63,17 +64,40 @@ class ImportarProdutosEst2OCCommand extends Command
         $qtdeProdutosCorrigidos = 0;
         foreach ($produtosOcProducts as $produtoOcProduct) {
             $ocProduct = $ocEntityManager->getRepository(OcProduct::class)->find($produtoOcProduct->getProductId());
-            if ($produtoOcProduct->getProduto()->getPrecoAtual()->getPrecoPrazo() != $ocProduct->getPrice()) {
-                $output->writeln('--------------------------------------------');
-                $output->writeln('Produto: ' . $produtoOcProduct->getProduto()->getId() . ' - ' . $produtoOcProduct->getProduto()->getDescricao());
-                $output->writeln('Preço na loja: ' . $ocProduct->getPrice() . ' . Preço no Estoque: ' . $produtoOcProduct->getProduto()->getPrecoAtual()->getPrecoPrazo());
-                $output->writeln('Atualizando...');
-                $ocProduct->setPrice($produtoOcProduct->getProduto()->getPrecoAtual()->getPrecoPrazo());
-                $output->writeln('Ok.');
-                $qtdeProdutosCorrigidos++;
+            if ($ocProduct) {
+                if ($produtoOcProduct->getProduto()->getPrecoAtual()->getPrecoPrazo() != $ocProduct->getPrice()) {
+                    $output->writeln('--------------------------------------------');
+                    $output->writeln('Produto: ' . $produtoOcProduct->getProduto()->getId() . ' - ' . $produtoOcProduct->getProduto()->getDescricao());
+                    $output->writeln('Preço na loja: ' . $ocProduct->getPrice() . ' . Preço no Estoque: ' . $produtoOcProduct->getProduto()->getPrecoAtual()->getPrecoPrazo());
+                    $output->writeln('Atualizando...');
+                    $ocProduct->setPrice($produtoOcProduct->getProduto()->getPrecoAtual()->getPrecoPrazo());
+                    $output->writeln('Ok.');
+                    $qtdeProdutosCorrigidos++;
+                }
             }
         }
         $ocEntityManager->flush();
+        $output->writeln('--------------------------------------------');
+        $output->writeln('--------------------------------------------');
+        $output->writeln('--------------------------------------------');
+        $output->writeln('Total de produtos corrigidos: ' . $qtdeProdutosCorrigidos);
+    }
+
+    private function corrigirProdutoOcProduct(OutputInterface $output)
+    {
+        $ocEntityManager = $this->doctrine->getEntityManager('oc');
+
+        $produtosOcProducts = $this->getDoctrine()->getRepository(ProdutoOcProduct::class)->findAll(WhereBuilder::buildOrderBy('productId'));
+
+        $qtdeProdutosCorrigidos = 0;
+        foreach ($produtosOcProducts as $produtoOcProduct) {
+            $ocProduct = $ocEntityManager->getRepository(OcProduct::class)->find($produtoOcProduct->getProductId());
+            if (!$ocProduct) {
+                $this->doctrine->getManager()->remove($produtoOcProduct);
+                $qtdeProdutosCorrigidos++;
+            }
+        }
+        $this->doctrine->getManager()->flush();
         $output->writeln('--------------------------------------------');
         $output->writeln('--------------------------------------------');
         $output->writeln('--------------------------------------------');

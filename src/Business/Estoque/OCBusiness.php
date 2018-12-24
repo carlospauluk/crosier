@@ -574,7 +574,7 @@ class OCBusiness extends BaseBusiness
         if (!$fornecedorFolder) {
             $novaPasta = $ocProductImagesFolder . '/' . $produto->getFornecedor()->getCodigo() . '-' . StringUtils::strToFilenameStr($produto->getFornecedor()->getPessoa()->getNomeFantasia());
             mkdir($novaPasta);
-            chmod($novaPasta, 0777);
+            @chmod($novaPasta, 0777);
         }
 
         $ents = scandir($ocProductImagesFolder . '/' . $fornecedorFolder);
@@ -590,8 +590,7 @@ class OCBusiness extends BaseBusiness
             $nome = StringUtils::strToFilenameStr($produto->getDescricao());
             $produtoFolder = $nome . '-' . $produto->getReduzido();
             mkdir($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder);
-            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
-            chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
+            @chmod($ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder, 0777);
         }
         $produtoFolder_compl = $ocProductImagesFolder . '/' . $fornecedorFolder . '/' . $produtoFolder;
 
@@ -841,8 +840,8 @@ class OCBusiness extends BaseBusiness
         $materiais['TACTEL'] = 'Action (Tactel)';
 
         // >>> CORES
-        $cores['AZUL'] = 'Azul';
-        $cores['ROSA'] = 'Rosa';
+        $cores[' AZUL '] = 'Azul';
+        $cores['ROSA '] = 'Rosa';
         $cores['AMA '] = 'Amarelo';
         $cores['AMAR '] = 'Amarelo';
         $cores['AMR '] = 'Amarelo';
