@@ -889,7 +889,7 @@ class OCBusiness extends BaseBusiness
         $moldes['LONGA'] = 'Longa';
         $moldes['FEM'] = 'Feminina';
         $moldes['MASC'] = 'Masculina';
-        $moldes['REG'] = 'Regata';
+        $moldes[' REG '] = 'Regata';
         $moldes['S/CAP'] = 'Sem Capuz';
 
         // RTA, pois os shorts-saias estão nos deptos de bermudas
