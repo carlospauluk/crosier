@@ -219,4 +219,27 @@ class DateTimeUtils
         }
     }
 
+
+    /**
+     * Incrementa ou decrementa em 1 mês levando em consideração a possibilidade do dia ser o último do mês (e nesse caso, seta como último dia do mês ajustado).
+     *
+     * @param \DateTime $dt
+     * @param int $inc
+     * @return bool|\DateTime
+     */
+    public static function incMes(\DateTime $dt, $inc = 1)
+    {
+        $ehUltimoDiaDoMes = $dt->format('Y-m-d') === $dt->format('Y-m-t');
+        $dtProx = clone $dt;
+        if ($ehUltimoDiaDoMes) {
+            $dtProx = $dtProx->setDate($dt->format('Y'), intval($dt->format('m')) + $inc, 1);
+            $dtProx = \DateTime::createFromFormat('Y-m-d', $dtProx->format('Y-m-t'));
+        } else {
+            $dtProx = $dt->setDate($dt->format('Y'), intval($dt->format('m')) + $inc, $dt->format('d'));
+        }
+        $dtProx->setTime(0,0,0,0);
+        return $dtProx;
+
+    }
+
 }

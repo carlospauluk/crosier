@@ -3,10 +3,12 @@
 namespace App\Controller\Financeiro;
 
 
+use App\Business\Financeiro\RegistroConferenciaBusiness;
 use App\Controller\FormListController;
 use App\Entity\Financeiro\RegistroConferencia;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\RegistroConferenciaEntityHandler;
+use App\Exception\ViewException;
 use App\Form\Financeiro\RegistroConferenciaType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class RegistroConferenciaController extends FormListController
 {
 
+    private $registroConferenciaBusiness;
 
     private $entityHandler;
 
@@ -32,6 +35,23 @@ class RegistroConferenciaController extends FormListController
     public function getEntityHandler(): ?EntityHandler
     {
         return $this->entityHandler;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRegistroConferenciaBusiness(): RegistroConferenciaBusiness
+    {
+        return $this->registroConferenciaBusiness;
+    }
+
+    /**
+     * @required
+     * @param mixed $registroConferenciaBusiness
+     */
+    public function setRegistroConferenciaBusiness(RegistroConferenciaBusiness $registroConferenciaBusiness): void
+    {
+        $this->registroConferenciaBusiness = $registroConferenciaBusiness;
     }
 
     public function getFormRoute()
@@ -102,7 +122,7 @@ class RegistroConferenciaController extends FormListController
                 'id',
                 'descricao',
                 'dtRegistro' => ['timestamp'],
-                'carteira' => ['id','descricao','descricaoMontada'],
+                'carteira' => ['id', 'descricao', 'descricaoMontada'],
                 'valor'
             )
         );
@@ -130,6 +150,26 @@ class RegistroConferenciaController extends FormListController
     public function delete(Request $request, RegistroConferencia $registroConferencia)
     {
         return $this->doDelete($request, $registroConferencia);
+    }
+
+    /**
+     *
+     * @Route("/fin/registroConferencia/gerarProximo/{id}/", name="fin_registroConferencia_gerarProximo", requirements={"id"="\d+"})
+     * @param Request $request
+     * @param RegistroConferencia $registroConferencia
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function gerarProximo(Request $request, RegistroConferencia $registroConferencia)
+    {
+        try {
+            $this->getRegistroConferenciaBusiness()->gerarProximo($registroConferencia);
+            $this->addFlash('info', 'Registro gerado com sucesso');
+        } catch (ViewException $e) {
+            $this->addFlash('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erro ao processar requisição.');
+        }
+        return $this->redirectToRoute($this->getListRoute());
     }
 
 

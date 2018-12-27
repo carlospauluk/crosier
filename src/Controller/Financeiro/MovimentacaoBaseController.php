@@ -13,6 +13,7 @@ use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use App\Form\Financeiro\MovimentacaoType;
 use App\Utils\Repository\FilterData;
+use App\Utils\Repository\WhereBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -137,7 +138,7 @@ class MovimentacaoBaseController extends FormListController
         $filterChoices = array();
 
         $repoCarteira = $this->getDoctrine()->getRepository(Carteira::class);
-        $carteiras = $repoCarteira->findAll();
+        $carteiras = $repoCarteira->findAll(WhereBuilder::buildOrderBy('codigo'));
         $filterChoices['carteiras'] = $carteiras;
 
         $filterChoices['status'] = Status::ALL;
