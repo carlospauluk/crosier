@@ -10,6 +10,7 @@ use App\EntityHandler\Financeiro\RegistroConferenciaEntityHandler;
 use App\Form\Financeiro\RegistroConferenciaType;
 use App\Utils\Repository\FilterData;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -72,6 +73,7 @@ class RegistroConferenciaController extends FormListController
      * @param Request $request
      * @param RegistroConferencia|null $registroConferencia
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function form(Request $request, RegistroConferencia $registroConferencia = null)
     {
@@ -83,10 +85,39 @@ class RegistroConferenciaController extends FormListController
      * @Route("/fin/registroConferencia/list/", name="fin_registroConferencia_list")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function list(Request $request)
     {
         return $this->doList($request);
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function getNormalizeAttributes()
+    {
+        return array(
+            'attributes' => array(
+                'id',
+                'descricao',
+                'dtRegistro' => ['timestamp'],
+                'carteira' => ['id','descricao','descricaoMontada'],
+                'valor'
+            )
+        );
+    }
+
+    /**
+     *
+     * @Route("/fin/registroConferencia/datatablesJsList/", name="fin_registroConferencia_datatablesJsList")
+     * @param Request $request
+     * @return Response
+     */
+    public function datatablesJsList(Request $request)
+    {
+        $jsonResponse = $this->doDatatablesJsList($request);
+        return $jsonResponse;
     }
 
     /**
