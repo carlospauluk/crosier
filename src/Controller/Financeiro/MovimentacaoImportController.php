@@ -6,12 +6,11 @@ use App\Business\Financeiro\MovimentacaoBusiness;
 use App\Business\Financeiro\MovimentacaoImporter;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\GrupoItem;
-use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
+use App\Exception\ViewException;
 use App\Form\Financeiro\MovimentacaoType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -91,7 +90,6 @@ class MovimentacaoImportController extends AbstractController
      * @Route("/fin/movimentacao/import", name="fin_movimentacao_import")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \Exception
      */
     public function import(Request $request)
     {
@@ -106,8 +104,10 @@ class MovimentacaoImportController extends AbstractController
             } else if ($request->request->get('btnLimpar')) {
                 $this->limpar($request);
             }
-        } catch (\Exception $e) {
+        } catch (ViewException $e) {
             $this->addFlash('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erro ao processar requisição.');
         }
 
         $session = $request->hasSession() ? $request->getSession() : new Session();
@@ -126,16 +126,14 @@ class MovimentacaoImportController extends AbstractController
 
     /**
      * @param Request $request
-     * @param $this ->vParams
-     * @param $session
      * @return mixed
-     * @throws \Exception
+     * @throws ViewException
      */
     public function importar(Request $request)
     {
         $tipoExtrato = $request->get('tipoExtrato');
         if (!$tipoExtrato) {
-            throw new \Exception('É necessário informar o tipo do extrato.');
+            throw new ViewException('É necessário informar o tipo do extrato.');
         }
 
 
@@ -158,15 +156,15 @@ class MovimentacaoImportController extends AbstractController
 
         if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
             if (!$carteiraExtrato or !$carteiraDestino) {
-                throw new \Exception("Para extratos do tipo 'DÉBITO' é necessário informar as carteiras de origem e destino");
+                throw new ViewException("Para extratos do tipo 'DÉBITO' é necessário informar as carteiras de origem e destino");
             }
         } else if (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
             if (!$grupoItem) {
-                throw new \Exception("Para extratos do tipo 'GRUPO' é necessário informar o grupo");
+                throw new ViewException("Para extratos do tipo 'GRUPO' é necessário informar o grupo");
             }
         } else {
             if (!$carteiraExtrato) {
-                throw new \Exception("É necessário informar a carteira do extrato");
+                throw new ViewException("É necessário informar a carteira do extrato");
             }
         }
 
@@ -184,11 +182,14 @@ class MovimentacaoImportController extends AbstractController
         $sessionMovs = array();
         $unqs = [];
         foreach ($movsImportadas as $mov) {
+            if (in_array($mov->getUnqControle(), $unqs)) {
+                throw new ViewException('Movimentação duplicada na sessão: ' . $mov->getDescricao());
+            }
             $unqs[] = $mov->getUnqControle();
-
 
             $sessionMovs[$mov->getUnqControle()] = $mov;
         }
+
         $this->vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
         $this->vParams['total'] = $this->getBusiness()->somarMovimentacoes($r['movs']);
 
@@ -196,14 +197,21 @@ class MovimentacaoImportController extends AbstractController
     }
 
 
+    /**
+     * Salva todas as movimentações.
+     *
+     * @param Request $request
+     */
     private function salvarTodas(Request $request)
     {
         try {
             $this->getEntityHandler()->persistAll($this->vParams['movs']);
             $this->addFlash('success', 'Movimentações salvas com sucesso!');
             $this->vParams['movs'] = null;
-        } catch (\Exception $e) {
+        } catch (ViewException $e) {
             $this->addFlash('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erro ao processar requisição');
         }
     }
 
@@ -215,6 +223,7 @@ class MovimentacaoImportController extends AbstractController
      */
     public function tiposExtratos(Request $request)
     {
+        // FIXME: isto deveria estar em uma tabela.
         $tiposExtratos = [
             ["id" => "EXTRATO_SIMPLES", "text" => "EXTRATO SIMPLES"],
             ["id" => "EXTRATO_GRUPO_MOVIMENTACOES", "text" => "EXTRATO GRUPO DE MOVIMENTAÇÕES"],
@@ -247,10 +256,8 @@ class MovimentacaoImportController extends AbstractController
      * @Route("/fin/movimentacao/import/form/{unqControle}", name="fin_movimentacao_import_form")
      * @param Request $request
      * @param $unqControle
-     * @param Movimentacao|null $movimentacao
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Doctrine\ORM\ORMException
-     * @throws \Exception
      */
     public function form(Request $request, $unqControle)
     {

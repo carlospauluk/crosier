@@ -2,6 +2,7 @@
 
 namespace App\Utils\Repository;
 
+use App\Exception\ViewException;
 use Doctrine\ORM\QueryBuilder;
 
 class WhereBuilder
@@ -29,7 +30,7 @@ class WhereBuilder
      * @param QueryBuilder $qb
      * @param array $filters
      * @return \Doctrine\ORM\Query\Expr\Comparison[]|string[]|NULL[]
-     * @throws \Exception
+     * @throws ViewException
      */
     public static function build(QueryBuilder &$qb, $filters)
     {
@@ -97,11 +98,11 @@ class WhereBuilder
                         break;
                     case 'IS_NULL':
                         $orX->add($qb->expr()
-                            ->isNull($field, $fieldP));
+                            ->isNull($field));
                         break;
                     case 'IS_NOT_NULL':
                         $orX->add($qb->expr()
-                            ->isNotNull($field, $fieldP));
+                            ->isNotNull($field));
                         break;
                     case 'IN':
                         $orX->add($qb->expr()
@@ -124,7 +125,7 @@ class WhereBuilder
                         $orX->add(WhereBuilder::handleBetween($filter, $qb));
                         break;
                     default:
-                        throw new \Exception('Tipo de filtro desconhecido.');
+                        throw new ViewException('Tipo de filtro desconhecido.');
                 }
             }
             $andX->add($orX);
@@ -178,12 +179,19 @@ class WhereBuilder
                 }
             }
         }
+        return null;
+
     }
 
+    /**
+     * @param $filter
+     * @param $qb
+     * @return null
+     */
     private static function handleBetween($filter, $qb)
     {
         if (!$filter->val['i'] && !$filter->val['f']) {
-            return;
+            return null;
         }
 
         $field = $filter->field;
@@ -203,6 +211,9 @@ class WhereBuilder
         }
     }
 
+    /**
+     * @param FilterData $filter
+     */
     private static function parseVal(FilterData $filter)
     {
         if ($filter->fieldType == 'decimal') {
@@ -231,6 +242,10 @@ class WhereBuilder
         }
     }
 
+    /**
+     * @param FilterData $filter
+     * @return bool
+     */
     private static function checkHasVal(FilterData $filter)
     {
         if (is_array($filter->val)) {
@@ -247,6 +262,10 @@ class WhereBuilder
         return false;
     }
 
+    /**
+     * @param $ordersStrs
+     * @return array
+     */
     public static function buildOrderBy($ordersStrs)
     {
         $ordersBy = array();

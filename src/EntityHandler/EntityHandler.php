@@ -22,16 +22,39 @@ abstract class EntityHandler
 
     private $security;
 
+    /**
+     * EntityHandler constructor.
+     * @param RegistryInterface $doctrine
+     * @param Security $security
+     */
     public function __construct(RegistryInterface $doctrine, Security $security)
     {
         $this->entityManager = $doctrine->getManager();
         $this->security = $security;
     }
 
+    /**
+     * A ser sobreescrito.
+     *
+     * @return mixed
+     */
+    abstract public function getEntityClass();
+
+    /**
+     * A ser sobreescrito.
+     *
+     * @param $entityId
+     */
     public function beforeSave($entityId)
     {
     }
 
+    /**
+     * Executa o persist/update e o flush.
+     *
+     * @param EntityId $entityId
+     * @return EntityId|object
+     */
     public function save(EntityId $entityId)
     {
         $this->beforeSave($entityId);
@@ -45,14 +68,29 @@ abstract class EntityHandler
         return $entityId;
     }
 
+    /**
+     * A ser sobreescrito.
+     *
+     * @param $entityId
+     */
     public function afterPersist($entityId)
     {
     }
 
+    /**
+     * A ser sobreescrito.
+     *
+     * @param $entityId
+     */
     public function beforeDelete($entityId)
     {
     }
 
+    /**
+     * Executa o DELETE e o flush.
+     *
+     * @param $entityId
+     */
     public function delete($entityId)
     {
         $this->beforeDelete($entityId);
@@ -61,29 +99,47 @@ abstract class EntityHandler
         $this->afterDelete($entityId);
     }
 
+    /**
+     * A ser sobreescrito.
+     *
+     * @param $entityId
+     */
     public function afterDelete($entityId)
     {
     }
 
+    /**
+     * A ser sobreescrito.
+     *
+     * @param $entityId
+     */
     public function beforeClone($entityId)
     {
     }
 
+    /**
+     * Copia o objeto removendo informações específicas.
+     *
+     * @param $e
+     * @return EntityId|object
+     */
     public function doClone($e) {
         $newE = clone $e;
         $newE->setId(null);
+        $newE->setInserted(null);
+        $newE->setUpdated(null);
+        $newE->setUserInserted(null);
+        $newE->setUserUpdated(null);
         $this->beforeClone($newE);
         $newE = $this->save($newE);
         $this->getEntityManager()->flush($newE);
         return $newE;
     }
 
-    abstract public function getEntityClass();
-
     /**
-     * @return \Doctrine\ORM\EntityManager
+     * @return \Doctrine\Common\Persistence\ObjectManager
      */
-    public function getEntityManager(): \Doctrine\ORM\EntityManager
+    public function getEntityManager(): \Doctrine\Common\Persistence\ObjectManager
     {
         return $this->entityManager;
     }

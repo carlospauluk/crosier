@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use App\Exception\ViewException;
+
 /**
  * Class DateTimeUtils.
  *
@@ -30,7 +32,7 @@ class DateTimeUtils
         } else if (strlen($dateStr) == 19) { // dd/mm/YYYY 12:34:00
             return \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr);
         } else {
-            throw new \Exception('Impossível parse na data [' . $dateStr . ']');
+            throw new ViewException('Impossível parse na data [' . $dateStr . ']');
         }
     }
 

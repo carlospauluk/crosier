@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Exception\ViewException;
 use App\Utils\Repository\WhereBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -27,7 +28,7 @@ abstract class FilterRepository extends ServiceEntityRepository
     /**
      * @return mixed
      */
-    public function getLogger():? LoggerInterface
+    public function getLogger(): ?LoggerInterface
     {
         return $this->logger;
     }
@@ -43,16 +44,31 @@ abstract class FilterRepository extends ServiceEntityRepository
 
     abstract public function getEntityClass();
 
+    /**
+     * Monta o "FROM" da query.
+     *
+     * @param QueryBuilder $qb
+     */
     public function handleFrombyFilters(QueryBuilder &$qb)
     {
         $qb->from($this->getEntityClass(), 'e');
     }
 
+    /**
+     * @param null $orderBy
+     * @return array|mixed
+     * @throws ViewException
+     */
     public function findAll($orderBy = null)
     {
         return $this->findByFilters(null, $orderBy, $start = 0, $limit = null);
     }
 
+    /**
+     * Ordens padrão do ORDER BY.
+     *
+     * @return array
+     */
     public function getDefaultOrders()
     {
         return array(
@@ -60,6 +76,13 @@ abstract class FilterRepository extends ServiceEntityRepository
         );
     }
 
+    /**
+     * Contagem de registros utilizando os filtros.
+     *
+     * @param $filters
+     * @return mixed
+     * @throws ViewException
+     */
     public function doCountByFilters($filters)
     {
         $em = $this->getEntityManager();
@@ -67,8 +90,8 @@ abstract class FilterRepository extends ServiceEntityRepository
         $qb->select('count(e.id)');
         $this->handleFrombyFilters($qb);
         WhereBuilder::build($qb, $filters);
-        $dql = $qb->getDql();
-        $sql = $qb->getQuery()->getSQL();
+//        $dql = $qb->getDql();
+//        $sql = $qb->getQuery()->getSQL();
         $count = $qb->getQuery()->getScalarResult();
         return $count[0][1];
     }
@@ -81,7 +104,7 @@ abstract class FilterRepository extends ServiceEntityRepository
      * @param int $start
      * @param int $limit
      * @return mixed
-     * @throws \Exception
+     * @throws ViewException
      */
     public function findByFilters($filters, $orders = null, $start = 0, $limit = 10)
     {
@@ -101,8 +124,8 @@ abstract class FilterRepository extends ServiceEntityRepository
             $qb->addOrderBy($orders, 'asc');
         }
 
-        $dql = $qb->getDql();
-        $sql = $qb->getQuery()->getSQL();
+//        $dql = $qb->getDql();
+//        $sql = $qb->getQuery()->getSQL();
         $query = $qb->getQuery();
         $query->setFirstResult($start);
         if ($limit) {

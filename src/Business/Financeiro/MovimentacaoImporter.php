@@ -74,12 +74,15 @@ class MovimentacaoImporter
     /**
      * @param $tipoExtrato
      * @param $linhasExtrato
-     * @param $carteiraExtrato
-     * @param $carteiraDestino
-     * @param $grupoItem
+     * @param Carteira|null $carteiraExtrato
+     * @param Carteira|null $carteiraDestino
+     * @param GrupoItem|null $grupoItem
      * @param $gerarSemRegras
+     * @param bool $identificarPorCabecalho
+     *
      * @return mixed
-     * @throws \Exception
+     *
+     * @throws ViewException
      */
     public function importar($tipoExtrato, $linhasExtrato, ?Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem, $gerarSemRegras, $identificarPorCabecalho = false)
     {
@@ -96,11 +99,11 @@ class MovimentacaoImporter
 
         if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
             if (!$carteiraExtrato or !$carteiraExtrato) {
-                throw new \Exception("Para extratos de cartões de débito, é necessário informar a carteira de origem e de destino.");
+                throw new ViewException("Para extratos de cartões de débito, é necessário informar a carteira de origem e de destino.");
             }
         } elseif (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
             if (!$grupoItem) {
-                throw new \Exception("Para extratos de grupos de movimentações, é necessário informar o grupo.");
+                throw new ViewException("Para extratos de grupos de movimentações, é necessário informar o grupo.");
             }
         }
 
@@ -112,14 +115,17 @@ class MovimentacaoImporter
         }
     }
 
+
     /**
+     * Constrói o array 'de-para' baseado no cabeçalho.
      *
+     * @throws ViewException
      */
     public function buildArrayCabecalho()
     {
         $linhas = explode("\n", $this->linhasExtrato);
         $primeira = $linhas[0];
-        if (strpos($primeira,'<<< LINHAS NÃO IMPORTADAS >>>') !== FALSE) {
+        if (strpos($primeira, '<<< LINHAS NÃO IMPORTADAS >>>') !== FALSE) {
             $primeira = $linhas[1];
         }
         $camposCSV = explode("\t", $primeira);
@@ -168,7 +174,7 @@ class MovimentacaoImporter
 
     /**
      * @return mixed
-     * @throws \Exception
+     * @throws ViewException
      */
     private function importarPadrao()
     {
@@ -196,7 +202,6 @@ class MovimentacaoImporter
                 $linhasNaoImportadas[] = $linha;
                 continue;
             }
-
 
             $linha = trim($linha);
 
@@ -226,7 +231,7 @@ class MovimentacaoImporter
     /**
      * @param $numLinha
      * @return mixed
-     * @throws \Exception
+     * @throws ViewException
      */
     private function importarLinha($numLinha)
     {
@@ -250,7 +255,7 @@ class MovimentacaoImporter
                 $camposLinha = $this->importLinhaExtratoStoneCredito($numLinha);
                 break;
             default:
-                throw new \Exception("Tipo de extrato inválido.");
+                throw new ViewException("Tipo de extrato inválido.");
         }
 
         if (strpos($this->tipoExtrato, "DEBITO") !== FALSE) {
@@ -265,7 +270,7 @@ class MovimentacaoImporter
     /**
      * @param $camposLinha
      * @return \App\Entity\Financeiro\Carteira|Movimentacao|OperadoraCartao
-     * @throws \Exception
+     * @throws ViewException
      */
     private function handleLinhaImportadaDebito($camposLinha)
     {
@@ -308,7 +313,7 @@ class MovimentacaoImporter
         // FIXME: na lógica do Java, se não encontrava ele ia procurar no próximo dia.
 
         if (count($movs101) < 1) {
-            throw new \Exception('Movimentação (1.01) original não encontrada (' . $descricao . ' - R$ ' . number_format($valorTotal, 2, '.', ','));
+            throw new ViewException('Movimentação (1.01) original não encontrada (' . $descricao . ' - R$ ' . number_format($valorTotal, 2, '.', ','));
         }
 
         // Por padrão, será a primeira. Mas se encontrar outra sem cadeia, troca.
@@ -346,7 +351,7 @@ class MovimentacaoImporter
         if ($mov101->getCadeia() and
             $mov101->getCadeia()->getMovimentacoes() and
             $mov101->getCadeia()->getMovimentacoes()->count() > 0) {
-            throw new \Exception("Inconsistência: movimentação original já possui uma cadeia e a movimentação que se está tentando importar não faz parte dela.");
+            throw new ViewException("Inconsistência: movimentação original já possui uma cadeia e a movimentação que se está tentando importar não faz parte dela.");
         }
 
         // Crio as movimentações 299 (no caixa AV) e 199 (na carteira extrato)
@@ -384,7 +389,7 @@ class MovimentacaoImporter
     /**
      * @param $camposLinha
      * @return Movimentacao|null|object
-     * @throws \Exception
+     * @throws ViewException
      */
     private function handleLinhaImportadaCredito($camposLinha)
     {
@@ -410,7 +415,7 @@ class MovimentacaoImporter
                 'bandeiraCartao' => $bandeiraCartao,
                 'modo' => $modo,
                 'dtVenctoEfetiva' => $dtVenctoEfetiva
-                ]);
+            ]);
 
         // Se achou alguma movimentação já lançada, pega a primeira
         if ($movs) {
@@ -457,7 +462,7 @@ class MovimentacaoImporter
     /**
      * @param $camposLinha
      * @return Movimentacao|null|object
-     * @throws \Exception
+     * @throws ViewException
      */
     private function handleLinhaImportadaPadrao($camposLinha)
     {
@@ -566,7 +571,7 @@ class MovimentacaoImporter
                     // A de destino, se não for informada na regra, será a do extrato.
 
                     if (!$regra->getCategoria()->getCodigo() == "299") {
-                        throw new \Exception("Regras para transferências entre carteiras próprias devem ser apenas com categoria 2.99");
+                        throw new ViewException("Regras para transferências entre carteiras próprias devem ser apenas com categoria 2.99");
                     }
 
                     // Se a regra informar a carteira da 299, prevalesce
@@ -715,7 +720,7 @@ class MovimentacaoImporter
     /**
      * @param $numLinha
      * @return mixed
-     * @throws \Exception
+     * @throws ViewException
      */
     private function importLinhaExtratoSimples($numLinha)
     {
@@ -762,7 +767,7 @@ class MovimentacaoImporter
 
     /**
      * @return array
-     * @throws \Exception
+     * @throws ViewException
      */
     private function importGrupoMovimentacao()
     {
@@ -838,6 +843,11 @@ class MovimentacaoImporter
         return $movimentacoes;
     }
 
+    /**
+     * @param $numLinha
+     * @return array|null
+     * @throws ViewException
+     */
     private function importLinhaExtratoModerninhaDebito($numLinha)
     {
         /**
@@ -867,9 +877,6 @@ class MovimentacaoImporter
         $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DÉBITO"
 
         $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
-        if (!$bandeiraCartao) {
-            throw new \Exception("Bandeira Cartão não encontrada");
-        }
 
         $camposLinha["bandeiraCartao"] = $bandeiraCartao;
         $camposLinha["planoPagtoCartao"] = 'DEBITO';
@@ -914,9 +921,6 @@ class MovimentacaoImporter
         $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DÉBITO"
 
         $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($campos[2], $modo);
-        if (!$bandeiraCartao) {
-            throw new \Exception("Bandeira Cartão não encontrada");
-        }
 
         $camposLinha["bandeiraCartao"] = $bandeiraCartao;
         $camposLinha["planoPagtoCartao"] = 'DEBITO';
@@ -968,9 +972,6 @@ class MovimentacaoImporter
         $modo = $this->doctrine->getRepository(Modo::class)->find(9); // "RECEB. CARTÃO CRÉDITO"
 
         $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
-        if (!$bandeiraCartao) {
-            throw new \Exception("Bandeira Cartão não encontrada");
-        }
 
         $planoPagtoCartao = (stripos($formaDePagamento, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
 
@@ -991,6 +992,11 @@ class MovimentacaoImporter
     }
 
 
+    /**
+     * @param $numLinha
+     * @return array
+     * @throws ViewException
+     */
     private function importLinhaExtratoCartaoArrayCabecalho($numLinha)
     {
         $linha = $this->linhas[$numLinha];
@@ -1059,9 +1065,6 @@ class MovimentacaoImporter
 
         if ($modo and $bandeira) {
             $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
-            if (!$bandeiraCartao) {
-                throw new \Exception("Bandeira Cartão não encontrada");
-            }
         }
 
         $planoPagtoCartao = (stripos($descricao, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
@@ -1079,6 +1082,11 @@ class MovimentacaoImporter
         return $camposLinha;
     }
 
+    /**
+     * @param $numLinha
+     * @return array
+     * @throws ViewException
+     */
     private function importLinhaExtratoStoneCredito($numLinha)
     {
         /**
@@ -1120,9 +1128,6 @@ class MovimentacaoImporter
             $modo = $this->doctrine->getRepository(Modo::class)->find(9); // "RECEB. CARTÃO CRÉDITO"
 
             $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
-            if (!$bandeiraCartao) {
-                throw new \Exception("Bandeira Cartão não encontrada");
-            }
 
             $planoPagtoCartao = (stripos($descricao, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
 
@@ -1174,9 +1179,6 @@ class MovimentacaoImporter
         $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DÉBITO"
 
         $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($campos[2], $modo);
-        if (!$bandeiraCartao) {
-            throw new \Exception("Bandeira Cartão não encontrada");
-        }
 
         $camposLinha["bandeiraCartao"] = $bandeiraCartao;
         $camposLinha["planoPagtoCartao"] = 'DEBITO';
