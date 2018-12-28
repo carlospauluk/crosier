@@ -112,6 +112,18 @@ class Carteira extends EntityId
      */
     private $limite;
 
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\OperadoraCartao")
+     * @ORM\JoinColumn(name="operadora_cartao_id", nullable=false)
+     *
+     * @var $operadoraCartao OperadoraCartao
+     */
+    private $operadoraCartao;
+
+
+
+
     public function getId()
     {
         return $this->id;
@@ -241,4 +253,22 @@ class Carteira extends EntityId
     {
         $this->limite = $limite;
     }
+
+    /**
+     * @return OperadoraCartao
+     */
+    public function getOperadoraCartao(): ?OperadoraCartao
+    {
+        return $this->operadoraCartao;
+    }
+
+    /**
+     * @param OperadoraCartao $operadoraCartao
+     */
+    public function setOperadoraCartao(?OperadoraCartao $operadoraCartao): void
+    {
+        $this->operadoraCartao = $operadoraCartao;
+    }
+
+
 }

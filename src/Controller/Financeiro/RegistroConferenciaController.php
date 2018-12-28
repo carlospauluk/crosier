@@ -159,7 +159,7 @@ class RegistroConferenciaController extends FormListController
      * @param RegistroConferencia $registroConferencia
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function gerarProximo(Request $request, RegistroConferencia $registroConferencia)
+    public function gerarProximo(RegistroConferencia $registroConferencia)
     {
         try {
             $this->getRegistroConferenciaBusiness()->gerarProximo($registroConferencia);

@@ -233,6 +233,11 @@ class MovimentacaoEntityHandler extends EntityHandler
         // ajusta a dt útil
         $movimentacao->setDtUtil(!$movimentacao->getDtPagto() ? $movimentacao->getDtVenctoEfetiva() : $movimentacao->getDtPagto());
 
+        if ($movimentacao->getCarteira()->getOperadoraCartao()) {
+            $this->getEntityManager()->refresh($movimentacao->getCarteira()->getOperadoraCartao());
+            $movimentacao->setOperadoraCartao($movimentacao->getCarteira()->getOperadoraCartao());
+        }
+
         if (($movimentacao->getStatus() == 'ABERTA' or $movimentacao->getStatus() == 'A_COMPENSAR')
             and ($movimentacao->getCarteira()->getAbertas() == FALSE)) {
             throw new \Exception("Esta carteira não pode conter movimentações abertas.");

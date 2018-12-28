@@ -33,7 +33,7 @@ class BandeiraCartaoRepository extends FilterRepository
         // Primeiro tenta achar por um LIKE no campo labels
 
 
-        $ql = "SELECT bc FROM BandeiraCartao bc WHERE bc.modo = :modo AND (bc.descricao LIKE :str OR bc.labels LIKE :str)";
+        $ql = "SELECT bc FROM App\Entity\Financeiro\BandeiraCartao bc WHERE bc.modo = :modo AND (bc.descricao LIKE :str OR bc.labels LIKE :str)";
         $qry = $this->getEntityManager()->createQuery($ql);
         $qry->setParameter('modo', $modo);
         $qry->setParameter('str', $str);

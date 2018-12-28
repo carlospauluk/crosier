@@ -7,10 +7,12 @@ use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\GrupoItem;
+use App\Entity\Financeiro\ImportExtratoCabec;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\OperadoraCartao;
 use App\Entity\Financeiro\RegraImportacaoLinha;
+use App\Exception\ViewException;
 use App\Repository\Financeiro\CategoriaRepository;
 use App\Utils\DateTimeUtils;
 use App\Utils\Repository\FilterData;
@@ -61,6 +63,8 @@ class MovimentacaoImporter
 
     private $gerarSemRegras;
 
+    private $arrayCabecalho;
+
 
     public function __construct(RegistryInterface $doctrine)
     {
@@ -77,7 +81,7 @@ class MovimentacaoImporter
      * @return mixed
      * @throws \Exception
      */
-    public function importar($tipoExtrato, $linhasExtrato, ?Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem, $gerarSemRegras)
+    public function importar($tipoExtrato, $linhasExtrato, ?Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem, $gerarSemRegras, $identificarPorCabecalho = false)
     {
         $this->tipoExtrato = $tipoExtrato;
         $this->linhasExtrato = $linhasExtrato;
@@ -85,6 +89,10 @@ class MovimentacaoImporter
         $this->carteiraDestino = $carteiraDestino;
         $this->grupoItem = $grupoItem;
         $this->gerarSemRegras = $gerarSemRegras;
+
+        if ($identificarPorCabecalho) {
+            $this->buildArrayCabecalho();
+        }
 
         if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
             if (!$carteiraExtrato or !$carteiraExtrato) {
@@ -102,6 +110,60 @@ class MovimentacaoImporter
             default:
                 return $this->importarPadrao();
         }
+    }
+
+    /**
+     *
+     */
+    public function buildArrayCabecalho()
+    {
+        $linhas = explode("\n", $this->linhasExtrato);
+        $primeira = $linhas[0];
+        if (strpos($primeira,'<<< LINHAS NÃO IMPORTADAS >>>') !== FALSE) {
+            $primeira = $linhas[1];
+        }
+        $camposCSV = explode("\t", $primeira);
+
+        $arrayCabecalho = [];
+
+        $camposDePara = $this->doctrine->getRepository(ImportExtratoCabec::class)->findBy(['tipoExtrato' => $this->tipoExtrato]);
+        if ($camposDePara) {
+            foreach ($camposDePara as $dePara) {
+                // Se não está separado por vírgula, é um campo único (1-para-1).
+                if (strpos($dePara->getCamposCabecalho(), ',') === FALSE) {
+                    $achou = false;
+                    foreach ($camposCSV as $key => $campoCSV) {
+                        if ($dePara->getCamposCabecalho() == $campoCSV) {
+                            $arrayCabecalho[$dePara->getCampoSistema()] = $key;
+                            $achou = true;
+                            break;
+                        }
+                    }
+                    if (!$achou) {
+                        throw new ViewException('Não foi possível montar o array do cabeçalho.');
+                    }
+                } else {
+                    $camposCabecalho = explode(',', $dePara->getCamposCabecalho());
+                    foreach ($camposCabecalho as $campoCabecalho) {
+                        $achou = false;
+                        foreach ($camposCSV as $key => $campoCSV) {
+                            if ($campoCabecalho == $campoCSV) {
+                                $arrayCabecalho[$dePara->getCampoSistema()]['campos'][] = $key;
+                                $achou = true;
+                                break;
+                            }
+                        }
+                        if (!$achou) {
+                            throw new ViewException('Não foi possível montar o array do cabeçalho.');
+                        }
+                    }
+                    $arrayCabecalho[$dePara->getCampoSistema()]['formato'] = $dePara->getFormato();
+                }
+            }
+        }
+
+        $this->arrayCabecalho = $arrayCabecalho;
+
     }
 
     /**
@@ -193,6 +255,8 @@ class MovimentacaoImporter
 
         if (strpos($this->tipoExtrato, "DEBITO") !== FALSE) {
             return $this->handleLinhaImportadaDebito($camposLinha);
+        } else if (strpos($this->tipoExtrato, "CREDITO") !== FALSE) {
+            return $this->handleLinhaImportadaCredito($camposLinha);
         } else {
             return $this->handleLinhaImportadaPadrao($camposLinha);
         }
@@ -322,13 +386,86 @@ class MovimentacaoImporter
      * @return Movimentacao|null|object
      * @throws \Exception
      */
+    private function handleLinhaImportadaCredito($camposLinha)
+    {
+        $descricao = $camposLinha["descricao"];
+        $dtMoviment = $camposLinha["dtMoviment"];
+        $dtVenctoEfetiva = $camposLinha["dtVenctoEfetiva"];
+        $valor = $camposLinha["valor"];
+        $desconto = 0.00;
+        $valorTotal = $camposLinha["valor"];
+        $modo = $camposLinha["modo"];
+        $categoriaCodigo = $camposLinha["categoriaCodigo"];
+        $planoPagtoCartao = $camposLinha["planoPagtoCartao"];
+        $bandeiraCartao = $camposLinha["bandeiraCartao"];
+        $numCheque = null;
+
+        $valorNegativo = $valor < 0.0;
+        $valor = abs($valor);
+
+        $movs = $this->doctrine->getRepository(Movimentacao::class)
+            ->findBy([
+                'descricao' => strtoupper($descricao),
+                'valor' => $valor,
+                'bandeiraCartao' => $bandeiraCartao,
+                'modo' => $modo,
+                'dtVenctoEfetiva' => $dtVenctoEfetiva
+                ]);
+
+        // Se achou alguma movimentação já lançada, pega a primeira
+        if ($movs) {
+
+            if (count($movs) > 1) {
+                throw new ViewException('Mais de uma movimentação encontrada para "' . $descricao . '"');
+            }
+
+            return $movs[0];
+        } else {
+            // se for pra gerar movimentações que não se encaixem nas regras...
+            $movimentacao = new Movimentacao();
+            $movimentacao->setUnqControle(md5(uniqid(rand(), true)));
+            $movimentacao->setCarteira($this->carteiraExtrato);
+            $movimentacao->setValor($valor);
+            $movimentacao->setDescontos($desconto);
+            $movimentacao->setValorTotal($valorTotal);
+            $movimentacao->setDescricao($descricao);
+            $movimentacao->setTipoLancto('REALIZADA');
+            $movimentacao->setStatus('REALIZADA');
+            $movimentacao->setModo($modo);
+            $movimentacao->setDtMoviment($dtMoviment);
+            $movimentacao->setDtVencto($dtVenctoEfetiva);
+            $movimentacao->setDtVenctoEfetiva($dtVenctoEfetiva);
+            $movimentacao->setDtPagto($dtVenctoEfetiva);
+            $movimentacao->setBandeiraCartao($bandeiraCartao);
+            $movimentacao->setPlanoPagtoCartao($planoPagtoCartao);
+
+            if ($categoriaCodigo) {
+                $categoria = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => $categoriaCodigo]);
+            } else {
+                if ($valorNegativo) {
+                    $categoria = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 2]);
+                } else {
+                    $categoria = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 1]);
+                }
+            }
+            $movimentacao->setCategoria($categoria);
+
+            return $movimentacao;
+        }
+    }
+
+    /**
+     * @param $camposLinha
+     * @return Movimentacao|null|object
+     * @throws \Exception
+     */
     private function handleLinhaImportadaPadrao($camposLinha)
     {
         $descricao = $camposLinha["descricao"];
         $dtMoviment = $camposLinha["dtMoviment"];
         $dtVenctoEfetiva = $camposLinha["dtVenctoEfetiva"];
         $valor = $camposLinha["valor"];
-        $desconto = $camposLinha["desconto"];
+        $desconto = isset($camposLinha["desconto"]) ? $camposLinha["desconto"] : null;
         $valorTotal = $camposLinha["valorTotal"];
         // $entradaOuSaida = $camposLinha["entradaOuSaida"];
         $modo = $camposLinha["modo"];
@@ -854,6 +991,94 @@ class MovimentacaoImporter
     }
 
 
+    private function importLinhaExtratoCartaoArrayCabecalho($numLinha)
+    {
+        $linha = $this->linhas[$numLinha];
+        $campos = explode("\t", $linha);
+
+        $camposLinha = [];
+
+        $dtVenda = null;
+        $dtPrevistaPagto = null;
+        $tipo = null;
+        $bandeira = null;
+        $valor = null;
+        $descricao = null;
+
+        foreach ($this->arrayCabecalho as $campo => $key) {
+            switch ($campo) {
+                case 'dtVenda':
+                    {
+                        $dtVenda = DateTimeUtils::parseDateStr($campos[$key]);
+                        break;
+                    }
+                case 'dtPrevistaPagto':
+                    {
+                        $dtPrevistaPagto = DateTimeUtils::parseDateStr($campos[$key]);
+                        break;
+                    }
+                case 'tipo':
+                    {
+                        $tipo = trim($campos[$key]);
+                        break;
+                    }
+                case 'bandeira':
+                    {
+                        $bandeira = trim($campos[$key]);
+                        break;
+                    }
+                case 'valor':
+                    {
+                        $valor = abs(StringUtils::parseFloat($campos[$key], true));
+                        break;
+                    }
+                case 'descricao':
+                    {
+                        if (is_array($key)) {
+                            $valores = [];
+                            foreach ($key['campos'] as $campoCSV) {
+                                $valores[] = trim($campos[$campoCSV]);
+                            }
+                            $descricao = vsprintf($key['formato'], $valores);
+                        } else {
+                            $descricao = trim($campos[$key]);
+                        }
+                        break;
+                    }
+            }
+        }
+
+        $entradaOuSaida = $valor < 0 ? 2 : 1;
+
+        if (strpos($this->tipoExtrato, 'CREDITO') !== FALSE) {
+            $modo = $this->doctrine->getRepository(Modo::class)->find(9); // "RECEB. CARTÃO CRÉDITO"
+        }
+        if (strpos($this->tipoExtrato, 'DEBITO') !== FALSE) {
+            $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DEBITO"
+        }
+
+        if ($modo and $bandeira) {
+            $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
+            if (!$bandeiraCartao) {
+                throw new \Exception("Bandeira Cartão não encontrada");
+            }
+        }
+
+        $planoPagtoCartao = (stripos($descricao, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
+
+        $camposLinha['modo'] = $modo;
+        $camposLinha['bandeiraCartao'] = $bandeiraCartao;
+        $camposLinha['planoPagtoCartao'] = $planoPagtoCartao;
+        $camposLinha["descricao"] = $descricao;
+        $camposLinha["dtMoviment"] = $dtVenda;
+        $camposLinha["dtVenctoEfetiva"] = $dtPrevistaPagto;
+        $camposLinha["valor"] = $valor;
+        $camposLinha["valorTotal"] = $valor;
+        $camposLinha["entradaOuSaida"] = $entradaOuSaida;
+        $camposLinha["categoriaCodigo"] = "101";
+        return $camposLinha;
+    }
+
     private function importLinhaExtratoStoneCredito($numLinha)
     {
         /**
@@ -870,45 +1095,49 @@ class MovimentacaoImporter
          * 10 VALOR LÍQUIDO
          * 11 ÚLTIMO STATUS
          * 12 DATA DO ÚLTIMO STATUS
-         *
          */
 
-        $linha = $this->linhas[$numLinha];
-        $campos = explode("\t", $linha);
-        if (count($campos) < 12) {
-            return null;
+        if ($this->arrayCabecalho) {
+            return $this->importLinhaExtratoCartaoArrayCabecalho($numLinha);
+        } else {
+
+            $linha = $this->linhas[$numLinha];
+            $campos = explode("\t", $linha);
+            if (count($campos) < 12) {
+                return null;
+            }
+
+            $dtVenda = DateTimeUtils::parseDateStr($campos[1]);
+            $dtPrevistaPagto = DateTimeUtils::parseDateStr($campos[2]);
+            $tipo = trim($campos[3]);
+            $bandeira = trim($campos[6]);
+
+            $descricao = trim($campos[0]) . " - " . $tipo . " - " . $bandeira . " (" . trim($campos[4]) . "/" . trim($campos[5]) . ") " . trim($campos[8]);
+
+            $valor = abs(StringUtils::parseFloat($campos[9], true));
+            $entradaOuSaida = $valor < 0 ? 2 : 1;
+
+            $modo = $this->doctrine->getRepository(Modo::class)->find(9); // "RECEB. CARTÃO CRÉDITO"
+
+            $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
+            if (!$bandeiraCartao) {
+                throw new \Exception("Bandeira Cartão não encontrada");
+            }
+
+            $planoPagtoCartao = (stripos($descricao, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
+
+            $camposLinha['modo'] = $modo;
+            $camposLinha['bandeiraCartao'] = $bandeiraCartao;
+            $camposLinha['planoPagtoCartao'] = $planoPagtoCartao;
+            $camposLinha["descricao"] = $descricao;
+            $camposLinha["dtMoviment"] = $dtVenda;
+            $camposLinha["dtVenctoEfetiva"] = $dtPrevistaPagto;
+            $camposLinha["valor"] = $valor;
+            $camposLinha["valorTotal"] = $valor;
+            $camposLinha["entradaOuSaida"] = $entradaOuSaida;
+            $camposLinha["categoriaCodigo"] = "101";
+            return $camposLinha;
         }
-
-        $dtVenda = DateTimeUtils::parseDateStr($campos[1]);
-        $dtPrevistaPagto = DateTimeUtils::parseDateStr($campos[2]);
-        $tipo = trim($campos[3]);
-        $bandeira = trim($campos[6]);
-
-        $descricao = trim($campos[0]) . " - " . $tipo . " - " . $bandeira . " (" . trim($campos[4]) . "/" . trim($campos[5]) . ") " . trim($campos[8]);
-
-        $valor = abs(StringUtils::parseFloat($campos[9], true));
-        $entradaOuSaida = $valor < 0 ? 2 : 1;
-
-        $modo = $this->doctrine->getRepository(Modo::class)->find(9); // "RECEB. CARTÃO CRÉDITO"
-
-        $bandeiraCartao = $this->doctrine->getRepository(BandeiraCartao::class)->findByLabelsAndModo($bandeira, $modo);
-        if (!$bandeiraCartao) {
-            throw new \Exception("Bandeira Cartão não encontrada");
-        }
-
-        $planoPagtoCartao = (stripos($descricao, "parc") === FALSE) ? 'CREDITO_30DD' : 'CREDITO_PARCELADO';
-
-        $camposLinha['modo'] = $modo;
-        $camposLinha['bandeiraCartao'] = $bandeiraCartao;
-        $camposLinha['planoPagtoCartao'] = $planoPagtoCartao;
-        $camposLinha["descricao"] = $descricao;
-        $camposLinha["dtMoviment"] = $dtVenda;
-        $camposLinha["dtVenctoEfetiva"] = $dtPrevistaPagto;
-        $camposLinha["valor"] = $valor;
-        $camposLinha["valorTotal"] = $valor;
-        $camposLinha["entradaOuSaida"] = $entradaOuSaida;
-        $camposLinha["categoriaCodigo"] = "101";
-        return $camposLinha;
     }
 
 

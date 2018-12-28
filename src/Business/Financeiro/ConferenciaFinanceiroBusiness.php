@@ -8,6 +8,7 @@ use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\GrupoItem;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
+use App\Entity\Financeiro\OperadoraCartao;
 use App\Entity\Financeiro\RegistroConferencia;
 use App\Entity\Vendas\Venda;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -29,6 +30,7 @@ class ConferenciaFinanceiroBusiness
     /**
      * ConferenciaFinanceiroBusiness constructor.
      * @param RegistryInterface $doctrine
+     * @param MovimentacaoBusiness $movimentacaoBusiness
      */
     public function __construct(RegistryInterface $doctrine, MovimentacaoBusiness $movimentacaoBusiness)
     {
@@ -51,28 +53,36 @@ class ConferenciaFinanceiroBusiness
         $lists['caixaVista'] = ['titulo' => 'Caixa a vista', 'itens' => $listCaixaVista];
         $lists['caixaPrazo'] = ['titulo' => 'Caixa a prazo', 'itens' => $listCaixaPrazo];
 
-        $lists['credito_cieloCTPL'] = ['titulo' => 'Cielo CTPL - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 30, 'TOTAL CIELO CTPL - CRÉDITOS')];
-        $lists['credito_cieloMSP'] = ['titulo' => 'Cielo MSP - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 32, 'TOTAL CIELO MSP - CRÉDITOS')];
-        $lists['credito_moderninha'] = ['titulo' => 'Moderninha - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 33, 'TOTAL PAGSEGURO MODERNINHA IPÊ - CRÉDITOS')];
-        $lists['credito_stoneCTPL'] = ['titulo' => 'Stone CTPL - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 34, 'TOTAL STONE - CRÉDITOS')];
-        $lists['credito_stoneMSP'] = ['titulo' => 'Stone MSP - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 35, 'TOTAL STONE MSP - CRÉDITOS')];
-        $lists['credito_rdcard'] = ['titulo' => 'Redecard - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 31, 'TOTAL RDCARD - CRÉDITOS')];
+        $lists['credito_cieloCTPL'] = ['titulo' => 'Cielo CTPL - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 30, 'TOTAL CIELO CTPL - CRÉDITOS', 'CIELO')];
+        $lists['credito_cieloMSP'] = ['titulo' => 'Cielo MSP - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 32, 'TOTAL CIELO MSP - CRÉDITOS', 'CIELO MSP')];
+        $lists['credito_moderninha'] = ['titulo' => 'Moderninha - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 33, 'TOTAL PAGSEGURO MODERNINHA IPÊ - CRÉDITOS', 'MODERNINHA')];
+        $lists['credito_stoneCTPL'] = ['titulo' => 'Stone CTPL - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 34, 'TOTAL STONE - CRÉDITOS', 'STONE')];
+        $lists['credito_stoneMSP'] = ['titulo' => 'Stone MSP - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 35, 'TOTAL STONE MSP - CRÉDITOS', 'STONE MSP')];
+        $lists['credito_rdcard'] = ['titulo' => 'Redecard - Créditos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 9, 31, 'TOTAL RDCARD - CRÉDITOS', 'REDECARD')];
 
 
-        $lists['debito_cieloCTPL'] = ['titulo' => 'Cielo CTPL - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 30, 'TOTAL CIELO CTPL - DÉBITOS')];
-        $lists['debito_cieloMSP'] = ['titulo' => 'Cielo MSP - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 32, 'TOTAL CIELO MSP - DÉBITOS')];
-        $lists['debito_moderninha'] = ['titulo' => 'Moderninha - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 33, 'TOTAL PAGSEGURO MODERNINHA IPÊ - DÉBITOS')];
-        $lists['debito_stoneCTPL'] = ['titulo' => 'Stone CTPL - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 34, 'TOTAL STONE - DÉBITOS')];
-        $lists['debito_stoneMSP'] = ['titulo' => 'Stone MSP - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 35, 'TOTAL STONE MSP - DÉBITOS')];
-        $lists['debito_rdcard'] = ['titulo' => 'Redecard - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 31, 'TOTAL RDCARD - DÉBITOS')];
+        $lists['debito_cieloCTPL'] = ['titulo' => 'Cielo CTPL - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 30, 'TOTAL CIELO CTPL - DÉBITOS', 'CIELO')];
+        $lists['debito_cieloMSP'] = ['titulo' => 'Cielo MSP - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 32, 'TOTAL CIELO MSP - DÉBITOS', 'CIELO MSP')];
+        $lists['debito_moderninha'] = ['titulo' => 'Moderninha - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 33, 'TOTAL PAGSEGURO MODERNINHA IPÊ - DÉBITOS', 'MODERNINHA')];
+        $lists['debito_stoneCTPL'] = ['titulo' => 'Stone CTPL - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 34, 'TOTAL STONE - DÉBITOS', 'STONE')];
+        $lists['debito_stoneMSP'] = ['titulo' => 'Stone MSP - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 35, 'TOTAL STONE MSP - DÉBITOS', 'STONE MSP')];
+        $lists['debito_rdcard'] = ['titulo' => 'Redecard - Débitos', 'itens' => $this->buildListCartao($dtIni, $dtFim, 10, 31, 'TOTAL RDCARD - DÉBITOS', 'REDECARD')];
 
 
         $lists['grupos'] = ['titulo' => 'Grupos de Movimentações', 'itens' => $this->buildListGrupos($dtFim)];
 
         $lists['transfs199e299'] = ['titulo' => 'Transferências entre Carteiras', 'itens' => $this->buildList199e299($dtIni, $dtFim)];
 
+        $listsComItens = [];
 
-        return $lists;
+        foreach ($lists as $list) {
+            if ($list['itens'] and count($list['itens']) > 0) {
+                $listsComItens[] = $list;
+            }
+        }
+
+
+        return $listsComItens;
     }
 
     /**
@@ -87,12 +97,13 @@ class ConferenciaFinanceiroBusiness
         $dt->setTime(0, 0, 0, 0);
         $registroConferencia = $this->doctrine->getRepository(RegistroConferencia::class)->findOneBy(['descricao' => $rcDescricao, 'dtRegistro' => $dt]);
 
-        if (!$registroConferencia or is_nan($registroConferencia->getValor())) {
-            return ['titulo' => '*** ' . $rcDescricao . ' (INFORMADO)',
-                'valor' => 0,
-                'icon' => $this->chooseIcon($totalComparado, null)];
+        if (!$registroConferencia or $registroConferencia->getValor() <= 0.00) { // is_nan($registroConferencia->getValor())) {
+            return null;
+//            return ['titulo' => '*** ' . $rcDescricao . ' (INFORMADO)',
+//                'valor' => 0,
+//                'icon' => $this->chooseIcon($totalComparado, null)];
         } else {
-            $dif = $registroConferencia->getValor() - $totalComparado;
+            $dif = number_format($registroConferencia->getValor() - $totalComparado, 2, ',', '.');
             return ['titulo' => $rcDescricao . ' (INFORMADO)',
                 'valor' => $registroConferencia->getValor(),
                 'icon' => $this->chooseIcon($totalComparado, $registroConferencia),
@@ -109,18 +120,19 @@ class ConferenciaFinanceiroBusiness
     public function chooseIcon($valor, ?RegistroConferencia $rc)
     {
         $icone = null;
+
         if ($valor and $rc) {
             if ($valor == $rc->getValor()) {
-                $icone = 'checked';
+                $icone = 'fas fa-thumbs-up';
             } else {
                 if ($rc->getObs() != null) {
-                    $icone = 'attention';
+                    $icone = 'fas fa-exclamation-triangle';
                 } else {
-                    $icone = 'cancel';
+                    $icone = 'fas fa-thumbs-down';
                 }
             }
         } else {
-            $icone = 'checked';
+            $icone = 'fas fa-exclamation-triangle';
         }
 
         return $icone;
@@ -147,8 +159,10 @@ class ConferenciaFinanceiroBusiness
 
         $tCaixaAvista102 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $caixaAVista, $c102);
 
-        $list[] = ['titulo' => 'TOTAL ENTRADAS (1.02) - CAIXA A VISTA',
-            'valor' => $tCaixaAvista102];
+        if ($tCaixaAvista102) {
+            $list[] = ['titulo' => 'TOTAL ENTRADAS (1.02) - CAIXA A VISTA',
+                'valor' => $tCaixaAvista102];
+        }
 
         // Linha para Registro de Conferência
         $list[] = $this->addLinhaRegistroConferencia('TOTAL CAIXA A VISTA (BONSUCESSO)', $tCaixaAvista101, $dtFim);
@@ -162,7 +176,7 @@ class ConferenciaFinanceiroBusiness
         $obs = $tAjustesCaixaAvistaPos . '(+) . ' . $tAjustesCaixaAvistaNeg . '(-)';
 
         $tAjustesAvista = $tAjustesCaixaAvistaPos - $tAjustesCaixaAvistaNeg;
-        $icone = $tAjustesAvista == 0 ? 'checked' : 'attention';
+        $icone = $tAjustesAvista == 0 ? 'fas fa-thumbs-up' : 'fas fa-exclamation';
 
         $list[] = ['titulo' => 'TOTAL AJUSTES - CAIXA A VISTA',
             'valor' => $tAjustesAvista,
@@ -173,7 +187,7 @@ class ConferenciaFinanceiroBusiness
 
         if ($tVendasEKT) {
             $dif = $tCaixaAvista101 - $tVendasEKT;
-            $icone = $tVendasEKT == $tCaixaAvista101 ? 'checked' : 'attention';
+            $icone = $tVendasEKT == $tCaixaAvista101 ? 'fas fa-thumbs-up' : 'fas fa-exclamation';
             $obs = '(DIF: ' . $dif . ')';
             $list[] = ['titulo' => 'TOTAL EKT - CAIXA A VISTA',
                 'valor' => $tVendasEKT,
@@ -222,7 +236,7 @@ class ConferenciaFinanceiroBusiness
 
 
         $tAjustesAprazo = $tAjustesCaixaAprazoPos - $tAjustesCaixaAprazoNeg;
-        $icone = $tAjustesAprazo == 0.0 ? 'checked' : 'attention';
+        $icone = $tAjustesAprazo == 0.0 ? 'fas fa-thumbs-up' : 'fas fa-exclamation';
 
         $list[] = ['titulo' => 'TOTAL AJUSTES - CAIXA A PRAZO',
             'valor' => $tAjustesAprazo,
@@ -243,10 +257,9 @@ class ConferenciaFinanceiroBusiness
      * @return array
      * @throws \Exception
      */
-    public function buildListCartao(\DateTime $dtIni, \DateTime $dtFim, $modoCodigo, $carteiraCodigo, $titulo)
+    public function buildListCartao(\DateTime $dtIni, \DateTime $dtFim, $modoCodigo, $carteiraCodigo, $titulo, $operadoraCartaoDescricao)
     {
-        $c101 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 101]);
-        $c102 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 102]);
+        $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['descricao' => $operadoraCartaoDescricao]);
         $carteira = $this->doctrine->getRepository(Carteira::class)->findOneBy(['codigo' => $carteiraCodigo]);
         if (!$carteira) {
             throw new \Exception('Carteira não encontrada para código $carteiraCodigo');
@@ -254,17 +267,35 @@ class ConferenciaFinanceiroBusiness
 
         $modo = $this->doctrine->getRepository(Modo::class)->findOneBy(['codigo' => $modoCodigo]);
 
-        $t101 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $carteira, $c101, $modo);
-        $t102 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $carteira, $c102, $modo);
 
-        $total = $t101 + $t102;
+        $c101 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 101]);
+        $c102 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 102]);
+
+        // Nos casos de CARTÕES DE DÉBITO, a carteira a ser realizada a totalização é sempre o CAIXA A VISTA.
+        if (strpos($modo->getDescricao(), 'DÉBITO') !== FALSE) {
+            $carteiraTotal = $this->doctrine->getRepository(Carteira::class)->findOneBy(['codigo' => 2]);
+            $debito = true;
+        } else {
+            $carteiraTotal = $carteira;
+            $debito = false;
+        }
+
+        $t101 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $carteiraTotal, $c101, $modo, $operadoraCartao);
+        $t102 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $carteiraTotal, $c102, $modo, $operadoraCartao);
+
+        $total = bcadd($t101, $t102, 2);
 
         $list[] = ['titulo' => $titulo, 'valor' => $total];
-        $list[] = $this->addLinhaRegistroConferencia($titulo, $total, $dtFim);
+        $linhaRegConf = $this->addLinhaRegistroConferencia($titulo, $total, $dtFim);
+        if (!$linhaRegConf) {
+            return null;
+        } else {
+            $list[] = $linhaRegConf;
+        }
 
-        $taxa = $this->movimentacaoBusiness->calcularTaxaCartao($carteira, false, $total, $dtIni, $dtFim);
+        $taxa = $this->movimentacaoBusiness->calcularTaxaCartao($carteira, $debito, $total, $dtIni, $dtFim);
 
-        $icone = $taxa > 0.0001 ? 'checked' : 'cancel';
+        $icone = $taxa > 0.0001 ? 'fas fa-thumbs-up' : 'cancel';
 
         $list[] = ['titulo' => 'TAXA',
             'valor' => $taxa,
@@ -286,11 +317,11 @@ class ConferenciaFinanceiroBusiness
             $valorLanctos = $gi->getValorLanctos();
             $valorInformado = $gi->getValorInformado();
 
-            $icone = $valorLanctos == $valorInformado ? 'checked' : 'cancel';
+            $icone = bcsub($valorLanctos, $valorInformado,2) == 0.00 ? 'fas fa-thumbs-up' : 'fas fa-thumbs-down';
 
-            $list[] = ['titulo' => 'TOTAL LANÇADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos, 'icone' => $icone];
-            $list[] = ['titulo' => '*** TOTAL INFORMADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos, 'icone' => $icone];
-            $list[] = ['titulo' => '', 'valor' => null];
+            $list[] = ['titulo' => 'TOTAL LANÇADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorLanctos];
+            $list[] = ['titulo' => '*** TOTAL INFORMADO - ' . $gi->getPai()->getDescricao(), 'valor' => $valorInformado, 'icon' => $icone];
+            $list[] = [];
         }
 
         return $list;
@@ -311,11 +342,11 @@ class ConferenciaFinanceiroBusiness
         $t299 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, null, $c299);
         $t199 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, null, $c199);
 
-        $icone = $t199 == $t299 ? 'checked' : 'cancel';
+        $icon = bcsub($t299, $t199,2) == 0.00 ? 'fas fa-thumbs-up' : 'fas fa-thumbs-down';
 
         $list = [];
-        $list[] = ['titulo' => 'TOTAL - ' . $c299->getPai()->getDescricao(), 'valor' => $t299, 'icone' => $icone];
-        $list[] = ['titulo' => 'TOTAL - ' . $c199->getPai()->getDescricao(), 'valor' => $t199, 'icone' => $icone];
+        $list[] = ['titulo' => 'TOTAL - ' . $c299->getPai()->getDescricao(), 'valor' => $t299, 'icon' => $icon];
+        $list[] = ['titulo' => 'TOTAL - ' . $c199->getPai()->getDescricao(), 'valor' => $t199, 'icon' => $icon];
 
         return $list;
     }

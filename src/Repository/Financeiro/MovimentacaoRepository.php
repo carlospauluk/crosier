@@ -6,6 +6,7 @@ use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
+use App\Entity\Financeiro\OperadoraCartao;
 use App\Repository\FilterRepository;
 use App\Utils\Repository\FilterData;
 use Doctrine\ORM\Query\ResultSetMapping;
@@ -76,7 +77,7 @@ class MovimentacaoRepository extends FilterRepository
         return $r[0]['valor_total'];
     }
 
-    public function findTotal(\DateTime $dtIni, \DateTime $dtFim, ?Carteira $carteira = null, ?Categoria $categoria = null, ?Modo $modo = null)
+    public function findTotal(\DateTime $dtIni, \DateTime $dtFim, ?Carteira $carteira = null, ?Categoria $categoria = null, ?Modo $modo = null, ?OperadoraCartao $operadoraCartao = null)
     {
         $dtIni->setTime(0, 0, 0, 0);
         $dtFim->setTime(23, 59, 59, 999999);
@@ -98,6 +99,10 @@ class MovimentacaoRepository extends FilterRepository
         if ($modo) {
             $ql .= " AND m.modo_id = :modoId";
             $params['modoId'] = $modo->getId();
+        }
+        if ($operadoraCartao) {
+            $ql .= " AND m.operadora_cartao_id = :operadoraCartaoId";
+            $params['operadoraCartaoId'] = $operadoraCartao->getId();
         }
 
         $rsm = new ResultSetMapping ();

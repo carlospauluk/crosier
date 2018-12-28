@@ -48,8 +48,9 @@ function getDatatablesColumns() {
             render: function (data, type, row) {
                 let routeedit = $(listId).data('routeedit');
                 let url = routeedit + '/' + data.id;
-                return "<button type=\"button\" class=\"btn btn-primary\" onclick=\"window.location.href='" + url + "'\">" +
-                    "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></button>";
+
+                return "<a role=\"button\" class=\"btn btn-primary\" href=\"" + url + "\">" +
+                    "<i class=\"fas fa-wrench\" aria-hidden=\"true\"></i></a>";
             },
             className: 'text-right'
         }

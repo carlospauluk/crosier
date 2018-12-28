@@ -10,6 +10,7 @@ use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use App\Form\Financeiro\MovimentacaoType;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +25,7 @@ use Symfony\Component\Serializer\Serializer;
  * @package App\Controller\Financeiro
  * @author Carlos Eduardo Pauluk
  */
-class MovimentacaoImportController extends Controller
+class MovimentacaoImportController extends AbstractController
 {
 
     private $entityHandler;
@@ -65,6 +66,7 @@ class MovimentacaoImportController extends Controller
         $this->vParams['grupo'] = null;
         $this->vParams['grupoItem'] = null;
         $this->vParams['gerarSemRegras'] = null;
+        $this->vParams['usarCabecalho'] = null;
         $this->vParams['movs'] = null;
         $this->vParams['total'] = null;
     }
@@ -174,12 +176,17 @@ class MovimentacaoImportController extends Controller
             $carteiraExtrato,
             $carteiraDestino,
             $grupoItem,
-            $this->vParams['gerarSemRegras']);
+            $this->vParams['gerarSemRegras'],
+            $this->vParams['usarCabecalho']);
 
         $movsImportadas = $r['movs'];
 
         $sessionMovs = array();
+        $unqs = [];
         foreach ($movsImportadas as $mov) {
+            $unqs[] = $mov->getUnqControle();
+
+
             $sessionMovs[$mov->getUnqControle()] = $mov;
         }
         $this->vParams['linhasExtrato'] = $r['LINHAS_RESULT'];
