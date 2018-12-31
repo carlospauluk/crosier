@@ -144,7 +144,7 @@ class MovimentacaoImportController extends AbstractController
 
         $carteiraDestino = null;
         if ($this->vParams['carteiraDestino']) {
-            $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($request->request->get($this->vParams['carteiraDestino']));
+            $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraDestino']);
         }
 
         $grupoItem = null;

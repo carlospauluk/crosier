@@ -278,22 +278,18 @@ class MovimentacaoImporter
         $dtMoviment = $camposLinha["dtMoviment"];
         $dtVenctoEfetiva = $camposLinha["dtVenctoEfetiva"];
         $valor = $camposLinha["valor"];
-        $desconto = $camposLinha["desconto"];
         $valorTotal = $camposLinha["valorTotal"];
         $bandeiraCartao = $camposLinha["bandeiraCartao"];
 
 
-        $categ101 = $this->doctrine->getRepository(CategoriaRepository::class)->find(101);
-        $categ299 = $this->doctrine->getRepository(CategoriaRepository::class)->find(299);
+        $categ101 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 101]);
+        $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
 
 
         $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DÉBITO";
 
-        // carteiraDestino aqui tem que ser sempre o Caixa a Vista (que é o caixa que primeiro recebeu o valor da compra).
-
-
         // Primeiro tento encontrar a movimentação original do cartão, que é a movimentação de entrada (101) no caixa a vista (anotado na folhinha de fechamento de caixa, lançado manualmente).
-
+        $dtMoviment = $dtMoviment->setTime(0,0,0,0);
         $movs101Todas = $this->doctrine->getRepository(Movimentacao::class)
             ->findBy([
                 'dtMoviment' => $dtMoviment,
@@ -303,26 +299,19 @@ class MovimentacaoImporter
                 'categoria' => $categ101
             ]);
 
-        $movs101 = array();
-        foreach ($movs101Todas as $mov101) {
-            if (!in_array($mov101->getId(), $this->movs101JaImportadas)) {
-                $movs101[] = $mov101;
-            }
-        }
-
-        // FIXME: na lógica do Java, se não encontrava ele ia procurar no próximo dia.
-
-        if (count($movs101) < 1) {
-            throw new ViewException('Movimentação (1.01) original não encontrada (' . $descricao . ' - R$ ' . number_format($valorTotal, 2, '.', ','));
-        }
-
-        // Por padrão, será a primeira. Mas se encontrar outra sem cadeia, troca.
-        $mov101 = $movs101[0];
-        foreach ($movs101 as $mov101_) {
-            if (!$mov101_->getCadeia()) {
-                $mov101 = $mov101_;
+        // Ignora as que já foram importadas (ou melhor, associadas, pois pode ter uma mesma movimentação, com mesmo valor,
+        // mesma data, mesma bandeira
+        $mov101 = null;
+        foreach ($movs101Todas as $_mov101) {
+            if (!in_array($_mov101->getId(), $this->movs101JaImportadas)) {
+                $mov101 = $_mov101;
                 break;
             }
+        }
+
+        // Se não encontrar, avisa
+        if (!$mov101) {
+            throw new ViewException('Movimentação (1.01) original não encontrada (' . $descricao . ' - R$ ' . number_format($valorTotal, 2, '.', ','));
         }
 
         // Aqui as carteiras são invertidas, pois é a 299 (a destino do método é a do extrato, e a destino da importação é a 'origem' no método)
@@ -335,23 +324,12 @@ class MovimentacaoImporter
                 'bandeiraCartao' => $bandeiraCartao,
                 'categoria' => $categ299
             ]);
-        $movs299 = array();
+        $mov299 = null;
         // Remove as já importadas para resolver o bug de ter duas movimentações de mesma bandeira e mesmo valor no mesmo dia
-        foreach ($movs299Todas as $mov299) {
-            if (!in_array($mov299->getId(), $this->movsJaImportadas)) {
-                $movs299[] = $mov299;
+        foreach ($movs299Todas as $_mov299) {
+            if (!in_array($_mov299->getId(), $this->movsJaImportadas)) {
+                return $mov299;
             }
-        }
-
-        // Se já existir, só retorna pois já encontrou a que já tinha sido $importada->..
-        if (count($movs299) < 1) {
-            return $movs299[0];
-        }
-
-        if ($mov101->getCadeia() and
-            $mov101->getCadeia()->getMovimentacoes() and
-            $mov101->getCadeia()->getMovimentacoes()->count() > 0) {
-            throw new ViewException("Inconsistência: movimentação original já possui uma cadeia e a movimentação que se está tentando importar não faz parte dela.");
         }
 
         // Crio as movimentações 299 (no caixa AV) e 199 (na carteira extrato)
@@ -362,7 +340,7 @@ class MovimentacaoImporter
         $mov299->setCarteiraDestino($this->carteiraExtrato); // vai creditar na carteira do cartão (199)
         $mov299->setCategoria($categ299);
         $mov299->setValor($valor);
-        $mov299->setDescontos($desconto);
+        $mov299->setDescontos(0.00);
         $mov299->setValorTotal($valorTotal);
         $mov299->setDescricao($descricao);
         $mov299->setTipoLancto('TRANSF_PROPRIA'); // para gerar as duas (299+199)
@@ -377,6 +355,7 @@ class MovimentacaoImporter
         $mov299->setDtPagto($mov101->getDtMoviment());
 
         $mov299->setBandeiraCartao($bandeiraCartao);
+        $mov299->setUnqControle(md5(uniqid(rand(), true)));
 
 
         $operadoraCartao = $this->doctrine->getRepository(OperadoraCartao::class)->findOneBy(['carteira' => $this->carteiraExtrato]);

@@ -11,6 +11,7 @@ use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\EntityHandler\EntityHandler;
+use App\Exception\ViewException;
 use Psr\Log\LoggerInterface;
 
 class MovimentacaoEntityHandler extends EntityHandler
@@ -287,7 +288,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             if ($mov) {
                 $err .= '(' . $mov->getDescricao() . ')';
             }
-            throw new \Exception($err);
+            throw new ViewException($err);
         }
     }
 
