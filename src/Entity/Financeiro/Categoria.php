@@ -30,7 +30,7 @@ class Categoria extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Categoria", inversedBy="subCategs")
      * @ORM\JoinColumn(name="pai_id",nullable=true)
      *
      * @var $pai Categoria

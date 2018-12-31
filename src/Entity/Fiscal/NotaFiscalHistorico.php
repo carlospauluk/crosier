@@ -28,7 +28,7 @@ class NotaFiscalHistorico extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Fiscal\NotaFiscal")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Fiscal\NotaFiscal", inversedBy="historicos")
      * @ORM\JoinColumn(name="fis_nf_id", nullable=false)
      *
      * @var $fisNf NotaFiscal

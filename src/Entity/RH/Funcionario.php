@@ -186,7 +186,7 @@ class Funcionario extends EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="FuncionarioCargo",
-     *      mappedBy="grade",
+     *      mappedBy="funcionario",
      *      orphanRemoval=true
      * )
      */

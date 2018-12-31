@@ -41,7 +41,7 @@ class ProdutoSaldo extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Produto")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Produto", inversedBy="saldos")
      * @ORM\JoinColumn(name="produto_id", nullable=false)
      *
      * @var $produto Produto

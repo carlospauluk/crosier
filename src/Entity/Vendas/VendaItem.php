@@ -64,7 +64,7 @@ class VendaItem extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\vendas\Venda")
+     * @ORM\ManyToOne(targetEntity="App\Entity\vendas\Venda", inversedBy="itens")
      * @ORM\JoinColumn(name="venda_id", nullable=false)
      *
      * @var $venda Venda

@@ -4,6 +4,7 @@ namespace App\Entity\Producao;
 
 use App\Entity\Base\EntityId;
 use App\Entity\Estoque\Grade;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -114,11 +115,21 @@ class Confeccao extends EntityId
      */
     private $oculta;
 
+    /**
+     *
+     * @var ConfeccaoItem[]|ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *      targetEntity="ConfeccaoItem",
+     *      mappedBy="confeccao",
+     *      orphanRemoval=true
+     * )
+     */
+    private $itens;
+
     public function __construct()
     {
-        ORM\Annotation::class;
-        Assert\All::class;
-        Grade::class;
+        $this->itens = new ArrayCollection();
     }
 
     public function getId()

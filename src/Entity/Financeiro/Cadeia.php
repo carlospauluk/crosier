@@ -6,7 +6,6 @@ use App\Entity\Base\EntityId;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\ChangeTrackingPolicy;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -39,18 +38,6 @@ class Cadeia extends EntityId
 
     /**
      *
-     * @var Movimentacao[]|ArrayCollection
-     *
-     * @ORM\OneToMany(
-     *      targetEntity="Movimentacao",
-     *      mappedBy="cadeia",
-     *      orphanRemoval=true
-     * )
-     */
-    private $movimentacoes;
-
-    /**
-     *
      * Se for vinculante, ao deletar uma movimentação da cadeia todas deverão são deletadas (ver trigger trg_ad_delete_cadeia).
      *
      * @ORM\Column(name="vinculante", type="boolean", nullable=false)
@@ -66,12 +53,6 @@ class Cadeia extends EntityId
      * @Assert\NotNull()
      */
     private $fechada = false;
-
-    public function __construct()
-    {
-        // Necessário para a inicialização do atributo pelo Doctrine.
-        $this->movimentacoes = new ArrayCollection();
-    }
 
     public function getId()
     {
@@ -97,30 +78,6 @@ class Cadeia extends EntityId
     public function setUnqc($unqc): void
     {
         $this->unqc = $unqc;
-    }
-
-
-    /**
-     *
-     * @return Collection|Movimentacao[]
-     */
-    public function getMovimentacoes(): Collection
-    {
-        return $this->movimentacoes;
-    }
-
-    public function addMovimentacao(?Movimentacao $movimentacao): void
-    {
-        $movimentacao->setCadeia($this);
-        if (!$this->movimentacoes->contains($movimentacao)) {
-            $this->movimentacoes->add($movimentacao);
-        }
-    }
-
-    public function removeMovimentacao(Movimentacao $movimentacao): void
-    {
-        $movimentacao->setCadeia(null);
-        $this->movimentacoes->removeElement($movimentacao);
     }
 
     public function getVinculante()

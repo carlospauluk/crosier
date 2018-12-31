@@ -128,7 +128,7 @@ class Movimentacao extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Parcelamento")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Parcelamento", inversedBy="parcelas")
      * @ORM\JoinColumn(name="parcelamento_id", nullable=true)
      *
      * @var $parcelamento Parcelamento
@@ -152,7 +152,7 @@ class Movimentacao extends EntityId
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Cadeia")
-     * @ORM\JoinColumn(name="cadeia_id", nullable=true)
+     * @ORM\JoinColumn(name="cadeia_id", referencedColumnName="id", nullable=true)
      *
      * @var $cadeia Cadeia
      */
@@ -202,7 +202,7 @@ class Movimentacao extends EntityId
     /**
      * Caso seja uma movimentação agrupada em um Grupo de Movimentação (item).
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\GrupoItem")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\GrupoItem", inversedBy="movimentacoes")
      * @ORM\JoinColumn(name="grupo_item_id", nullable=true)
      *
      * @var $grupoItem GrupoItem
@@ -410,9 +410,15 @@ class Movimentacao extends EntityId
             case 'CHEQUE_PROPRIO':
             case 'CHEQUE_TERCEIROS':
             case 'GERAL':
-            case 'ESTORNO_CORRECAO': $this->tipoLancto = 'GERAL'; break;
-            case 'TRANSF_CAIXA': $this->tipoLancto = 'TRANSF_PROPRIA'; break;
-            case 'MOVIMENTACAO_AGRUPADA': $this->tipoLancto = 'GRUPO'; break;
+            case 'ESTORNO_CORRECAO':
+                $this->tipoLancto = 'GERAL';
+                break;
+            case 'TRANSF_CAIXA':
+                $this->tipoLancto = 'TRANSF_PROPRIA';
+                break;
+            case 'MOVIMENTACAO_AGRUPADA':
+                $this->tipoLancto = 'GRUPO';
+                break;
         }
 
         return $this->tipoLancto;

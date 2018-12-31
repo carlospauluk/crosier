@@ -4,6 +4,7 @@ namespace App\Entity\Financeiro;
 
 use App\Entity\Base\EntityId;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -167,5 +168,16 @@ class Grupo extends EntityId
     {
         $this->categoriaPadrao = $categoriaPadrao;
     }
+
+
+    /**
+     *
+     * @return Collection|Categoria[]
+     */
+    public function getItens(): Collection
+    {
+        return $this->itens;
+    }
+
 }
 

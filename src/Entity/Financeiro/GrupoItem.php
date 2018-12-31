@@ -30,7 +30,7 @@ class GrupoItem extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Grupo")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Financeiro\Grupo", inversedBy="itens")
      * @ORM\JoinColumn(name="grupo_pai_id", nullable=true)
      *
      * @var $pai Grupo

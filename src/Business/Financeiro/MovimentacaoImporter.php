@@ -319,15 +319,14 @@ class MovimentacaoImporter
             ->findBy([
                 'dtMoviment' => $dtMoviment,
                 'valorTotal' => $valorTotal,
-                'carteira' => $this->carteiraExtrato,
-                'carteiraDestino' => $this->carteiraDestino,
+                'carteira' => $this->carteiraDestino,
+                'carteiraDestino' => $this->carteiraExtrato,
                 'bandeiraCartao' => $bandeiraCartao,
                 'categoria' => $categ299
             ]);
-        $mov299 = null;
         // Remove as já importadas para resolver o bug de ter duas movimentações de mesma bandeira e mesmo valor no mesmo dia
-        foreach ($movs299Todas as $_mov299) {
-            if (!in_array($_mov299->getId(), $this->movsJaImportadas)) {
+        foreach ($movs299Todas as $mov299) {
+            if (!in_array($mov299->getId(), $this->movsJaImportadas)) {
                 return $mov299;
             }
         }

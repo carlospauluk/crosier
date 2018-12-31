@@ -39,7 +39,7 @@ class GradeTamanho extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Grade")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Estoque\Grade", inversedBy="tamanhos")
      * @ORM\JoinColumn(name="grade_id", nullable=false)
      *
      * @var $grade Grade

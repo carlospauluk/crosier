@@ -66,7 +66,7 @@ class EntMenu extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Config\EntMenu")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Config\EntMenu", inversedBy="filhos")
      * @ORM\JoinColumn(nullable=true)
      */
     private $pai;

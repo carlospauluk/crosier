@@ -27,7 +27,7 @@ class ConfeccaoItem extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Producao\Confeccao")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Producao\Confeccao", inversedBy="itens")
      * @ORM\JoinColumn(name="confeccao_id", nullable=false)
      *
      * @var $confeccao Confeccao

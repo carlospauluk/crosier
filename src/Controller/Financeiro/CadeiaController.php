@@ -3,7 +3,7 @@
 namespace App\Controller\Financeiro;
 
 use App\EntityHandler\Financeiro\CadeiaEntityHandler;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * @package App\Controller\Financeiro
  * @author Carlos Eduardo Pauluk
  */
-class CadeiaController extends Controller
+class CadeiaController extends AbstractController
 {
 
     private $entityHandler;
@@ -37,6 +37,18 @@ class CadeiaController extends Controller
     {
         $this->entityHandler->corrigirUnqcs();
         return new Response('Corrigido');
+    }
+
+    /**
+     *
+     * @Route("/fin/cadeia/removerCadeiasComApenasUmaMovimentacao", name="fin_cadeia_removerCadeiasComApenasUmaMovimentacao")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function removerCadeiasComApenasUmaMovimentacao()
+    {
+        $this->entityHandler->removerCadeiasComApenasUmaMovimentacao();
+        return new Response('OK');
     }
 
 

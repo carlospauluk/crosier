@@ -32,7 +32,7 @@ class ConfeccaoItemQtde extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Producao\ConfeccaoItem")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Producao\ConfeccaoItem", inversedBy="qtdesGrade")
      * @ORM\JoinColumn(name="confeccao_item_id", nullable=false)
      *
      * @var $confeccaoItem ConfeccaoItem

@@ -79,7 +79,7 @@ class FuncionarioCargo extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\RH\Funcionario")
+     * @ORM\ManyToOne(targetEntity="App\Entity\RH\Funcionario", inversedBy="cargos")
      * @ORM\JoinColumn(name="funcionario_id", nullable=false)
      *
      * @var $funcionario Funcionario

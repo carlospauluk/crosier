@@ -250,10 +250,11 @@ class MovimentacaoEntityHandler extends EntityHandler
      * Tratamento diferenciado para cada tipoLancto.
      *
      * @param \App\Entity\Base\EntityId $movimentacao
+     * @param bool $flush
      * @return \App\Entity\Base\EntityId|Movimentacao|null
-     * @throws \Exception
+     * @throws ViewException
      */
-    public function save($movimentacao)
+    public function save($movimentacao, $flush = true)
     {
         if (!$movimentacao->getTipoLancto()) {
             throw new \Exception("Tipo Lancto não informado para " . $movimentacao->getDescricaoMontada());
@@ -278,6 +279,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $this->getEntityManager()->beginTransaction();
             foreach ($movs as $mov) {
                 $this->getMovimentacaoBusiness()->mergeAll($mov);
+                $this->getEntityManager()->flush();
                 $this->save($mov);
                 $this->getEntityManager()->clear();
             }
@@ -292,6 +294,19 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
     }
 
+
+    public function saveTransfPropria2(Movimentacao $moviment299)
+    {
+        $cadeia = new Cadeia();
+
+        $cadeia->setVinculante(false);
+        $cadeia->setFechada(false);
+        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
+
+        print_r($cadeia);
+
+    }
+
     /**
      * Salva uma transferência entre carteiras.
      * Pode ser chamado a partir da saveTransfCaixa (que gera, então, 3 movimentações).
@@ -303,8 +318,6 @@ class MovimentacaoEntityHandler extends EntityHandler
     {
         $categ299 = $this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
         $categ199 = $this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 199]);
-        $moviment299->setCategoria($categ299);
-
 
         if ($moviment299->getId()) {
             $cadeia = $moviment299->getCadeia();
@@ -317,8 +330,15 @@ class MovimentacaoEntityHandler extends EntityHandler
             $moviment199 = new Movimentacao();
         }
 
+        $cadeia->setVinculante(false);
+        $cadeia->setFechada(false);
+        $this->getCadeiaEntityHandler()->save($cadeia);
+
+        $moviment299->setCategoria($categ299);
+
         $moviment299->setCadeiaOrdem(1);
         $moviment299->setCadeia($cadeia);
+//        $cadeia->addMovimentacao($moviment299);
         $moviment299->calcValorTotal();
 
         // Salvar a 199
@@ -344,18 +364,16 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment199->setBandeiraCartao($moviment299->getBandeiraCartao());
         $moviment199->setCadeiaOrdem(2); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
         $moviment199->setCadeia($cadeia);
-
-        $cadeia->setVinculante(false);
-        $cadeia->setFechada(false);
-        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
-
-        $moviment299 = parent::save($moviment299);
-        $moviment199 = parent::save($moviment199);
+//        $cadeia->addMovimentacao($moviment199);
 
 
+        $moviment299 = parent::save($moviment299, false);
+        $moviment199 = parent::save($moviment199, false);
+
+        $this->getEntityManager()->flush();
         // agora que já salvou a primeira, pode fechar a cadeia
         $cadeia->setVinculante(true);
-        $cadeia->setFechada (true);
+        $cadeia->setFechada(true);
         $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
 
         return $moviment299;
@@ -454,12 +472,14 @@ class MovimentacaoEntityHandler extends EntityHandler
                 // Como está sendo gerada uma cadeia nova, tenho que atualizar a movimentação original e mandar salva-la também.
                 $originante->setCadeiaOrdem(1);
                 $originante->setCadeia($cadeia);
+                $cadeia->addMovimentacao($originante);
                 $salvarOriginal = true; // tem que salvar a originante porque ela foi incluída na cadeia
                 $nova->setCadeiaOrdem(2);
             }
             $cadeia->setVinculante(false);
             $cadeia->setFechada(false);
             $nova->setCadeia($cadeia);
+            $cadeia->addMovimentacao($nova);
 
             $this->calcularNovaDtVencto($originante, $nova);
 
@@ -477,6 +497,7 @@ class MovimentacaoEntityHandler extends EntityHandler
             $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
 
             $originante->setCadeia($cadeia);
+            $cadeia->addMovimentacao($originante);
 
             if ($salvarOriginal) {
                 try {
@@ -486,6 +507,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                     $result .= "<<ERRO>> ao salvar movimentação originante: " . $originante->getDescricao() . ". (" . $e->getMessage() . ")";
                 }
                 $nova->setCadeia($originante->getCadeia());
+                $cadeia->addMovimentacao($nova);
             }
 
             try {
@@ -572,5 +594,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         return $movimentacao;
     }
+
+
 
 }

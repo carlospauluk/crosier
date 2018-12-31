@@ -98,7 +98,7 @@ class NotaFiscalItem extends EntityId
 
     /**
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Fiscal\NotaFiscal")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Fiscal\NotaFiscal", inversedBy="itens")
      * @ORM\JoinColumn(name="nota_fiscal_id", nullable=false)
      *
      * @var $notaFiscal NotaFiscal

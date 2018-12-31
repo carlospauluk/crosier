@@ -42,8 +42,7 @@ class Parcelamento extends EntityId
      *
      * @ORM\OneToMany(
      *      targetEntity="Movimentacao",
-     *      mappedBy="cadeia",
-     *      orphanRemoval=true
+     *      mappedBy="parcelamento"
      * )
      */
     private $parcelas;
@@ -73,18 +72,9 @@ class Parcelamento extends EntityId
         $this->valorTotal = $valorTotal;
     }
 
-    /**
-     *
-     * @return Collection|Movimentacao[]
-     */
-    public function getParcelas(): Collection
-    {
-        return $this->parcelas;
-    }
-
     public function addParcela(?Movimentacao $movimentacao): void
     {
-        $movimentacao->setCadeia($this);
+        $movimentacao->setParcelamento($this);
         if (!$this->parcelas->contains($movimentacao)) {
             $this->parcelas->add($movimentacao);
         }
@@ -92,7 +82,7 @@ class Parcelamento extends EntityId
 
     public function removeParcela(Movimentacao $movimentacao): void
     {
-        $movimentacao->setCadeia(null);
+        $movimentacao->setParcelamento(null);
         $this->parcelas->removeElement($movimentacao);
     }
 
@@ -122,6 +112,15 @@ class Parcelamento extends EntityId
             }
         }
         $this->setValorTotal($valorTotal);
+    }
+
+    /**
+     *
+     * @return Collection|Movimentacao[]
+     */
+    public function getParcelas(): Collection
+    {
+        return $this->parcelas;
     }
 }
 

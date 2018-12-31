@@ -5,6 +5,7 @@ namespace App\EntityHandler;
 
 use App\Business\Base\EntityIdBusiness;
 use App\Entity\Base\EntityId;
+use App\Exception\ViewException;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -53,17 +54,24 @@ abstract class EntityHandler
      * Executa o persist/update e o flush.
      *
      * @param EntityId $entityId
+     * @param bool $flush
      * @return EntityId|object
+     * @throws ViewException
      */
-    public function save(EntityId $entityId)
+    public function save(EntityId $entityId, $flush = true)
     {
+        if (!$entityId->getId() and $this->getEntityManager()->contains($entityId)) {
+            throw new ViewException('872362384');
+        }
         $this->beforeSave($entityId);
         if ($entityId->getId()) {
-            $entityId = $this->entityManager->merge($entityId);
+            $entityId = $this->getEntityManager()->merge($entityId);
         } else {
-            $this->entityManager->persist($entityId);
+            $this->getEntityManager()->persist($entityId);
         }
-        $this->entityManager->flush();
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
         $this->afterPersist($entityId);
         return $entityId;
     }
