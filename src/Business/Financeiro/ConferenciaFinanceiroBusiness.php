@@ -278,6 +278,7 @@ class ConferenciaFinanceiroBusiness
         } else {
             $carteiraTotal = $carteira;
             $debito = false;
+            $operadoraCartao = null; // só precisa (e só funciona) no caso do débito (que precisa distinguir no caixa a vista)
         }
 
         $t101 = $this->doctrine->getRepository(Movimentacao::class)->findTotal($dtIni, $dtFim, $carteiraTotal, $c101, $modo, $operadoraCartao);

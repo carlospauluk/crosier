@@ -81,7 +81,7 @@ class MovimentacaoBusiness
      * @param Movimentacao $movimentacao
      * @throws \Doctrine\ORM\ORMException
      */
-    public function mergeAll(Movimentacao $movimentacao)
+    public function mergeAll(Movimentacao &$movimentacao)
     {
         $em = $this->doctrine->getManager();
         if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getId()) {
@@ -89,6 +89,7 @@ class MovimentacaoBusiness
         }
         if ($movimentacao->getCarteira() and $movimentacao->getCarteira()->getId()) {
             $movimentacao->setCarteira($em->merge($movimentacao->getCarteira()));
+            $em->refresh($movimentacao->getCarteira());
         }
         if ($movimentacao->getCarteiraDestino() and $movimentacao->getCarteiraDestino()->getId()) {
             $movimentacao->setCarteiraDestino($em->merge($movimentacao->getCarteiraDestino()));

@@ -60,9 +60,6 @@ abstract class EntityHandler
      */
     public function save(EntityId $entityId, $flush = true)
     {
-        if (!$entityId->getId() and $this->getEntityManager()->contains($entityId)) {
-            throw new ViewException('872362384');
-        }
         $this->beforeSave($entityId);
         if ($entityId->getId()) {
             $entityId = $this->getEntityManager()->merge($entityId);

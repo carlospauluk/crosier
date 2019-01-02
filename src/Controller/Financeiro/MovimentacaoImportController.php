@@ -131,6 +131,8 @@ class MovimentacaoImportController extends AbstractController
      */
     public function importar(Request $request)
     {
+        $this->vParams['movs'] = null;
+
         $tipoExtrato = $request->get('tipoExtrato');
         if (!$tipoExtrato) {
             throw new ViewException('É necessário informar o tipo do extrato.');

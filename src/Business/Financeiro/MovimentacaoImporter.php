@@ -178,7 +178,7 @@ class MovimentacaoImporter
      */
     private function importarPadrao()
     {
-        $movsImportadas = array();
+        $this->movsJaImportadas = [];
 
         $linhasNaoImportadas = array();
         $linhasImportadas = array();
@@ -208,7 +208,7 @@ class MovimentacaoImporter
             $movimentacao = $this->importarLinha($i);
 
             if ($movimentacao) {
-                $movsImportadas[] = $movimentacao;
+                $this->movsJaImportadas[] = $movimentacao;
                 $linhasImportadas[] = $linha;
             } else {
                 $linhasNaoImportadas[] = $linha;
@@ -223,7 +223,7 @@ class MovimentacaoImporter
         $r['LINHAS_RESULT'] .= TXT_LINHA_IMPORTADA . "\n" .
             implode("\n", $linhasImportadas);
 
-        $r['movs'] = $movsImportadas;
+        $r['movs'] = $this->movsJaImportadas;
 
         return $r;
     }
@@ -283,6 +283,7 @@ class MovimentacaoImporter
 
 
         $categ101 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 101]);
+        $categ102 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 102]);
         $categ299 = $this->doctrine->getRepository(Categoria::class)->findOneBy(['codigo' => 299]);
 
 
@@ -296,8 +297,10 @@ class MovimentacaoImporter
                 'valorTotal' => $valorTotal,
                 'carteira' => $this->carteiraDestino,
                 'bandeiraCartao' => $bandeiraCartao,
-                'categoria' => $categ101
+                'categoria' => [$categ101,$categ102]
             ]);
+
+
 
         // Ignora as que já foram importadas (ou melhor, associadas, pois pode ter uma mesma movimentação, com mesmo valor,
         // mesma data, mesma bandeira
@@ -307,6 +310,9 @@ class MovimentacaoImporter
                 $mov101 = $_mov101;
                 break;
             }
+        }
+        if ($mov101) {
+            $this->movs101JaImportadas[] = $mov101->getId();
         }
 
         // Se não encontrar, avisa
@@ -326,10 +332,11 @@ class MovimentacaoImporter
             ]);
         // Remove as já importadas para resolver o bug de ter duas movimentações de mesma bandeira e mesmo valor no mesmo dia
         foreach ($movs299Todas as $mov299) {
-            if (!in_array($mov299->getId(), $this->movsJaImportadas)) {
+            if (!in_array($mov299, $this->movsJaImportadas)) {
                 return $mov299;
             }
         }
+
 
         // Crio as movimentações 299 (no caixa AV) e 199 (na carteira extrato)
 

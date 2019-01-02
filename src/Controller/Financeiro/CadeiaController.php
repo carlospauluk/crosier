@@ -51,5 +51,17 @@ class CadeiaController extends AbstractController
         return new Response('OK');
     }
 
+    /**
+     *
+     * @Route("/fin/cadeia/removerCadeiasComApenasUmaMovimentacao", name="fin_cadeia_removerCadeiasComApenasUmaMovimentacao")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function corrigir()
+    {
+        $this->entityHandler->removerCadeiasComApenasUmaMovimentacao();
+        return new Response('OK');
+    }
+
 
 }

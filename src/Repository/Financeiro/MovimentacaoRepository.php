@@ -101,7 +101,7 @@ class MovimentacaoRepository extends FilterRepository
             $params['modoId'] = $modo->getId();
         }
         if ($operadoraCartao) {
-            $ql .= " AND m.operadora_cartao_id = :operadoraCartaoId";
+            $ql .= " AND m.cadeia_id IN (SELECT cadeia_id FROM fin_movimentacao WHERE cadeia_id = m.cadeia_id AND operadora_cartao_id = :operadoraCartaoId)";
             $params['operadoraCartaoId'] = $operadoraCartao->getId();
         }
 

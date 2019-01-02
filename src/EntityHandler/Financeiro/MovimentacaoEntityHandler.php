@@ -235,7 +235,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $movimentacao->setDtUtil(!$movimentacao->getDtPagto() ? $movimentacao->getDtVenctoEfetiva() : $movimentacao->getDtPagto());
 
         if ($movimentacao->getCarteira()->getOperadoraCartao()) {
-            $this->getEntityManager()->refresh($movimentacao->getCarteira()->getOperadoraCartao());
+            // $this->getEntityManager()->refresh($movimentacao->getCarteira()->getOperadoraCartao());
             $movimentacao->setOperadoraCartao($movimentacao->getCarteira()->getOperadoraCartao());
         }
 
@@ -278,8 +278,6 @@ class MovimentacaoEntityHandler extends EntityHandler
         try {
             $this->getEntityManager()->beginTransaction();
             foreach ($movs as $mov) {
-                $this->getMovimentacaoBusiness()->mergeAll($mov);
-                $this->getEntityManager()->flush();
                 $this->save($mov);
                 $this->getEntityManager()->clear();
             }
@@ -292,19 +290,6 @@ class MovimentacaoEntityHandler extends EntityHandler
             }
             throw new ViewException($err);
         }
-    }
-
-
-    public function saveTransfPropria2(Movimentacao $moviment299)
-    {
-        $cadeia = new Cadeia();
-
-        $cadeia->setVinculante(false);
-        $cadeia->setFechada(false);
-        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
-
-        print_r($cadeia);
-
     }
 
     /**
@@ -320,6 +305,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $categ199 = $this->getEntityManager()->getRepository(Categoria::class)->findOneBy(['codigo' => 199]);
 
         if ($moviment299->getId()) {
+            $moviment299 = $this->getEntityManager()->find(Movimentacao::class, $moviment299->getId());
             $cadeia = $moviment299->getCadeia();
             $moviment199 = $this->getEntityManager()->getRepository(Movimentacao::class)->findOneBy(['cadeia' => $cadeia, 'categoria' => $categ199]);
             if (!$moviment199) {
@@ -332,13 +318,15 @@ class MovimentacaoEntityHandler extends EntityHandler
 
         $cadeia->setVinculante(false);
         $cadeia->setFechada(false);
-        $this->getCadeiaEntityHandler()->save($cadeia);
+        $this->getCadeiaEntityHandler()->save($cadeia, false);
+        $this->getEntityManager()->flush(); // precisa dar o flush aqui para realmente mandar o INSERT já, pois a cadeia precisa estar aberta para poder inserir movimentações
+
+        $this->getMovimentacaoBusiness()->mergeAll($moviment299);
 
         $moviment299->setCategoria($categ299);
 
         $moviment299->setCadeiaOrdem(1);
         $moviment299->setCadeia($cadeia);
-//        $cadeia->addMovimentacao($moviment299);
         $moviment299->calcValorTotal();
 
         // Salvar a 199
@@ -364,17 +352,20 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment199->setBandeiraCartao($moviment299->getBandeiraCartao());
         $moviment199->setCadeiaOrdem(2); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
         $moviment199->setCadeia($cadeia);
-//        $cadeia->addMovimentacao($moviment199);
 
 
-        $moviment299 = parent::save($moviment299, false);
-        $moviment199 = parent::save($moviment199, false);
 
-        $this->getEntityManager()->flush();
+        parent::save($moviment299, false);
+        parent::save($moviment199, false);
+
+//        $this->getEntityManager()->flush();
+
         // agora que já salvou a primeira, pode fechar a cadeia
         $cadeia->setVinculante(true);
         $cadeia->setFechada(true);
-        $cadeia = $this->getCadeiaEntityHandler()->save($cadeia);
+        $this->getCadeiaEntityHandler()->save($cadeia, false);
+
+        $this->getEntityManager()->flush();
 
         return $moviment299;
     }
