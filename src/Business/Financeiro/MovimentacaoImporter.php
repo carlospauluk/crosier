@@ -13,7 +13,6 @@ use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\OperadoraCartao;
 use App\Entity\Financeiro\RegraImportacaoLinha;
 use App\Exception\ViewException;
-use App\Repository\Financeiro\CategoriaRepository;
 use App\Utils\DateTimeUtils;
 use App\Utils\Repository\FilterData;
 use App\Utils\StringUtils;
@@ -290,16 +289,15 @@ class MovimentacaoImporter
         $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DÉBITO";
 
         // Primeiro tento encontrar a movimentação original do cartão, que é a movimentação de entrada (101) no caixa a vista (anotado na folhinha de fechamento de caixa, lançado manualmente).
-        $dtMoviment = $dtMoviment->setTime(0,0,0,0);
+        $dtMoviment = $dtMoviment->setTime(0, 0, 0, 0);
         $movs101Todas = $this->doctrine->getRepository(Movimentacao::class)
             ->findBy([
                 'dtMoviment' => $dtMoviment,
                 'valorTotal' => $valorTotal,
                 'carteira' => $this->carteiraDestino,
                 'bandeiraCartao' => $bandeiraCartao,
-                'categoria' => [$categ101,$categ102]
+                'categoria' => [$categ101, $categ102]
             ]);
-
 
 
         // Ignora as que já foram importadas (ou melhor, associadas, pois pode ter uma mesma movimentação, com mesmo valor,
@@ -1176,6 +1174,37 @@ class MovimentacaoImporter
 
         return $camposLinha;
 
+
+    }
+
+
+    public function verificarImportadasAMais($movs, $tipoExtrato, ?Carteira $carteiraExtrato, ?Carteira $carteiraDestino, ?GrupoItem $grupoItem)
+    {
+
+        $primeira = $movs[0];
+        $dtPagto = $primeira->getDtPagto();
+        $dtIni = DateTimeUtils::getPrimeiroDiaMes($dtPagto);
+        $dtFim = DateTimeUtils::getUltimoDiaMes($dtPagto);
+
+        if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
+            $dql = "SELECT m FROM App\Entity\Financeiro\Movimentacao m 
+                WHERE 
+                m.dtPagto BETWEEN :dtIni AND :dtFim AND 
+                m.carteira = :carteiraDestino AND
+                modo = :modo AND 
+                AND cadeia IN (SELECT m.cadeia FROM App\Entity\Financeiro\Movimentacao m2 WHERE m2.cadeia = m.cadeia AND m2.carteira = :carteiraExtrato)";
+
+            $qry = $this->doctrine->getEntityManager()->createQuery($dql);
+            $qry->setParameter('dtIni', $dtIni);
+            $qry->setParameter('dtFim', $dtFim);
+            $qry->setParameter('carteiraDestino', $carteiraDestino);
+            $qry->setParameter('carteiraExtrato', $carteiraExtrato);
+            $modo = $this->doctrine->getRepository(Modo::class)->find(10); // "RECEB. CARTÃO DEBITO"
+            $qry->setParameter('modo', $modo);
+            $rs = $qry->getResult();
+// FIXME: terminar
+
+        }
 
     }
 

@@ -150,7 +150,7 @@ class ParcelamentoController extends Controller
     {
         $session = $request->hasSession() ? $request->getSession() : new Session();
         $movimentacao = $session->get('parcelamentoMovimentacao');
-        $this->getMovimentacaoBusiness()->mergeAll($movimentacao);
+        $this->getMovimentacaoBusiness()->refindAll($movimentacao);
 
         $parcelas = $request->get('parcela');
         if (!is_array($parcelas)) {

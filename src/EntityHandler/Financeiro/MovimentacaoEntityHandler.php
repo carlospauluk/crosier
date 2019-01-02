@@ -271,13 +271,14 @@ class MovimentacaoEntityHandler extends EntityHandler
 
     /**
      * @param $movs
-     * @throws \Exception
+     * @throws ViewException
      */
     public function persistAll($movs)
     {
         try {
             $this->getEntityManager()->beginTransaction();
             foreach ($movs as $mov) {
+                $this->getMovimentacaoBusiness()->refindAll($mov);
                 $this->save($mov);
                 $this->getEntityManager()->clear();
             }
@@ -285,7 +286,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             $err = 'Erro ao salvar movimentações importadas. ';
-            if ($mov) {
+            if (isset($mov)) {
                 $err .= '(' . $mov->getDescricao() . ')';
             }
             throw new ViewException($err);
@@ -295,9 +296,9 @@ class MovimentacaoEntityHandler extends EntityHandler
     /**
      * Salva uma transferência entre carteiras.
      * Pode ser chamado a partir da saveTransfCaixa (que gera, então, 3 movimentações).
-     * @param Movimentacao $movimentacao
+     * @param Movimentacao $moviment299
      * @return \App\Entity\Base\EntityId|Movimentacao|null
-     * @throws \Exception
+     * @throws ViewException
      */
     public function saveTransfPropria(Movimentacao $moviment299)
     {
@@ -321,7 +322,7 @@ class MovimentacaoEntityHandler extends EntityHandler
         $this->getCadeiaEntityHandler()->save($cadeia, false);
         $this->getEntityManager()->flush(); // precisa dar o flush aqui para realmente mandar o INSERT já, pois a cadeia precisa estar aberta para poder inserir movimentações
 
-        $this->getMovimentacaoBusiness()->mergeAll($moviment299);
+        $this->getMovimentacaoBusiness()->refindAll($moviment299);
 
         $moviment299->setCategoria($categ299);
 
@@ -352,7 +353,6 @@ class MovimentacaoEntityHandler extends EntityHandler
         $moviment199->setBandeiraCartao($moviment299->getBandeiraCartao());
         $moviment199->setCadeiaOrdem(2); // aqui incremento, pois não sei se é a 299 foi a 1 ou a 2.
         $moviment199->setCadeia($cadeia);
-
 
 
         parent::save($moviment299, false);
@@ -413,7 +413,7 @@ class MovimentacaoEntityHandler extends EntityHandler
 
             // verifico se já existe a movimentação posterior
             if ($originante->getCadeia() != null) {
-                $posterior = $this->getEntityManager()->getRepository(Cadeia::class)->findBy(['cadeia' => $originante->getCadeia(), 'cadeiaOrdem' => $originante->getCadeiaOrdem() + 1]);
+                $posterior = $this->getEntityManager()->getRepository(Movimentacao::class)->findOneBy(['cadeia' => $originante->getCadeia(), 'cadeiaOrdem' => $originante->getCadeiaOrdem() + 1]);
                 if ($posterior) {
 
                     // verifico se teve alterações na originante
@@ -436,7 +436,7 @@ class MovimentacaoEntityHandler extends EntityHandler
                         $this->calcularNovaDtVencto($originante, $posterior);
 
                         try {
-                            $posterior = $this->save($posterior);
+                            $this->save($posterior);
                             $result = "<<SUCESSO>> ao atualizar movimentação: " . $originante->getDescricao();
                         } catch (\Exception $e) {
                             $result = "<<ERRO>> ao atualizar movimentação: " . $originante->getDescricao() . ". (" . $e->getMessage() . ")";
@@ -585,7 +585,6 @@ class MovimentacaoEntityHandler extends EntityHandler
         }
         return $movimentacao;
     }
-
 
 
 }

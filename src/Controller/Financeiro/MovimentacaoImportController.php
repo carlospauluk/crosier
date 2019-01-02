@@ -6,7 +6,6 @@ use App\Business\Financeiro\MovimentacaoBusiness;
 use App\Business\Financeiro\MovimentacaoImporter;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\GrupoItem;
-use App\EntityHandler\EntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
 use App\Exception\ViewException;
 use App\Form\Financeiro\MovimentacaoType;
@@ -46,7 +45,7 @@ class MovimentacaoImportController extends AbstractController
         $this->setDefaults();
     }
 
-    public function getEntityHandler(): ?EntityHandler
+    public function getEntityHandler(): ?MovimentacaoEntityHandler
     {
         return $this->entityHandler;
     }
@@ -61,9 +60,13 @@ class MovimentacaoImportController extends AbstractController
         $this->vParams['tipoExtrato'] = 'EXTRATO_SIMPLES';
         $this->vParams['linhasExtrato'] = null;
         $this->vParams['carteiraExtrato'] = null;
+        $this->vParams['carteiraExtratoEntity'] = null;
         $this->vParams['carteiraDestino'] = null;
+        $this->vParams['carteiraDestinoEntity'] = null;
         $this->vParams['grupo'] = null;
+        $this->vParams['grupoEntity'] = null;
         $this->vParams['grupoItem'] = null;
+        $this->vParams['grupoItemEntity'] = null;
         $this->vParams['gerarSemRegras'] = null;
         $this->vParams['usarCabecalho'] = null;
         $this->vParams['movs'] = null;
@@ -73,16 +76,49 @@ class MovimentacaoImportController extends AbstractController
     /**
      * Lida com os vParams, sobrepondo na seguinte ordem: defaults > session > request.
      * @param Request $request
+     * @throws ViewException
      */
     public function handleVParams(?Request $request)
     {
+
         $session = $request->hasSession() ? $request->getSession() : new Session();
         if (is_array($session->get('vParams'))) {
             $this->vParams = array_merge($this->vParams, $session->get('vParams'));
         }
         if (is_array($request->request->all())) {
             $this->vParams = array_merge($this->vParams, $request->request->all());
+
+            $this->vParams['tipoExtrato'] = $request->get('tipoExtrato');
+
+            if ($this->vParams['carteiraExtrato']) {
+                // já pesquisa e armazena a entidade para ser usada tanto no importar quanto no verificar
+                $this->vParams['carteiraExtratoEntity'] = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraExtrato']);
+            }
+
+            if ($this->vParams['carteiraDestino']) {
+                $this->vParams['carteiraDestinoEntity'] = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraDestino']);
+            }
+
+            if ($this->vParams['grupoItem']) {
+                $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($this->vParams['grupoItem']);
+                $this->vParams['grupoItemEntity'] = $grupoItem;
+                $this->vParams['grupo'] = $grupoItem->getPai()->getId();
+                $this->vParams['grupoEntity'] = $grupoItem->getPai();
+            }
+
+            if (strpos($this->vParams['tipoExtrato'], 'DEBITO') !== FALSE) {
+                if (!$this->vParams['carteiraExtratoEntity'] or !$this->vParams['carteiraDestinoEntity']) {
+                    throw new ViewException("Para extratos do tipo 'DÉBITO' é necessário informar as carteiras de origem e destino");
+                }
+            } else if (strpos($this->vParams['tipoExtrato'], 'GRUPO') !== FALSE) {
+                if (!$this->vParams['grupoItemEntity']) {
+                    throw new ViewException("Para extratos do tipo 'GRUPO' é necessário informar o grupo");
+                }
+            }
+
         }
+
+
     }
 
     /**
@@ -90,6 +126,7 @@ class MovimentacaoImportController extends AbstractController
      * @Route("/fin/movimentacao/import", name="fin_movimentacao_import")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws ViewException
      */
     public function import(Request $request)
     {
@@ -97,10 +134,16 @@ class MovimentacaoImportController extends AbstractController
 
         try {
             if ($request->request->get('btnImportar')) {
-                $this->importar($request);
+                $this->importar();
+            } else if ($request->request->get('btnVerificar')) {
+                $this->movimentacaoImporter->verificarImportadasAMais($this->vParams['movs'],
+                    $this->vParams['tipoExtrato'],
+                    $this->vParams['carteiraExtratoEntity'],
+                    $this->vParams['carteiraDestinoEntity'],
+                    $this->vParams['grupoItemEntity']);
             } else if ($request->request->get('btnSalvarTodas')) {
-                $this->salvarTodas($request);
-                $this->importar($request);
+                $this->salvarTodas();
+                $this->importar();
             } else if ($request->request->get('btnLimpar')) {
                 $this->limpar($request);
             }
@@ -125,57 +168,18 @@ class MovimentacaoImportController extends AbstractController
     }
 
     /**
-     * @param Request $request
-     * @return mixed
      * @throws ViewException
      */
-    public function importar(Request $request)
+    public function importar()
     {
         $this->vParams['movs'] = null;
-
-        $tipoExtrato = $request->get('tipoExtrato');
-        if (!$tipoExtrato) {
-            throw new ViewException('É necessário informar o tipo do extrato.');
-        }
-
-
-        $carteiraExtrato = null;
-        if ($this->vParams['carteiraExtrato']) {
-            $carteiraExtrato = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraExtrato']);
-        }
-
-        $carteiraDestino = null;
-        if ($this->vParams['carteiraDestino']) {
-            $carteiraDestino = $this->getDoctrine()->getRepository(Carteira::class)->find($this->vParams['carteiraDestino']);
-        }
-
-        $grupoItem = null;
-        if ($this->vParams['grupoItem']) {
-            $grupoItem = $this->getDoctrine()->getRepository(GrupoItem::class)->find($this->vParams['grupoItem']);
-            $this->vParams['grupo'] = $grupoItem->getId();
-        }
-
-
-        if (strpos($tipoExtrato, 'DEBITO') !== FALSE) {
-            if (!$carteiraExtrato or !$carteiraDestino) {
-                throw new ViewException("Para extratos do tipo 'DÉBITO' é necessário informar as carteiras de origem e destino");
-            }
-        } else if (strpos($tipoExtrato, 'GRUPO') !== FALSE) {
-            if (!$grupoItem) {
-                throw new ViewException("Para extratos do tipo 'GRUPO' é necessário informar o grupo");
-            }
-        } else {
-            if (!$carteiraExtrato) {
-                throw new ViewException("É necessário informar a carteira do extrato");
-            }
-        }
 
         $r = $this->movimentacaoImporter->importar(
             $this->vParams['tipoExtrato'],
             $this->vParams['linhasExtrato'],
-            $carteiraExtrato,
-            $carteiraDestino,
-            $grupoItem,
+            $this->vParams['carteiraExtratoEntity'],
+            $this->vParams['carteiraDestinoEntity'],
+            $this->vParams['grupoItemEntity'],
             $this->vParams['gerarSemRegras'],
             $this->vParams['usarCabecalho']);
 
@@ -202,9 +206,8 @@ class MovimentacaoImportController extends AbstractController
     /**
      * Salva todas as movimentações.
      *
-     * @param Request $request
      */
-    private function salvarTodas(Request $request)
+    private function salvarTodas()
     {
         try {
             $this->getEntityHandler()->persistAll($this->vParams['movs']);
@@ -220,10 +223,9 @@ class MovimentacaoImportController extends AbstractController
     /**
      *
      * @Route("/fin/movimentacao/import/tiposExtratos", name="fin_movimentacao_import_tiposExtratos")
-     * @param Request $request
      * @return Response
      */
-    public function tiposExtratos(Request $request)
+    public function tiposExtratos()
     {
         // FIXME: isto deveria estar em uma tabela.
         $tiposExtratos = [
@@ -259,12 +261,12 @@ class MovimentacaoImportController extends AbstractController
      * @param Request $request
      * @param $unqControle
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \Doctrine\ORM\ORMException
+     * @throws ViewException
      */
     public function form(Request $request, $unqControle)
     {
         if (!$unqControle) {
-            throw new \Exception("unqControle não informado");
+            throw new ViewException("unqControle não informado");
         }
         $session = new Session();
         $sessionMovs = $session->get('movs');
@@ -272,7 +274,7 @@ class MovimentacaoImportController extends AbstractController
         $movimentacao = $sessionMovs[$unqControle];
 
         // Dá um merge nos atributos manyToOne pra não dar erro no createForm
-        $this->getBusiness()->mergeAll($movimentacao);
+        $this->getBusiness()->refindAll($movimentacao);
 
         $formData = null;
         $form = $this->createForm(MovimentacaoType::class, $movimentacao);

@@ -241,7 +241,30 @@ class DateTimeUtils
         }
         $dtProx->setTime(0,0,0,0);
         return $dtProx;
+    }
 
+    /**
+     * Retorna o primeiro dia do mês a partir de uma data.
+     *
+     * @param \DateTime $dt
+     * @return bool|\DateTime
+     */
+    public static function getPrimeiroDiaMes(\DateTime $dt) {
+        $primeiroDiaMes = \DateTime::createFromFormat('Ymd', $dt->format('Y') . $dt->format('m') . '01');
+        $primeiroDiaMes->setTime(0,0,0,0);
+        return $primeiroDiaMes;
+    }
+
+    /**
+     * Retorna o último dia do mês a partir de uma data.
+     *
+     * @param \DateTime $dt
+     * @return bool|\DateTime
+     */
+    public static function getUltimoDiaMes(\DateTime $dt) {
+        $ultimoDiaMes = \DateTime::createFromFormat('Ymd', $dt->format('Y') . $dt->format('m') . $dt->format('t'));
+        $ultimoDiaMes->setTime(0,0,0,0);
+        return $ultimoDiaMes;
     }
 
 }

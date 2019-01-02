@@ -3,9 +3,15 @@
 namespace App\Business\Financeiro;
 
 use App\Entity\Base\DiaUtil;
+use App\Entity\Base\Pessoa;
+use App\Entity\Financeiro\Banco;
+use App\Entity\Financeiro\BandeiraCartao;
+use App\Entity\Financeiro\Cadeia;
 use App\Entity\Financeiro\Carteira;
 use App\Entity\Financeiro\Categoria;
+use App\Entity\Financeiro\CentroCusto;
 use App\Entity\Financeiro\Grupo;
+use App\Entity\Financeiro\GrupoItem;
 use App\Entity\Financeiro\Modo;
 use App\Entity\Financeiro\Movimentacao;
 use App\Entity\Financeiro\OperadoraCartao;
@@ -13,6 +19,7 @@ use App\Entity\Financeiro\Parcelamento;
 use App\EntityHandler\Financeiro\CadeiaEntityHandler;
 use App\EntityHandler\Financeiro\GrupoEntityHandler;
 use App\EntityHandler\Financeiro\MovimentacaoEntityHandler;
+use App\Exception\ViewException;
 use App\Utils\ExceptionUtils;
 use NumberFormatter;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -79,50 +86,67 @@ class MovimentacaoBusiness
 
     /**
      * @param Movimentacao $movimentacao
-     * @throws \Doctrine\ORM\ORMException
+     * @throws ViewException
      */
-    public function mergeAll(Movimentacao &$movimentacao)
+    public function refindAll(Movimentacao &$movimentacao)
     {
-        $em = $this->doctrine->getManager();
-        if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getId()) {
-            $movimentacao->setCategoria($em->merge($movimentacao->getCategoria()));
-        }
-        if ($movimentacao->getCarteira() and $movimentacao->getCarteira()->getId()) {
-            $movimentacao->setCarteira($em->merge($movimentacao->getCarteira()));
-            $em->refresh($movimentacao->getCarteira());
-        }
-        if ($movimentacao->getCarteiraDestino() and $movimentacao->getCarteiraDestino()->getId()) {
-            $movimentacao->setCarteiraDestino($em->merge($movimentacao->getCarteiraDestino()));
-        }
-        if ($movimentacao->getCentroCusto() and $movimentacao->getCentroCusto()->getId()) {
-            $movimentacao->setCentroCusto($em->merge($movimentacao->getCentroCusto()));
-        }
-        if ($movimentacao->getModo() and $movimentacao->getModo()->getId()) {
-            $movimentacao->setModo($em->merge($movimentacao->getModo()));
-        }
-        if ($movimentacao->getGrupoItem() and $movimentacao->getGrupoItem()->getId()) {
-            $movimentacao->setGrupoItem($em->merge($movimentacao->getGrupoItem()));
-        }
-        if ($movimentacao->getOperadoraCartao() and $movimentacao->getOperadoraCartao()->getId()) {
-            $movimentacao->setOperadoraCartao($em->merge($movimentacao->getOperadoraCartao()));
-        }
-        if ($movimentacao->getBandeiraCartao() and $movimentacao->getBandeiraCartao()->getId()) {
-            $movimentacao->setBandeiraCartao($em->merge($movimentacao->getBandeiraCartao()));
-        }
-        if ($movimentacao->getPessoa() and $movimentacao->getPessoa()->getId()) {
-            $movimentacao->setPessoa($em->merge($movimentacao->getPessoa()));
-        }
-        if ($movimentacao->getCadeia() and $movimentacao->getCadeia()->getId()) {
-            $movimentacao->setCadeia($em->merge($movimentacao->getCadeia()));
-        }
-        if ($movimentacao->getParcelamento() and $movimentacao->getParcelamento()->getId()) {
-            $movimentacao->setParcelamento($em->merge($movimentacao->getParcelamento()));
-        }
-        if ($movimentacao->getDocumentoBanco() and $movimentacao->getDocumentoBanco()->getId()) {
-            $movimentacao->setDocumentoBanco($em->merge($movimentacao->getDocumentoBanco()));
-        }
-        if ($movimentacao->getChequeBanco() and $movimentacao->getChequeBanco()->getId()) {
-            $movimentacao->setChequeBanco($em->merge($movimentacao->getChequeBanco()));
+        try {
+            $em = $this->doctrine->getManager();
+
+            if ($movimentacao->getCategoria() and $movimentacao->getCategoria()->getId()) {
+                $categoria = $em->find(Categoria::class, $movimentacao->getCategoria()->getId());
+                $movimentacao->setCategoria($categoria);
+            }
+            if ($movimentacao->getCarteira() and $movimentacao->getCarteira()->getId()) {
+                $carteira = $em->find(Carteira::class, $movimentacao->getCarteira()->getId());
+                $movimentacao->setCarteira($carteira);
+            }
+            if ($movimentacao->getCarteiraDestino() and $movimentacao->getCarteiraDestino()->getId()) {
+                $carteiraDestino = $em->find(Carteira::class, $movimentacao->getCarteiraDestino()->getId());
+                $movimentacao->setCarteiraDestino($carteiraDestino);
+            }
+            if ($movimentacao->getCentroCusto() and $movimentacao->getCentroCusto()->getId()) {
+                $centroCusto = $em->find(CentroCusto::class, $movimentacao->getCentroCusto()->getId());
+                $movimentacao->setCentroCusto($centroCusto);
+            }
+            if ($movimentacao->getModo() and $movimentacao->getModo()->getId()) {
+                $modo = $em->find(Modo::class, $movimentacao->getModo()->getId());
+                $movimentacao->setModo($modo);
+            }
+            if ($movimentacao->getGrupoItem() and $movimentacao->getGrupoItem()->getId()) {
+                $grupoItem = $em->find(GrupoItem::class, $movimentacao->getGrupoItem()->getId());
+                $movimentacao->setGrupoItem($grupoItem);
+            }
+            if ($movimentacao->getOperadoraCartao() and $movimentacao->getOperadoraCartao()->getId()) {
+                $operadoraCartao = $em->find(OperadoraCartao::class, $movimentacao->getOperadoraCartao()->getId());
+                $movimentacao->setOperadoraCartao($operadoraCartao);
+            }
+            if ($movimentacao->getBandeiraCartao() and $movimentacao->getBandeiraCartao()->getId()) {
+                $bandeiraCartao = $em->find(BandeiraCartao::class, $movimentacao->getBandeiraCartao()->getId());
+                $movimentacao->setBandeiraCartao($bandeiraCartao);
+            }
+            if ($movimentacao->getPessoa() and $movimentacao->getPessoa()->getId()) {
+                $pessoa = $em->find(Pessoa::class, $movimentacao->getPessoa()->getId());
+                $movimentacao->setPessoa($pessoa);
+            }
+            if ($movimentacao->getCadeia() and $movimentacao->getCadeia()->getId()) {
+                $cadeia = $em->find(Cadeia::class, $movimentacao->getCadeia()->getId());
+                $movimentacao->setCadeia($cadeia);
+            }
+            if ($movimentacao->getParcelamento() and $movimentacao->getParcelamento()->getId()) {
+                $parcelamento = $em->find(Parcelamento::class, $movimentacao->getParcelamento()->getId());
+                $movimentacao->setParcelamento($parcelamento);
+            }
+            if ($movimentacao->getDocumentoBanco() and $movimentacao->getDocumentoBanco()->getId()) {
+                $documentoBanco = $em->find(Banco::class, $movimentacao->getDocumentoBanco()->getId());
+                $movimentacao->setDocumentoBanco($documentoBanco);
+            }
+            if ($movimentacao->getChequeBanco() and $movimentacao->getChequeBanco()->getId()) {
+                $chequeBanco = $em->find(Banco::class, $movimentacao->getChequeBanco()->getId());
+                $movimentacao->setDocumentoBanco($chequeBanco);
+            }
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao realizar o refindAll');
         }
     }
 

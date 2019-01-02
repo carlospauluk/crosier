@@ -254,6 +254,7 @@ class ConferenciaFinanceiroBusiness
      * @param $modoCodigo
      * @param $carteiraCodigo
      * @param $titulo
+     * @param $operadoraCartaoDescricao
      * @return array
      * @throws \Exception
      */
