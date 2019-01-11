@@ -36,9 +36,6 @@ class OCBusiness extends BaseBusiness
 
     private $ftpUtils;
 
-    private $ftpConn;
-
-
     /**
      * Monta um array 'de-para' entre est_produto e oc_product.
      *
@@ -296,10 +293,8 @@ class OCBusiness extends BaseBusiness
                 $ocProduct->setPrice($produto->getPrecoAtual()->getPrecoPrazo());
 
                 if ($produto->getFornecedor()) {
-                    $fornecedor2manufacturer = $this->getDoctrine()->getRepository(FornecedorOcManufacturer::class)->findOneBy(['fornecedor' => $produto->getFornecedor()]);
-                    if ($fornecedor2manufacturer) {
-                        $ocProduct->setManufacturerId($fornecedor2manufacturer->getManufacturerId());
-                    }
+                    $ocManufacturerId = $this->fornecedor2OcManufacturer($produto->getFornecedor());
+                    $ocProduct->setManufacturerId($ocManufacturerId);
                 } else {
                     $ocProduct->setManufacturerId(0); // Não informado
                 }
@@ -311,12 +306,14 @@ class OCBusiness extends BaseBusiness
                 if ($produto->getSubdepto()) {
 
                     // RTA, pois os shorts-saias estão nos deptos de bermudas
-                    if (preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
+                    if ($this->getProdutoBusiness()->ehUniformeEscolar($produto) and preg_match('/((SHORT)+(.)*(SAIA)+)/', $produto->getDescricao())) {
                         $ocProductToCategory->setCategoryId(65);
                     } else {
                         $subdepto2category = $this->getDoctrine()->getRepository(SubdeptoOcCategory::class)->findOneBy(['subdepto' => $produto->getSubdepto()]);
                         if ($subdepto2category) {
                             $ocProductToCategory->setCategoryId($subdepto2category->getCategoryId());
+                        } else {
+                            $ocProductToCategory->setCategoryId(1);
                         }
                     }
 
@@ -454,7 +451,6 @@ class OCBusiness extends BaseBusiness
             }
 
             $ocProduct->setQuantity($produto->getSaldoTotal());
-
 
 
             // Por fim, removo as productOptionValue e productOption que não condizam com a grade atual do produto,
@@ -606,12 +602,12 @@ class OCBusiness extends BaseBusiness
             $ftpConn = ftp_connect($ftpServer);
             $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
             if (!$logged) {
-                throw new ViewException('Erro ao conectar ao FTP', 0);
+                throw new ViewException('Erro ao conectar ao FTPUtils', 0);
             }
         }
 
         if (!ftp_chdir($ftpConn, $ftpProductImagesFolder)) {
-            throw new ViewException('Erro ao abrir pasta das imagens no FTP', 0);
+            throw new ViewException('Erro ao abrir pasta das imagens no FTPUtils', 0);
         }
 
         // manda criar com supressão de erros (caso exista, não retorna o erro)
@@ -711,7 +707,7 @@ class OCBusiness extends BaseBusiness
             }
         }
         $ocProductImages = $ocEntityManager->getRepository(OcProductImage::class)->findBy(['productId' => $ocProduct->getProductId()]);
-        // ...e também os arquivos que estejam no FTP porém que não existam na base
+        // ...e também os arquivos que estejam no FTPUtils porém que não existam na base
         $remoteFiles = ftp_mlsd($ftpConn, '.');
         foreach ($remoteFiles as $remoteFile) {
             if (strpos($remoteFile['type'], 'dir') !== false) continue;
@@ -745,7 +741,7 @@ class OCBusiness extends BaseBusiness
     }
 
     /**
-     * Salva todas as imagens dos produtos passados abrindo e fechando apenas uma vez a conexão FTP.
+     * Salva todas as imagens dos produtos passados abrindo e fechando apenas uma vez a conexão FTPUtils.
      * @param $produtos
      * @throws ORMException
      * @throws ViewException
@@ -759,7 +755,7 @@ class OCBusiness extends BaseBusiness
         $ftpConn = ftp_connect($ftpServer);
         $logged = ftp_login($ftpConn, $ftpUsername, $ftpPassword);
         if (!$logged) {
-            throw new ViewException('Erro ao conectar ao FTP', 0);
+            throw new ViewException('Erro ao conectar ao FTPUtils', 0);
         }
         foreach ($produtos as $produto) {
             $this->saveImages($produto, $ftpConn);
@@ -916,7 +912,6 @@ class OCBusiness extends BaseBusiness
         }
 
 
-
         foreach ($moldes as $key => $molde) {
             if (strpos($produto->getDescricao(), ' ' . $key) !== FALSE) {
                 $novaDescricao .= ' ' . $molde;
@@ -970,6 +965,48 @@ class OCBusiness extends BaseBusiness
         $ocProductDescription->setDescription($descricao);
         $ocEntityManager->flush();
 
+
+    }
+
+
+    /**
+     * Retorna um ocManufaturer a partir de um Fornecedor (caso exista, senão salva um novo).
+     *
+     * @param Fornecedor $fornecedor
+     * @return int
+     * @throws ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ViewException
+     */
+    public function fornecedor2OcManufacturer(Fornecedor $fornecedor)
+    {
+        try {
+            $fornecedor2manufacturer = $this->getDoctrine()->getRepository(FornecedorOcManufacturer::class)->findOneBy(['fornecedor' => $fornecedor]);
+            if ($fornecedor2manufacturer) {
+                return $fornecedor2manufacturer->getManufacturerId();
+            } else {
+                $ocEntityManager = $this->getDoctrine()->getEntityManager('oc');
+
+                $ocManufacturer = new OcManufacturer();
+                $ocManufacturer->setName($fornecedor->getPessoa()->getNomeFantasia());
+                $ocManufacturer->setImage('');
+                $ocManufacturer->setSortOrder(0);
+
+                $ocEntityManager->persist($ocManufacturer);
+                $ocEntityManager->flush();
+
+                $fornecedor2manufacturer = new FornecedorOcManufacturer();
+                $fornecedor2manufacturer->setFornecedor($fornecedor);
+                $fornecedor2manufacturer->setManufacturerId($ocManufacturer->getManufacturerId());
+
+                $this->getDoctrine()->getEntityManager()->persist($fornecedor2manufacturer);
+                $this->getDoctrine()->getEntityManager()->flush();
+
+                return $fornecedor2manufacturer->getManufacturerId();
+            }
+        } catch (\Exception $e) {
+            throw new ViewException('Erro ao retornar fornecedor2OcManufacturer');
+        }
 
     }
 
